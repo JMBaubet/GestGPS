@@ -1,27 +1,21 @@
 <template>
   <v-app>
-    <v-main>
-      <v-card>
-        <v-layout>
-          
-          <MapContainer v-model="pointOfView" ></MapContainer> 
-        </v-layout>
-      </v-card>
-    </v-main>
+    <router-view/>
   </v-app>
 </template>
 
 
 <script setup lang="ts">
-import { ref } from 'vue';
-import MapContainer from './components/MapContainer.vue'
+//import { ref } from 'vue';
+//import MapContainer from './views/MapContainer.vue'
+import { RouterView } from 'vue-router';
 
 
 //const port = import.meta.env.VITE_PORT
 
 // MapBox
- const pointOfView = ref({lng: -0.03851, lat: 38.60945, bearing: 0,
-                          pitch: 70, zoom: 14.83 })
+//  const pointOfView = ref({lng: -0.03851, lat: 38.60945, bearing: 0,
+//                           pitch: 70, zoom: 14.83 })
 
 
 /*
