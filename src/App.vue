@@ -1,24 +1,29 @@
 <template>
   <v-app>
-    <router-view/>
+    <router-link to="/">Home</router-link>
+    <RouterView/>
   </v-app>
 </template>
 
 
 <script setup lang="ts">
+// import { useRouter } from 'vue-router';
+// const router = useRouter()
+
 //import { ref } from 'vue';
-//import MapContainer from './views/MapContainer.vue'
+// import MapContainer from './views/MapContainer.vue'
 import { RouterView } from 'vue-router';
 
 
 //const port = import.meta.env.VITE_PORT
 
 // MapBox
-//  const pointOfView = ref({lng: -0.03851, lat: 38.60945, bearing: 0,
-//                           pitch: 70, zoom: 14.83 })
+  // const pointOfView = {lng: -0.03851, lat: 38.60945, bearing: 0,
+  //                           pitch: 70, zoom: 14.83 }
 
 
-/*
+                           
+/* 
 const text = ref('')
 const subtitle = ref('')
 

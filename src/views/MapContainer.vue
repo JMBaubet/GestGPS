@@ -18,10 +18,10 @@
 <script setup>
   import '../../node_modules/mapbox-gl/dist/mapbox-gl.css';
   import mapboxgl from 'mapbox-gl';
-  import {ref, onMounted} from 'vue' 
+  import {ref, onMounted, onUnmounted} from 'vue' 
 
   const props = defineProps({
-    modelValue: Object,
+    id: Number,
   })
 
   mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN
@@ -30,6 +30,7 @@
   let refPovZoom = 8
   let refPovBearing = 0
   let refPovPitch = 70
+  
 
   // if ((import.meta.env.VITE_POV_LONGITUDE !== undefined) && (import.meta.env.VITE_POV_LATITUDE !== undefined)) {
   //   refPovCenter= [import.meta.env.VITE_POV_LONGITUDE, import.meta.env.VITE_POV_LATITUDE]
@@ -38,17 +39,25 @@
   // if (import.meta.env.VITE_POV_BEARING !== undefined) refPovBearing = import.meta.env.VITE_POV_BEARING
   // if (import.meta.env.VITE_POV_PITCH !== undefined) refPovPitch = import.meta.env.VITE_POV_PITCH
 
+  
   let map = null
 
   onMounted(() => {
+    console.log(`On charge mmap props.id : ${props.id}`)
     // On initialise la carte au montage du composant
-    map = new mapboxgl.Map({
-      container: "mapContainer",
-      style: 'mapbox://styles/mapbox/streets-v12',
-      center: refPovCenter,
-      zoom: refPovZoom,
-      bearing :refPovBearing,
-      pitch: refPovPitch
-    })
+    try {
+      map = new mapboxgl.Map({
+        container: "mapContainer",
+        style: 'mapbox://styles/mapbox/streets-v12',
+        center: refPovCenter,
+        zoom: refPovZoom,
+        bearing :refPovBearing,
+        pitch: refPovPitch
+      })
+    } catch (error) {console.log(error)}
+  })
+
+  onUnmounted(() => {
+    console.log("On detruit la carte")
   })
 </script>

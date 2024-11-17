@@ -6,12 +6,15 @@ const router = createRouter({
     history: createWebHistory(),
     routes: [
         {
+            name: 'home',
             path: '/',
             component: PageTest
         },
         {
-            path: '/map',
-            component: MapContainer
+            name : 'map',
+            path: '/map/:id',
+            component: MapContainer,
+            props: true
         }
     ]
 })
