@@ -1,16 +1,16 @@
 <template>
-    <h2>Page de test</h2>
+    <!-- <h2>Page de test</h2>
     <router-link :to="{name: 'map', params: {id: 1 }}">Carte Calp</router-link>
-    <v-btn width="100" @click="myMap()">TEST</v-btn>
+    <v-btn width="100" @click="myMap()">TEST</v-btn> -->
+    <MenuToolbar></MenuToolbar>
 
-    <h2>test des colonnes</h2>
-    <v-container  v-if="width < 960">
+    <v-container  class="hidden-md-and-up">
     <v-row justify="space-between">
         <v-col  class="d-flex justify-center">
       <ParcoursCard></ParcoursCard></v-col>
     </v-row>
   </v-container>
-    <v-container  v-if=" width > 959 && width < 1280">
+    <v-container class="hidden-sm-and-down hidden-lg-and-up">
     <v-row 
       justify="space-between">
       <v-col class="d-flex justify-center" v-for="n in 2" :key="n" cols="12" sm="6">
@@ -18,14 +18,14 @@
       </v-col>
     </v-row>
   </v-container>
-    <v-container min-width=1280   v-if="width > 1279 && width < 1920">
+    <v-container class="hidden-md-and-down hidden-xl-and-up">
     <v-row justify="space-between">
       <v-col class="d-flex justify-center" v-for="n in 3" :key="n" cols="12" sm="4">
         <ParcoursCard></ParcoursCard>
       </v-col>
     </v-row>
   </v-container>
-  <v-container  v-if="width > 1919">
+  <v-container  class="hidden-lg-and-down">
     <v-row  justify="space-between">
       <v-col class="d-flex justify-center" v-for="n in 4" :key="n" cols="12" sm="3">
         <ParcoursCard></ParcoursCard>
@@ -39,6 +39,7 @@
 <script setup>
 import { useRouter } from 'vue-router';
 import ParcoursCard from '@/components/ParcoursCard.vue';
+import MenuToolbar from '@/components/MenuToolbar.vue';
 const router = useRouter()
 
 function myMap() {
@@ -47,7 +48,4 @@ function myMap() {
 }
 
 
-import { useWindowSize } from '@vueuse/core';
-
-const { width } = useWindowSize()
 </script>

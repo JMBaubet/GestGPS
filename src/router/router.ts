@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory }from 'vue-router'
-import PageTest from '@/views/PageTest'
+import GpxContainer from '@/views/GpxContainer.vue'
 import MapContainer from '@/views/MapContainer.vue'
 
 const router = createRouter({
@@ -8,7 +8,7 @@ const router = createRouter({
         {
             name: 'home',
             path: '/',
-            component: PageTest
+            component: GpxContainer
         },
         {
             name : 'map',

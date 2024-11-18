@@ -1,6 +1,6 @@
 <template>
   <v-app>
-    <router-link to="/">Home</router-link>
+    <!-- <router-link to="/">Home</router-link> -->
     <RouterView/>
   </v-app>
 </template>
