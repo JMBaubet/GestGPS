@@ -24,7 +24,7 @@
         </v-tooltip>
     </v-btn>
 
-    <v-btn icon> 
+    <v-btn icon disabled> 
         <v-icon color="success">mdi-file-video</v-icon>
         <v-tooltip
             activator="parent"
@@ -121,6 +121,10 @@
 
 function ImportGpx(){
     console.log(`importGpx`)
+    // On affiche la page AddGpxCard
+    this.$router.push({name: `/AddGpx`})
+    // On emet un signal qui sera intercepté par AddGpxCard
+    //const emit = defineEmits(['addGpxFile']) // Pour signaler la demande de reset
 }
 
 </script>  

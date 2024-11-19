@@ -1,17 +1,17 @@
 <template>
-    <v-container 
-        fixed-right
-        style="
-            height: 100vh; 
-            display: flex;  
-            width:  100%; 
-            max-width: 100%; 
-            margin-left: 0px; 
-            padding: 0
-        " 
-    >
+  <v-container 
+    fixed-right
+    style="
+      height: 100vh; 
+      display: flex;  
+      width:  100%; 
+      max-width: 100%; 
+      margin-left: 0px; 
+      padding: 0
+    " 
+  >
     <div id="mapContainer" class="map-container" style="flex: 1;"></div>
-</v-container>
+  </v-container>
 </template>
   
 
