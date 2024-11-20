@@ -118,13 +118,17 @@
 </template>
   
 <script setup>
+import { ref } from 'vue';
+const param = ref()
+
+const emit = defineEmits(['AddGpxFile'])
+
+//const router = useRouter()
 
 function ImportGpx(){
-    console.log(`importGpx`)
-    // On affiche la page AddGpxCard
-    this.$router.push({name: `/AddGpx`})
-    // On emet un signal qui sera intercepté par AddGpxCard
-    //const emit = defineEmits(['addGpxFile']) // Pour signaler la demande de reset
+    
+    //console.log("On emet le signal ") // On emet un signal GpxContainer
+    emit('AddGpxFile') 
 }
 
 </script>  

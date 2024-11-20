@@ -7,8 +7,8 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
-    HelloWorld: typeof import('./src/components/HelloWorld.vue')['default']
-    MapContainer: typeof import('./src/components/MapContainer.vue')['default']
+    AddGpxCard: typeof import('./src/components/AddGpxCard.vue')['default']
+    AddGpxDialog: typeof import('./src/components/AddGpxDialog.vue')['default']
     MenuToolbar: typeof import('./src/components/MenuToolbar.vue')['default']
     ParcoursCard: typeof import('./src/components/ParcoursCard.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
