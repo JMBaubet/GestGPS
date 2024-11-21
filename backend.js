@@ -20,22 +20,43 @@ app.use(cors(options))
 
 app.use(morgan('tiny'))
 
-
-
-//definition des points de terminaison
-// Obtention des fichier GPX de download.
 const directory = os.homedir() + "\\downloads"
 
+//definition des points de terminaison
+
+// Test :
+// - de la présence du serveur
+// - de fichiers *.gpx dans ~/Downloads
+// - de fichiers *.fit dans ~/Downloads (Pour la version 3)
+app.get('/api/isRunning/', (req, res) => {
+  fs.promises.readdir(directory)
+  .then(filesDir => {
+    const gpxFiles = filesDir.filter(el => path.extname(el) === '.gpx')
+    const fitFiles = filesDir.filter(el => path.extname(el) === '.fit')
+    res.set('Content-Type', 'application/json')
+    res.send({gpx : `${gpxFiles.length}`, fit : `${fitFiles.length}`})
+  })
+  .catch(err => {
+    res.setHeader('Content-Type', 'application/json');
+    res.status(500)
+    res.json({error: `Le dossier ${directory} n'a pas été trouvé !`})            
+  })
+
+})
+
+// Obtention des fichier GPX de download.
+
 app.get('/api/getGpxFiles/', (req,res) => {
-      fs.promises.readdir(directory)
+    fs.promises.readdir(directory)
     .then(filesDir => {
       const gpxFiles = filesDir.filter(el => path.extname(el) === '.gpx')
+      res.setHeader('Content-Type', 'application/json');
       res.send(gpxFiles)
     })
     .catch(err => {
       res.setHeader('Content-Type', 'application/json');
       res.status(500)
-      res.json({error: `Le dossier ${directory} n'a pas été trouvé !`})            
+      res.json.send({error: `Le dossier ${directory} n'a pas été trouvé !`})            
     })
 })
 

@@ -118,8 +118,6 @@
 </template>
   
 <script setup>
-import { ref } from 'vue';
-const param = ref()
 
 const emit = defineEmits(['AddGpxFile'])
 
