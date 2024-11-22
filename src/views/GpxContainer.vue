@@ -3,8 +3,12 @@
     <router-link :to="{name: 'map', params: {id: 1 }}">Carte Calp</router-link>
     <v-btn width="100" @click="myMap()">TEST</v-btn> -->
     <MenuToolbar
-      @AddGpxFile="getGpxFiles"
-    ></MenuToolbar>
+    :no-gpx-file-ready
+    :no-fit-file-ready
+    @AddGpxFile="getGpxFiles"
+      @affMap="myMap"
+    >
+    </MenuToolbar>
 
     <v-container  class="hidden-md-and-up">
     <v-row justify="space-between">
@@ -46,11 +50,71 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, watch, onMounted, onUnmounted} from 'vue';
 import { useRouter } from 'vue-router';
 import ParcoursCard from '@/components/ParcoursCard.vue';
 import MenuToolbar from '@/components/MenuToolbar.vue';
 import AddGpxDialog from '@/components/AddGpxDialog.vue';
+
+
+const noGpxFileReady = ref(true)
+const noFitFileReady = ref(true)
+
+let intervalIsRunning
+onMounted(() => {
+  backEndIsRuning()
+  intervalIsRunning = setInterval( backEndIsRuning, 5000)
+})
+
+onUnmounted(() => {
+  clearInterval(intervalIsRunning)
+})
+
+async function backEndIsRuning() {  
+  const url = "http://localhost:4000/api/isRunning"
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Response status: ${response.status}`);
+      // Erreur 500 : Le serveur est présent mais problème avec lecture du dossier 
+      // Erreur 404: Le backEndIsRunning n'est pas connu du serveur
+      // TODO: Mettre un message d'erreur
+    }
+
+    const reception = await response.json();
+    console.log(`${reception.gpx}, ${reception.fit}`)
+    // Enable/disable bouton importation fichier gpx 
+    if (reception.gpx === "0") noGpxFileReady.value = true
+    else noGpxFileReady.value = false
+    // Enable/disable bouton importation fichier gpx 
+    if (reception.fit === "0") noFitFileReady.value = true
+    else noFitFileReady.value = false
+  } 
+  catch (error) {
+    console.error(`Pas de réponse du serveur ${error.message}`);
+    // TODO: Mettre un message d'alarme
+  }
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // Ajout d'une trace GPX
 const modelValue = ref(false)
@@ -63,7 +127,6 @@ function close() {
 }
 
 
-/** */ 
 
 const router = useRouter()
 

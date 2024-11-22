@@ -10,37 +10,37 @@
 import { RouterView } from 'vue-router';
 import {ref, onMounted, onUnmounted} from 'vue'
 
-
 const isStoped = ref(false)
-let intervalIsRunning
-onMounted(() => {
-  intervalIsRunning = setInterval( backEndIsRuning, 5000)
-})
+// let intervalIsRunning
+// onMounted(() => {
+//   intervalIsRunning = setInterval( backEndIsRuning, 5000)
+// })
 
-onUnmounted(() => {
-  clearInterval(intervalIsRunning)
-})
+// onUnmounted(() => {
+//   clearInterval(intervalIsRunning)
+// })
 
-async function backEndIsRuning() {
-  const url = "http://localhost:4000/api/isRunning"
-  try {
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(`Response status: ${response.status}`);
-      // Erreur 500 : Le serveur est présent mais problème avec lecture du dossier 
-      // Erreur 404: Le backEndIsRunning n'est pas connu du serveur
-      // TODO: Mettre un message d'erreur
-    }
+// async function backEndIsRuning() {
+  
+//   const url = "http://localhost:4000/api/isRunning"
+//   try {
+//     const response = await fetch(url);
+//     if (!response.ok) {
+//       throw new Error(`Response status: ${response.status}`);
+//       // Erreur 500 : Le serveur est présent mais problème avec lecture du dossier 
+//       // Erreur 404: Le backEndIsRunning n'est pas connu du serveur
+//       // TODO: Mettre un message d'erreur
+//     }
 
-    const reception = await response.json();
-    console.log(`${reception.gpx}, ${reception.fit}`)
-    // TODO: Mettre à jour les icons du MenuToolBar
-  } catch (error) {
-    console.error(`Pas de réponse du serveur ${error.message}`);
-    // TODO: Mettre un message d'alarme
-  }
+//     const reception = await response.json();
+//     console.log(`${reception.gpx}, ${reception.fit}`)
+//     // TODO: Mettre à jour les icons du MenuToolBar
+//   } catch (error) {
+//     console.error(`Pas de réponse du serveur ${error.message}`);
+//     // TODO: Mettre un message d'alarme
+//   }
 
-}
+// }
 
 // import { useRouter } from 'vue-router';
 // const router = useRouter()
