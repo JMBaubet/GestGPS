@@ -44,8 +44,7 @@ app.get('/api/isRunning/', (req, res) => {
 
 })
 
-// Obtention des fichier GPX de download.
-
+// Obtention de la liste des fichiers *.gpx de download.
 app.get('/api/getGpxFiles/', (req,res) => {
     fs.promises.readdir(directory)
     .then(filesDir => {
@@ -61,6 +60,7 @@ app.get('/api/getGpxFiles/', (req,res) => {
 })
 
 
+// Obtention de la liste des fichiers *.fit de download.
 app.get('/api/getGpxFile/:fileName', (req,res) => {    
   fs.promises.readdir(directory)
     .then(filesDir => {

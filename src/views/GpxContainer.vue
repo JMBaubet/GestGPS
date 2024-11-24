@@ -2,6 +2,12 @@
     <!-- <h2>Page de test</h2>
     <router-link :to="{name: 'map', params: {id: 1 }}">Carte Calp</router-link>
     <v-btn width="100" @click="myMap()">TEST</v-btn> -->
+
+    <MsgAlert 
+      :alarmes
+      @close-alarme="delAlarme"
+    ></MsgAlert>
+
     <MenuToolbar
     :no-gpx-file-ready
     :no-fit-file-ready
@@ -47,6 +53,7 @@
   > 
   </AddGpxDialog>
 
+
 </template>
 
 <script setup>
@@ -55,15 +62,22 @@ import { useRouter } from 'vue-router';
 import ParcoursCard from '@/components/ParcoursCard.vue';
 import MenuToolbar from '@/components/MenuToolbar.vue';
 import AddGpxDialog from '@/components/AddGpxDialog.vue';
+import MsgAlert from '@/components/MsgAlert.vue';
 
 
 const noGpxFileReady = ref(true)
 const noFitFileReady = ref(true)
+const alarmes = ref([])
 
-let intervalIsRunning
+  function delAlarme(id) {
+    alarmes.value.splice([alarmes.value.findIndex(alarme => alarme.id == id)], 1)
+    // console.log(` ${alarmes.value.length}`)
+  }
+
+
 onMounted(() => {
   backEndIsRuning()
-  intervalIsRunning = setInterval( backEndIsRuning, 5000)
+  setInterval( backEndIsRuning, 5000)
 })
 
 onUnmounted(() => {
@@ -75,14 +89,12 @@ async function backEndIsRuning() {
   try {
     const response = await fetch(url);
     if (!response.ok) {
-      throw new Error(`Response status: ${response.status}`);
-      // Erreur 500 : Le serveur est présent mais problème avec lecture du dossier 
-      // Erreur 404: Le backEndIsRunning n'est pas connu du serveur
-      // TODO: Mettre un message d'erreur
+      // console.log(`${response.status}`)
+      throw new Error(`${response.status}`);      
     }
 
     const reception = await response.json();
-    console.log(`${reception.gpx}, ${reception.fit}`)
+    //console.log(`${reception.gpx}, ${reception.fit}`)
     // Enable/disable bouton importation fichier gpx 
     if (reception.gpx === "0") noGpxFileReady.value = true
     else noGpxFileReady.value = false
@@ -91,26 +103,38 @@ async function backEndIsRuning() {
     else noFitFileReady.value = false
   } 
   catch (error) {
-    console.error(`Pas de réponse du serveur ${error.message}`);
-    // TODO: Mettre un message d'alarme
+    console.log(`Erreur du Backend : ${error.message}`);
+    switch(error.message) {
+      case '500':
+        if (alarmes.value.findIndex(alarme => alarme.id == 500)) {
+          alarmes.value.push({
+            id: 500, 
+            type: 'error', 
+            text:"Erreur 500 : Ressource indisponible ", 
+            closable: true,
+            icon: "mdi-alert-box-outline"
+          })
+        }
+      break;
+      case '404':
+        if (alarmes.value.findIndex(alarme => alarme.id == 404)) {
+          alarmes.value.push({
+            id: 404, 
+            type: 'error', 
+            text:"Erreur 404 : Page inconnue.", 
+            closable: true,
+            icon: "mdi-file-alert-outline"
+          })
+        }
+      break;
+      case 'NetworkError when attempting to fetch resource.':
+        if (alarmes.value.findIndex(alarme => alarme.id == 3)) {
+          alarmes.value.push({id: 3, type: 'error', text:"Le backend est absent"})
+        }
+      break;
+    }    
   }
-
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

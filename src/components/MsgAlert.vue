@@ -1,52 +1,53 @@
 <template>
-    <v-container class="position-absolute pa-0 ma-O" left="0px" max-width="360">
-      <v-alert
-        text="Absence du Backend !"
-        title=""
-        type="error"
-        density="compact"
-        rounded="0"
-      ></v-alert>
-
-      <v-progress-linear v-model="value" color="red-darken-4" max="250">
-      </v-progress-linear>
+  <div  style="z-index:1100; opacity:0.75; margin-left: 24px ;">
+    <v-container class="position-absolute pa-2" >
+      <v-timeline 
+      
+      density="compact"
+        line-thickness="0"
+        truncate-line="both"
+        side="end">
+        <v-timeline-item
+          v-for="alarme in alarmes"
+            :key="alarme.id"
+            :dot-color="alarme.type"
+            size="0"
+        >
+          <v-alert
+            :type="alarme.type"
+            :text="alarme.text"
+            :closable="alarme.closable"
+            @click:close="emit('closeAlarme', alarme.id)"
+            width="450"
+            density="compact"
+            border="start"
+            rounded="0"
+          >
+          </v-alert>
+        </v-timeline-item>
+      </v-timeline>
     </v-container>
+  </div>
 </template>
 
-<script>
-  export default {
-    data() {
-      return {
-        value: 0,
-        interval: 0,
-      }
-    },
 
-    watch: {
-      value(val) {
-        if (val < 255) return
+<script setup>
+import{ref} from 'vue'
 
-        this.value = 0
-        this.startBuffer()
-      },
-    },
+const props = defineProps({
+  alarmes: Array,
+  }) 
 
-    mounted() {
-      this.startBuffer()
-    },
+  const emit = defineEmits(['closeAlarme'])
 
-    beforeUnmount() {
-      clearInterval(this.interval)
-    },
-
-    methods: {
-      startBuffer() {
-        clearInterval(this.interval)
-
-        this.interval = setInterval(() => {
-          this.value += 1
-        }, 40)
-      },
-    },
-  }
 </script>
+
+
+<style scoped>
+  .v-timeline--vertical.v-timeline {
+    row-gap: 4px;
+  }
+  .v-timeline-item__body {
+    padding-inline-start: 0px;
+  }
+</style>
