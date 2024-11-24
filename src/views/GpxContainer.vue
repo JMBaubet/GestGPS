@@ -106,7 +106,7 @@ async function backEndIsRuning() {
     console.log(`Erreur du Backend : ${error.message}`);
     switch(error.message) {
       case '500':
-        if (alarmes.value.findIndex(alarme => alarme.id == 500)) {
+        if (alarmes.value.findIndex(alarme => alarme.id == 500) === -1) {
           alarmes.value.push({
             id: 500, 
             type: 'error', 
@@ -117,7 +117,7 @@ async function backEndIsRuning() {
         }
       break;
       case '404':
-        if (alarmes.value.findIndex(alarme => alarme.id == 404)) {
+        if (alarmes.value.findIndex(alarme => alarme.id == 404) === -1) {
           alarmes.value.push({
             id: 404, 
             type: 'error', 
@@ -128,7 +128,7 @@ async function backEndIsRuning() {
         }
       break;
       case 'NetworkError when attempting to fetch resource.':
-        if (alarmes.value.findIndex(alarme => alarme.id == 3)) {
+        if (alarmes.value.findIndex(alarme => alarme.id == 3) === -1) {
           alarmes.value.push({id: 3, type: 'error', text:"Le backend est absent"})
         }
       break;

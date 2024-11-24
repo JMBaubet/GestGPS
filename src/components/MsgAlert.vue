@@ -17,6 +17,7 @@
             :type="alarme.type"
             :text="alarme.text"
             :closable="alarme.closable"
+            :icon="alarme.icon"
             @click:close="emit('closeAlarme', alarme.id)"
             width="450"
             density="compact"
