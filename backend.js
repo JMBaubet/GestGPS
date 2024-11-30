@@ -6,6 +6,7 @@ import os from 'os'
 import fs from 'fs'
 import path from 'path'
 
+import {decodeGpx} from './src/scripts/gpx.js'
 const app = express()
 dotenv.config()
 const port = process.env.PORT
@@ -60,23 +61,25 @@ app.get('/api/getGpxFiles/', (req,res) => {
 })
 
 
-// Obtention de la liste des fichiers *.fit de download.
+// Traitement d'un fichier gpx
 app.get('/api/getGpxFile/:fileName', (req,res) => {    
-  fs.promises.readdir(directory)
-    .then(filesDir => {
-      console.log(`Fichier : ${directory}\\${req.params.fileName}`)
+  decodeGpx(`${directory}\\${req.params.fileName}`)
+    .then( retour => {    
+      console.log(`Retour de la promise : ${retour}`)
+     
       /** Il faut : 
        * - decoder le fichier
        * - archiver le fichier gpx dans l'appli
        * - mettre à jour le fichier json
        * - créer la vignette  */
-      const gpxFiles = filesDir.filter(el => path.extname(el) === '.gpx')
-      res.send(gpxFiles)
+      res.set('Content-Type', 'application/json')
+      res.send({gpx : "OK"})
     })
     .catch(err => {
+      console.error(`Erreur : ${err}`)
       res.setHeader('Content-Type', 'application/json');
       res.status(500)
-      res.json({error: `Le dossier ${directory} n'a pas été trouvé !`})            
+      res.json({error: `Le fichier ${req.params.fileName} n'a pas pu être traité !`})            
     })
 })
 

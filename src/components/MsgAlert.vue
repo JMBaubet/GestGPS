@@ -1,6 +1,6 @@
 <template>
   <div  style="z-index:1100; opacity:0.75; margin-left: 24px ;">
-    <v-container class="position-absolute pa-2" >
+    <v-container class="position-absolute pa-2" max-width="500">
       <v-timeline 
       
       density="compact"
