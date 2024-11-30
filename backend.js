@@ -65,7 +65,7 @@ app.get('/api/getGpxFiles/', (req,res) => {
 app.get('/api/getGpxFile/:fileName', (req,res) => {    
   decodeGpx(`${directory}\\${req.params.fileName}`)
     .then( retour => {    
-      console.log(`Retour de la promise : ${retour}`)
+      if (retour !== 0) {console.error(`Retour de la promise : ${retour}`)}
      
       /** Il faut : 
        * - decoder le fichier
