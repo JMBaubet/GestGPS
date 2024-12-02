@@ -23,6 +23,7 @@
     "mapbox-gl": "^3.8.0",
     "morgan": "^1.10.0",
     "roboto-fontface": "*",
+    "simplify-geojson": "^1.0.5",
     "vue": "^3.4.31",
     "vue-router": "^4.0.13",
     "vuetify": "^3.6.11",

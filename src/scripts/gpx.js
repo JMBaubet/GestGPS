@@ -12,11 +12,10 @@ import xml2js from 'xml2js'                 // Pour convertir le trace gpx en JS
 import haversine from 'haversine-distance'  // pour calculer la distance entre 2 points
 import polyline from '@mapbox/polyline'     // Pour encoder l'URL pour la générationde la vignette
 import isPng from 'is-png'                  // Pour vérifier que la vignette est correctement générée
+import simplify from 'simplify-geojson'
 
 
 // les variables globales
-let departLat = 0                           // Latitude du point de départ
-let departLong = 0                          // longitude du point de départ
 let arriveeLat = 0                          // Latitude du point d'arrivée
 let arriveeLong = 0                         // longitude du point d'arrivée
 let ville = ""                              // Ville de départ. (Utilisée pour filtrer les traces)
@@ -24,12 +23,40 @@ let ville = ""                              // Ville de départ. (Utilisée pour
 
 // Tuto Promises : https://www.youtube.com/watch?v=05mKXSdkCJg
 
+/** 
+ * Promise d'obtention de la commune de départ 
+ */
+const getGommune = (lat, long, accessToken) => {
+  return new Promise((resolve, reject) => {
+      url = `https://api.mapbox.com/search/geocode/v6/reverse?longitude=${long}&latitude=${lat}&access_token=${accessToken}`
+      fetch(url, {method:'GET', signal: AbortSignal.timeout(1000)})
+      .then(repHttp => {
+          if (repHttp.ok)
+              return repHttp.json()
+          else {
+              const e = new Error(`getCommune, Réponse status: ${repHttp.status}`)
+              e.name = 'httpError'
+              throw e
+          }
+      })
+      .then((repJson) =>{
+          const commune = repJson.features.find(feature => feature.properties.feature_type === "place").properties.name
+          /**
+           * @todo : Faire un test avec une erreur dans le json
+           */
+          resolve(commune)
+      })
+      .catch(error => [
+          reject(error)
+      ])
+  })
+}
 
 
 /**
  * Promises de génération de l'image static MapBox
  */
-const createVignette = (fichierEncode) => {
+const createVignette = (nbPts, lineString, departLat, departLong, arriveeLat, arriveeLong, accessToken) => {
   return new Promise((resolve, reject) => {
     /**  Génération de la vignette :
     * l'URL est de la forme :  
@@ -52,26 +79,59 @@ const createVignette = (fichierEncode) => {
     const vignetteTackWidth = process.env.VIGNETTE_TRACK_WIDTH                    // Epaisseur de la trace en pixel   
     const vignetteTrackCouleur = process.env.VIGNETTE_TRACK_COULEUR               // Couleur de la trace dur 3 digits
     const vignetteTrackOpacite = process.env.VIGNETTE_TRACK_OPACITE               // Opacité de la trace
-    const accessToken = process.env.VITE_MAPBOX_TOKEN                             // Le token d'accès à mapbox
-
     
+    // On optimise le nombre de points pour ne pas dépasser 8Ko sur l'URL 
+    // Si nombre de point > 4000 tolérance de simplify = 0.0005
+    // sinon si nombre de point > 1500 tolérance de simplify = 0.0001
+    // Sinon pas besoin de simplifier
+    let minimized = ""
+    if (nbPts > 4000) 
+      minimized = simplify(JSON.parse(lineString), 0.0005)
+    else if (nbPts > 1500 )
+      minimized = simplify(JSON.parse(lineString), 0.0001)
+    else  
+      minimized = JSON.parse(lineString)
+
+    // Dans mapbox il y-a un bug si deux points consécutifs ont la meme lattitude ou longitude
+    // On balaye l'objet json pour éliminer le second point
+    for (let index = 0; index <  minimized["geometry"]["coordinates"].length - 1; index ++)  {
+      let [x1, y1] = minimized["geometry"]["coordinates"][index]
+      let [x2, y2] = minimized["geometry"]["coordinates"][index  + 1]
+      if ((x1 === x2) || (y1 === y2 )) {
+        minimized["geometry"]["coordinates"].splice(index--, 1)
+      }
+    }
+
+    // On encode l'objet json pour réduite la taillde l'URL
+    const lineStringEncodee = polyline.fromGeoJSON(minimized)
+        
     // On prépare l'URL
     let urlVignette = `https://api.mapbox.com/styles/v1/mapbox/${vignetteFondCarte}/static/`
-    urlVignette = urlVignette + `path-${vignetteTackWidth}+${vignetteTrackCouleur}-${vignetteTrackOpacite}(${fichierEncode})`
+    urlVignette = urlVignette + `path-${vignetteTackWidth}+${vignetteTrackCouleur}-${vignetteTrackOpacite}(${lineStringEncodee})`
     urlVignette = urlVignette + `,pin-s-${vignetteIconDepartSymbol}+${vignetteIconDepartCouleur}(${departLong},${departLat})`
     urlVignette = urlVignette + `,pin-s-${vignetteIconArriveeSymbol}+${vignetteIconArriveeCouleur}(${arriveeLong},${arriveeLat})`
     urlVignette = urlVignette + `/auto/${vignetteLargeur}x${vignetteHauteur}@2x?access_token=${accessToken}`
     // Il faut encoder l'URL pour passer les catactères spéciaux qui  peuvent être présent dans fichierEncode
+
+    console.log(urlVignette)
     const urlEncode = encodeURI(urlVignette)
-    //console.log(urlEncode)
+
+    // On vérifie avant de lancer la requete que l'URL n'est pas trop longue
+    if(urlEncode.length > 8100) {
+      const e = new Error(`L'URL pour la vignette est trop longue ${urlEncode.length} !`)
+      e.name = 'urlToLong'
+      throw e
+    }
 
     fetch(urlEncode, {method:'GET', signal: AbortSignal.timeout(5000)})
-    // On attend la réponse du serveur MapBox
+    // On attend la réponse du serveur MapBox 
     .then(response => {
         if (!response.ok) {
-          throw new Error(`Erreur http, Status code: ${response.status}`);
+          const e = new Error(`Status code: ${response.status}`);
+          e.name = "httpError"
+          throw e
         }
-        // L'image PNG est normalement retounée dans le body sous un buffer
+        // L'image PNG est normalement retounée dans le body sous forme d'un buffer
         return response.arrayBuffer();
     })
     .then(imageBuffer => {
@@ -82,13 +142,17 @@ const createVignette = (fichierEncode) => {
         // On enregistre le fichier png
         fs.writeFile('./src/assets/tmp/vignette.png', Buffer.from(imageBuffer), err => {
           if (err) {
-            throw new Error(`La vignette n'a pas pu être enregistrée. Cause : ${err}`);
+            const e = new Error(`La vignette n'a pas pu être enregistrée. Cause : ${err}`);
+            e.name = "recordError"
+            throw e
           } else {
-            resolve()
+            resolve("OK")
           }
         })
       } else {
-        throw new Error(`L'image n'est pas un PNG`);
+        const e = new Error(`L'image n'est pas un PNG`);
+        e.name = "pngError"
+        throw e
       }
     })
     .catch(error => {
@@ -97,14 +161,17 @@ const createVignette = (fichierEncode) => {
   })
 }
 
+
+
+
+
+
+
+
+
+
 export async function decodeGpx(fichier) {
-  /**
-   * Le code retour vaut 0 si tout s'est bien passé sinon :
-   *  un bit est monté pour indiquer le type d'erreur:
-   * - 0x0000 0001 : site d'origine inconnu.
-   * - 0x0000 0010 : Erreur dans l'extraction du lien d'origine
-   * - 0x0000 0100 : Format Route RideWithGpx incompatible
-   */
+
 
   // definition des variables pour mise à jour du fichier data.json
   let codeRetour = 0
@@ -121,243 +188,249 @@ export async function decodeGpx(fichier) {
   let longMax = 0         // Extrémité Est de la trace
   let distance = 0        // Distance en m de la trace
   let denivele = 0        // Dénivelé positif de la trace
-
+  let trkpt = 0
+  let lineString = ""
+  let departLat = ""
+  let departLong = ""
+  let arriveeLat = ""
+  let arriveeLong = ""
+  
   const accessToken = process.env.VITE_MAPBOX_TOKEN  
 
-  console.log(fichier) 
 
-  let objectGpx = 0
 
-  // Transformation du fichier gpx en objet javascript
   try {
+    // Transformation du fichier gpx en objet javascript
     const parser = new xml2js.Parser()
     const data =  await fs.promises.readFile(fichier)
-    const jsonGpx = await parser.parseStringPromise(data)
-    objectGpx = JSON.parse(JSON.stringify(jsonGpx))
-  
-    // extraction du site d'édition de la trace
-    const creator = objectGpx.gpx.$.creator
-    switch(creator) {
-      case "StravaGPX" : 
-        editeurId = 1 
-        editeur = "Strava"
-        break ;
-      case "Garmin Connect" :
-        editeur = "Garmin"
-        editeurId =  2
-        break ;
-      case "http://ridewithgps.com/" :
-        editeur = "RideWithGps"
-        editeurId =  3         
-        break ;
-      case "Openrunner - https://www.openrunner.com" :
-        editeur = "openRunner"
-        editeurId = 4
-        break;
-      default:
-        const e = new Error(`Editeur ${creator} non traité !`)
-        e.name = 'switchError'
-        throw e
-    } 
-  }
+    const objetGpx = await parser.parseStringPromise(data)
+     
+    // extraction des points de passage
+    trkpt = objetGpx.gpx.trk[0].trkseg[0].trkpt 
+  } 
   catch({name, message}) {
     //console.error(`${name}, ${message}`)
     return `${name}, ${message}`   
   }
 
 
-  /** 
-   * extraction du nom de la trace  depend de l'editeur
-   */
-  switch(editeurId) {
-    case 1:   // Strava
-    case 2:   // Garmin
-    case 3:   // RideWithGps
-      // Pour RideWithGPS le format route n'est pas compatible
-      // L'objet contient objectGpx.gpx.rte[0]
-      try {
-        nom = objectGpx.gpx.trk[0].name
-      }
-      catch{
-        codeRetour = codeRetour + 4
-        const e = new Error("les fichiers routes sont incompatibles !")
-        e.name ='FormatError'
-        throw e
-      }
-    break;
-    case 4:   // OpenRunner le nom de la trace est précdé de son id 
-      const nomLong = objectGpx.gpx.trk[0].name
-      const tabNom = nomLong.toString().split("-")
-      nom = tabNom[0]
-    break;
-  }
 
 
-  /** Extraction de l'URL dépend de l'editeur
-   * - Pour Strava et RideWithGpx l'Url est dans les metadata
-   * - Pour Garmin l'Id est dans le nom du fichier apres le prefixe COURSE_
-   * - Pour OpenRunner l'Id est dans le nom du fichier sous la forme nom_du_parcours-xxxxx-Id-yyy.gpx
-   */
-  try {
-    const myArray = fichier.split("\\")
-    const nomFichier = myArray.slice(-1)
-    //console.log(`Nom Fichier : ${nomFichier}`)
-    switch(editeurId) {
-      case 1: //Strava
-      case 3: //RideWithGps
-        url = objectGpx.gpx.metadata[0].link[0].$.href        
-      break;
-      case 2: //Garmin
-        url = 'https://connect.garmin.com/modern/course/' + nomFichier.toString().replace('COURSE_', '').replace('.gpx', '')
-      break;
-      case 4: //Openrunner
-        const myArrayBis = nomFichier.toString().split("-")
-        url = 'https://www.openrunner.com/route-details/' + myArrayBis[1]
-      break;
-      /**
-       * @todo Généré une erreur Pour O et default
-       */
-      case 0:
-        null // pour ne pas générer une nouvelle erreur 
-      break;
-      default:
-        codeRetour = codeRetour + 2
+try {
+    // Création du JSON lineString
+    //console.log(trkpt.length)
+    let nbPts = 0
+    lineString = '{"type": "Feature","geometry": {"type": "LineString","coordinates":['
+    for(let key = 0; key < trkpt.length - 1; key++) {
+      // if ((Number.parseFloat(trkpt[key].$.lon).toFixed(5) !== Number.parseFloat(trkpt[key + 1].$.lon).toFixed(5)) && 
+      //    (Number.parseFloat(trkpt[key].$.lat).toFixed(5) !== Number.parseFloat(trkpt[key + 1].$.lat).toFixed(5)))
+        lineString = lineString + '[' + Number.parseFloat(trkpt[key].$.lon).toFixed(5) + ',' + Number.parseFloat(trkpt[key].$.lat).toFixed(5) + '],'
+    //   else {
+    //     console.log(Number.parseFloat(trkpt[key].$.lon).toFixed(5), Number.parseFloat(trkpt[key + 1].$.lon).toFixed(5))
+    //     console.log(Number.parseFloat(trkpt[key].$.lat).toFixed(5), Number.parseFloat(trkpt[key + 1].$.lat).toFixed(5))
+    //     console.log(++nbPts)
+    // }
     }
-    console.log(`URL : ${url}`)
+    lineString = lineString.slice(0, -1); // On supprime la dernière virgule
+    lineString = lineString + ']},"properties": {}}'
 
-    
-    /** extraction des points pour  :
-     * - avoir les coordonées de départ. Ceci permetra d'avoir la ville de départ
-     * - Calculer le rectangle qui contient la trace
-     * - calculer la distance
-     * - calculer le dénivelé
-    */
-    const trkpt = objectGpx.gpx.trk[0].trkseg[0].trkpt 
-    
-    // Extracttion des coordonées de départ
+    // Extracttion des coordonnées de départ et d'arrivée
     departLat = Number.parseFloat(trkpt[0].$.lat).toFixed(5)
     departLong = Number.parseFloat(trkpt[0].$.lon).toFixed(5)
-
     arriveeLat = Number.parseFloat(trkpt[trkpt.length-1].$.lat).toFixed(5)
     arriveeLong = Number.parseFloat(trkpt[trkpt.length-1].$.lon).toFixed(5)
-
-    latMin = trkpt[0].$.lat
-    latMax = trkpt[0].$.lat
-    longMin = trkpt[0].$.lon
-    longMax = trkpt[0].$.lon
-  
-    let lat
-    let long
-    let ele
-    for(var key in trkpt) {
-      lat = trkpt[key].$.lat
-      long = trkpt[key].$.lon
-      ele = trkpt[key].ele
-      lat < latMin ? latMin = lat:null
-      lat > latMin ? latMax = lat:null
-      long < longMin ? longMin = long:null
-      long > longMax ? longMax = long:null
-    }
-
-    // Calcul de la distance et du dénivelé
-    let trace = '{"type": "Feature","geometry": {"type": "LineString","coordinates":['
-    for(let key = 0; key < trkpt.length - 1; key = key + 3) {
-      const ptA = {lat : trkpt[key].$.lat, lon: trkpt[key].$.lon}
-      const ptB = {lat : trkpt[key + 1].$.lat, lon: trkpt[key + 1].$.lon}
-
-      distance = distance + haversine(ptA, ptB)
-
-      if (parseInt(trkpt[key + 1].ele) > parseInt(trkpt[key].ele)) {
-        denivele = denivele + parseInt(trkpt[key  +1 ].ele) - parseInt(trkpt[key].ele)
-      }
-      if ((Number.parseFloat(trkpt[key].$.lon).toFixed(5) !== Number.parseFloat(trkpt[key + 3].$.lon).toFixed(5)) && 
-         (Number.parseFloat(trkpt[key].$.lat).toFixed(5) !== Number.parseFloat(trkpt[key + 3].$.lat).toFixed(5)) ) {
-        trace = trace + '[' + Number.parseFloat(trkpt[key].$.lon).toFixed(5) + ',' + Number.parseFloat(trkpt[key].$.lat).toFixed(5) + '],'
-      }
-    }
-    trace = trace.slice(0, -1);
-    trace = trace + ']},"properties": {}}'
-
-    console.log(trkpt.length)
-
-
-    const traceEncodee = polyline.fromGeoJSON(JSON.parse(trace))
-    createVignette(traceEncodee)
-    .then (() => {
-      console.log('OK')
-    })
-    .catch((err) => {
-      console.error(err)
-    })
-
-
-
-
-    // Obtention de la ville  
-    url = `https://api.mapbox.com/search/geocode/v6/reverse?longitude=${long}&latitude=${lat}&access_token=${accessToken}`
-    
-    ville = await fetch(url, {method:'GET', signal: AbortSignal.timeout(1000)})
-    .then((rep, err) => {
-      // console.log(`Réponse MapBox : ${rep.status} : ${rep.ok}, ${rep.statusText}`)
-      if (rep.ok)
-        return rep.json()
-      else {
-        // si rep KO on passe le N° d'err et le text
-        throw `${rep.status}, ${rep.statusText}` 
-      }
-    })
-    .then((rep, err) => {
-      const city = rep.features.find(feature => feature.properties.feature_type === "place").properties.name
-      //console.log(`Ville : ${city}`)
-      return city
-      
-    })
-
-
-
-  //console.dir(`${editeur}, ${nom}, ${distance}, ${denivele}, ${ville}`)
-    
-
-
-    
-    
-    
-
-    return codeRetour
-  } catch({name, message}) {
-      console.error(`${name}, ${message}`)
+} 
+  catch({name, message}) {
+    //console.error(`${name}, ${message}`)
     return `${name}, ${message}`   
   }
-}
 
 
-/************************************
-* Obtention de la commune de départ *
-* voir https://docs.mapbox.com/playground/geocoding/?longitude=2.813454204212036&latitude=48.86380768349139&searchType=reverse
-************************************/
-async function getCommuneDepart(lat, long, accessToken) {
-  const url = `https://api.mapbox.com/search/geocode/v6/reverse?longitude=${long}&latitude=${lat}&access_token=${accessToken}`
-  await fetch(url, {method:'GET', signal: AbortSignal.timeout(1000)})
-  .then((rep, err) => {
-    // console.log(`Réponse MapBox : ${rep.status} : ${rep.ok}, ${rep.statusText}`)
-    if (rep.ok)
-      return rep.json()
-    else {
-      // si rep KO on passe le N° d'err et le text
-      throw `${rep.status}, ${rep.statusText}` 
-    }
-  })
-  .then((rep, err) => {
-    const city = rep.features.find(feature => feature.properties.feature_type === "place").properties.name
-    console.log(`Ville : ${city}`)
-    return city
+    // await createVignette(trkpt.length, lineString, departLat, departLong, arriveeLat, arriveeLong, accessToken)
+    // .then(() => {
+    //   console.log('OK')
+    // })
+    // .catch((err) => {
+    //   console.error(err)
+    // })
+
+    // getGommune(departLat, departLong, accessToken)
+    // .then((ville) => {
+    //   console.log(ville)
+    // })
+    // .catch((err) => {
+    //   console.error(err)
+    // })
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// try {  
+//     // extraction du site d'édition de la trace
+//     const creator = objetGpx.gpx.$.creator
+//     switch(creator) {
+//       case "StravaGPX" : 
+//         editeurId = 1 
+//         editeur = "Strava"
+//         break ;
+//       case "Garmin Connect" :
+//         editeur = "Garmin"
+//         editeurId =  2
+//         break ;
+//       case "http://ridewithgps.com/" :
+//         editeur = "RideWithGps"
+//         editeurId =  3         
+//         break ;
+//       case "Openrunner - https://www.openrunner.com" :
+//         editeur = "openRunner"
+//         editeurId = 4
+//         break;
+//       default:
+//         const e = new Error(`Editeur ${creator} non traité !`)
+//         e.name = 'switchError'
+//         throw e
+//     } 
+//   }
+//   catch({name, message}) {
+//     //console.error(`${name}, ${message}`)
+//     return `${name}, ${message}`   
+//   }
+
+
+//   /** 
+//    * extraction du nom de la trace  depend de l'editeur
+//    */
+//   switch(editeurId) {
+//     case 1:   // Strava
+//     case 2:   // Garmin
+//     case 3:   // RideWithGps
+//       // Pour RideWithGPS le format route n'est pas compatible
+//       // L'objet contient objetGpx.gpx.rte[0]
+//       try {
+//         nom = objetGpx.gpx.trk[0].name
+//       }
+//       catch{
+//         codeRetour = codeRetour + 4
+//         const e = new Error("les fichiers routes sont incompatibles !")
+//         e.name ='FormatError'
+//         throw e
+//       }
+//     break;
+//     case 4:   // OpenRunner le nom de la trace est précédé de son id 
+//       const nomLong = objetGpx.gpx.trk[0].name
+//       const tabNom = nomLong.toString().split("-")
+//       nom = tabNom[0]
+//     break;
+//   }
+
+
+//   /** Extraction de l'URL dépend de l'editeur
+//    * - Pour Strava et RideWithGpx l'Url est dans les metadata
+//    * - Pour Garmin l'Id est dans le nom du fichier apres le prefixe COURSE_
+//    * - Pour OpenRunner l'Id est dans le nom du fichier sous la forme nom_du_parcours-xxxxx-Id-yyy.gpx
+//    */
+//   try {
+//     const myArray = fichier.split("\\")
+//     const nomFichier = myArray.slice(-1)
+//     //console.log(`Nom Fichier : ${nomFichier}`)
+//     switch(editeurId) {
+//       case 1: //Strava
+//       case 3: //RideWithGps
+//         url = objetGpx.gpx.metadata[0].link[0].$.href        
+//       break;
+//       case 2: //Garmin
+//         url = 'https://connect.garmin.com/modern/course/' + nomFichier.toString().replace('COURSE_', '').replace('.gpx', '')
+//       break;
+//       case 4: //Openrunner
+//         const myArrayBis = nomFichier.toString().split("-")
+//         url = 'https://www.openrunner.com/route-details/' + myArrayBis[1]
+//       break;
+//       default:
+//         const e = new Error(`EditeurId ${editeurId} inconnu !`)
+//         e.name = 'switchError'
+//         throw e
+//     }
+//     // console.log(`URL : ${url}`)
+
     
-  })
 
-  .catch(err => {
-    //traitement des erreurs
-    console.error(`Erreur mapbox : ${err}`)
-  })
+
+
+//     // calcul distance et D+ 
+//     let lineString = '{"type": "Feature","geometry": {"type": "LineString","coordinates":['
+//     for(let key = 0; key < trkpt.length - 1; key = key++) {
+//       const ptA = {lat : trkpt[key].$.lat, lon: trkpt[key].$.lon}
+//       const ptB = {lat : trkpt[key + 1].$.lat, lon: trkpt[key + 1].$.lon}
+
+//       distance = distance + haversine(ptA, ptB)
+
+//       if (parseInt(trkpt[key + 1].ele) > parseInt(trkpt[key].ele)) {
+//         denivele = denivele + parseInt(trkpt[key  +1 ].ele) - parseInt(trkpt[key].ele)
+//       }
+//       if ((Number.parseFloat(trkpt[key].$.lon).toFixed(5) !== Number.parseFloat(trkpt[key + 3].$.lon).toFixed(5)) && 
+//           (Number.parseFloat(trkpt[key].$.lat).toFixed(5) !== Number.parseFloat(trkpt[key + 3].$.lat).toFixed(5)) ) {
+//         lineString = lineString + '[' + Number.parseFloat(trkpt[key].$.lon).toFixed(5) + ',' + Number.parseFloat(trkpt[key].$.lat).toFixed(5) + '],'
+//       }
+//     }
+//     lineString = lineString.slice(0, -1);
+//     lineString = lineString + ']},"properties": {}}'
+
+//     console.log(trkpt.length)
+
+
+
+
+
+
+
+//     /** extraction des points pour  :
+//      * - avoir les coordonées de départ. Ceci permetra d'avoir la ville de départ
+//      * - Calculer le rectangle qui contient la trace
+//      * - calculer la distance
+//      * - calculer le dénivelé
+//     */
+    
+//     // Extracttion des coordonées de départ et d'arrivée
+//     departLat = Number.parseFloat(trkpt[0].$.lat).toFixed(5)
+//     departLong = Number.parseFloat(trkpt[0].$.lon).toFixed(5)
+//     arriveeLat = Number.parseFloat(trkpt[trkpt.length-1].$.lat).toFixed(5)
+//     arriveeLong = Number.parseFloat(trkpt[trkpt.length-1].$.lon).toFixed(5)
+
+//     latMin = trkpt[0].$.lat
+//     latMax = trkpt[0].$.lat
+//     longMin = trkpt[0].$.lon
+//     longMax = trkpt[0].$.lon
+  
+//     let lat
+//     let long
+//     let ele
+//     for(var key in trkpt) {
+//       lat = trkpt[key].$.lat
+//       long = trkpt[key].$.lon
+//       ele = trkpt[key].ele
+//       lat < latMin ? latMin = lat:null
+//       lat > latMin ? latMax = lat:null
+//       long < longMin ? longMin = long:null
+//       long > longMax ? longMax = long:null
+//     }
+
+
+
+//   //console.dir(`${editeur}, ${nom}, ${distance}, ${denivele}, ${ville}`)
+    
+//     return codeRetour
+//   } catch({name, message}) {
+//       console.error(`${name}, ${message}`)
+//     return `${name}, ${message}`   
+//   }
 }
-
-
