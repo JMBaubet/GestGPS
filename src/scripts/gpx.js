@@ -11,7 +11,7 @@ import fs from "fs"
 import xml2js from 'xml2js'                 // Pour convertir le trace gpx en JSON
 import { createVignette, getGommune } from "./requestsMapbox.js"
 import { getDistanceDPlus } from "./distanceDenivele.js"
-import { getData } from "./getData.js"
+import { getData } from "./getDatas.js"
 
 // les variables globales
 let arriveeLat = 0                          // Latitude du point d'arrivée
