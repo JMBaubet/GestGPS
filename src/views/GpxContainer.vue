@@ -46,8 +46,9 @@
   </v-container>
 
   <AddGpxDialog 
-    :model-value 
-    :items 
+    :vue-dialog-gpx
+    :items
+    :items-traceurs 
     @close-add-gpx-dialog="close"
     @import-gpx-file="getGpxFile"
   > 
@@ -63,6 +64,7 @@
   import MenuToolbar from '@/components/MenuToolbar.vue';
   import AddGpxDialog from '@/components/AddGpxDialog.vue';
   import MsgAlert from '@/components/MsgAlert.vue';
+
 
 
   const noGpxFileReady = ref(true)
@@ -144,13 +146,14 @@
 
 
   // Ajout d'une trace GPX
-  const modelValue = ref(false)
+  const vueDialogGpx = ref(false)
   const items = ref()
+  const itemsTraceurs = ref()
 
 
   function close() {
     // console.log("reception du signal close" )
-    modelValue.value=false
+    vueDialogGpx.value=false
   }
 
 
@@ -171,6 +174,8 @@
   * Lecture du dossier Téléchargement *
   ************************************/
   function getGpxFiles() {
+    getTraceurs()
+
     const url = `http://localhost:4000/api/getGpxFiles/`
     fetch(url, {method:'GET', signal: AbortSignal.timeout(1000)})
     .then((rep, err) => {
@@ -184,8 +189,35 @@
     })
     .then((rep, err) => {
       items.value = rep
-      modelValue.value=true
-      //console.log(`reponse : ${rep}`)
+      vueDialogGpx.value=true
+      console.log(`Fichiers : ${rep}`)
+    })
+
+    .catch(err => {
+      //traitement des erreurs
+      itemsFichiers.value=`Text : ${err}`
+    })
+  }
+
+  /************************************
+  * Lecture des traceurs              *
+  ************************************/
+  function getTraceurs() {
+    const url = `http://localhost:4000/api/traceurs/`
+    fetch(url, {method:'GET', signal: AbortSignal.timeout(1000)})
+    .then((rep, err) => {
+      //console.log(`Réponse : ${rep.status} : ${rep.ok}, ${rep.statusText}`)
+      if (rep.ok)
+        return rep.json()
+      else {
+        // si rep KO on passe le N° d'err et le text
+        throw `${rep.status}, ${rep.statusText}` 
+      }
+    })
+    .then((rep, err) => {
+      itemsTraceurs.value = rep
+      // vueDialogGpx.value=true
+      console.log(`Traceurs : ${rep}`)
     })
 
     .catch(err => {
@@ -194,13 +226,14 @@
     })
   }
 
+
   /****************************
-   * Lecture d'un fichier gpx *
+   * Ajout d'un fichier gpx *
    ****************************/
-  function getGpxFile(selection) {
+  function getGpxFile(selection, traceur) {
     close()
     
-    console.log(`on va traiter ${selection}`)
+    console.log(`on va traiter ${selection}, ${traceur}`)
     const url = `http://localhost:4000/api/getGpxFile/${selection}`
     fetch(url, {method:'GET', signal: AbortSignal.timeout(1000)})
     .then((rep, err) => {

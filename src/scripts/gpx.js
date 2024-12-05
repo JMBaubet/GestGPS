@@ -12,6 +12,7 @@ import xml2js from 'xml2js'                 // Pour convertir le trace gpx en JS
 import { createVignette, getGommune } from "./requestsMapbox.js"
 import { getDistanceDPlus } from "./distanceDenivele.js"
 import { getData } from "./getDatas.js"
+import { addTrace } from "./dataModel.js"
 
 // les variables globales
 let arriveeLat = 0                          // Latitude du point d'arrivée
@@ -108,17 +109,29 @@ export const decodeGpx = (fichier) => {
              * Lancemeent des promesses
              */
             Promise.all([
-              // createVignette(trkpt.length, lineString, departLat, departLong, arriveeLat, arriveeLong, accessToken),
-              // getGommune(departLat, departLong, accessToken),
               getDistanceDPlus(lineString),
-              getData(fichier, objetGpx)
+              getData(fichier, objetGpx),
+              // getGommune(departLat, departLong, accessToken),
+              // createVignette(trkpt.length, lineString, departLat, departLong, arriveeLat, arriveeLong, accessToken)
             ])
-              .then((results) => {
-                console.log(`fin de promise.all : ${results}`)
+              .then((donneesGpx) => {
+                console.log(`fin de promise.all : ${donneesGpx}`)
                 /**
                  * @todo mettre a jour le fichier data.json
                  */
-                resolve({ status: "OK" })
+                donneesGpx.push({ commune: "Calp" })
+                donneesGpx.push({ status: "OK" })
+                donneesGpx.push({ lon: departLong, lat: departLat })
+                console.log(typeof (donneesGpx[1].nom) + ` : ${donneesGpx[1].nom}`)
+                addTrace(donneesGpx)
+                  .then((result) => {
+                    console.log(result.idTrace)
+                    resolve({ status: "OK" })
+
+                  })
+                  .catch((e) => {
+                    reject(e)
+                  })
               })
               .catch((e) => {
                 console.error(`${e}`)

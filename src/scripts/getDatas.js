@@ -42,7 +42,7 @@ export const getData = (fileName, objetGpx) => {
           // Pour RideWithGPS le format route n'est pas compatible
           // L'objet contient objetGpx.gpx.rte[0]
           try {
-            nomTrace = objetGpx.gpx.trk[0].name
+            nomTrace = objetGpx.gpx.trk[0].name[0]
           }
           catch {
             codeRetour = codeRetour + 4

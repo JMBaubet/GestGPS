@@ -23,8 +23,8 @@ export const getDistanceDPlus = (lineString) => {
           distanceSommet = distance
         }
       }
-      distance = parseInt(distance) / 1000
-      distanceSommet = parseInt(distanceSommet / 1000)
+      distance = Number.parseFloat(distance / 1000).toFixed(2)
+      distanceSommet = Number.parseFloat(distanceSommet / 1000).toFixed(2)
       resolve({ distance: distance, denivele: denivele, ptCulminant: sommet, distSommet: distanceSommet })
     }
     catch ({ e }) {
