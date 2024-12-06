@@ -115,7 +115,7 @@ export const createVignette = (nbPts, lineString, departLat, departLong, arrivee
 }
 
 /** 
- * Promise d'obtention de la commune de départ 
+ * Promise d'obtention la commune de départ 
  */
 export const getGommune = (lat, long, accessToken) => {
   return new Promise((resolve, reject) => {

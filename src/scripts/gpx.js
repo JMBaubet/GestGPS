@@ -20,8 +20,13 @@ let arriveeLong = 0                         // longitude du point d'arrivée
 let ville = ""                              // Ville de départ. (Utilisée pour filtrer les traces)
 
 
-
-export const decodeGpx = (fichier) => {
+/**
+ * decodeGpx
+ * @param {string} fichier 
+ * @param {string} traceur 
+ * @returns promise 
+ */
+export const decodeGpx = (fichier, traceur) => {
   return new Promise((resolve, reject) => {
 
     // definition des variables pour mise à jour du fichier data.json
@@ -48,7 +53,6 @@ export const decodeGpx = (fichier) => {
     let arriveeLong = ""
 
     const accessToken = process.env.VITE_MAPBOX_TOKEN
-
 
     // Transformation du fichier gpx en objet javascript
     const parser = new xml2js.Parser()
@@ -115,18 +119,17 @@ export const decodeGpx = (fichier) => {
               // createVignette(trkpt.length, lineString, departLat, departLong, arriveeLat, arriveeLong, accessToken)
             ])
               .then((donneesGpx) => {
-                console.log(`fin de promise.all : ${donneesGpx}`)
                 /**
                  * @todo mettre a jour le fichier data.json
                  */
                 donneesGpx.push({ commune: "Calp" })
                 donneesGpx.push({ status: "OK" })
                 donneesGpx.push({ lon: departLong, lat: departLat })
-                console.log(typeof (donneesGpx[1].nom) + ` : ${donneesGpx[1].nom}`)
+                donneesGpx.push({ traceur: traceur })
                 addTrace(donneesGpx)
                   .then((result) => {
-                    console.log(result.idTrace)
-                    resolve({ status: "OK" })
+                    console.log(`gpx.js : decodeGpx : circuitId : ${result.circuitId}, isPresent : ${result.isPresent}`)
+                    resolve(result)
 
                   })
                   .catch((e) => {
@@ -140,7 +143,7 @@ export const decodeGpx = (fichier) => {
           })
       })
       .catch((e) => {
-        console.lof(`${e}`)
+        console.log(`${e}`)
         reject(e)
       })
   })

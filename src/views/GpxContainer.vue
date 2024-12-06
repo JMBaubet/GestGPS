@@ -50,7 +50,7 @@
     :items
     :items-traceurs 
     @close-add-gpx-dialog="close"
-    @import-gpx-file="getGpxFile"
+    @import-gpx-file="addGpxFile"
   > 
   </AddGpxDialog>
 
@@ -176,7 +176,7 @@
   function getGpxFiles() {
     getTraceurs()
 
-    const url = `http://localhost:4000/api/getGpxFiles/`
+    const url = `http://localhost:4000/api/GpxFiles/`
     fetch(url, {method:'GET', signal: AbortSignal.timeout(1000)})
     .then((rep, err) => {
       //console.log(`Réponse : ${rep.status} : ${rep.ok}, ${rep.statusText}`)
@@ -230,24 +230,47 @@
   /****************************
    * Ajout d'un fichier gpx *
    ****************************/
-  function getGpxFile(selection, traceur) {
+  function addGpxFile(selection, traceur) {
     close()
     
     console.log(`on va traiter ${selection}, ${traceur}`)
-    const url = `http://localhost:4000/api/getGpxFile/${selection}`
-    fetch(url, {method:'GET', signal: AbortSignal.timeout(1000)})
+    const url = `http://localhost:4000/api/GpxFile/${selection}/${traceur}`
+    fetch(url, {method:'POST', signal: AbortSignal.timeout(1000)})
     .then((rep, err) => {
       //console.log(`Réponse : ${rep.status} : ${rep.ok}, ${rep.statusText}`)
-      if (rep.ok)
+      if (rep.ok) {
+        // objet = rep.json()
+        // console.log(`GpxContainer.vue : reponse : ${objet.gpx}`)
         return rep.json()
+      }
       else {
         // si rep KO on passe le N° d'err et le text
         throw `${rep.status}, ${rep.statusText}` 
       }
     })
     .then((rep, err) => {
-      items.value = rep
-      //console.log(`reponse : ${rep}`)
+      console.log(`reponse : ${rep.gpx}`)
+      // Mettre une alarme si rep.gpx vaut Present  ou Semblable
+      switch(rep.gpx) {
+        case "Present" :
+        alarmes.value.push({
+              id: 404, 
+              type: 'error', 
+              text:"Ce circuit est déjà présent.", 
+              closable: true,
+              icon: "mdi-map-marker-alert-outline"
+            })
+        break;
+        case "Semblable" : 
+        alarmes.value.push({
+              id: 404, 
+              type: 'warning', 
+              text:"Un circuit semblable est déjà présent.", 
+              closable: true,
+              icon: "mdi-map-marker-distance"
+            })
+        break;
+      }
     })
 
     .catch(err => {

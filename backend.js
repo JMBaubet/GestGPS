@@ -48,7 +48,7 @@ app.get('/api/isRunning/', (req, res) => {
 })
 
 // Obtention de la liste des fichiers *.gpx présents dans download.
-app.get('/api/getGpxFiles/', (req, res) => {
+app.get('/api/GpxFiles/', (req, res) => {
   fs.promises.readdir(directory)
     .then(filesDir => {
       const gpxFiles = filesDir.filter(el => path.extname(el) === '.gpx')
@@ -64,10 +64,11 @@ app.get('/api/getGpxFiles/', (req, res) => {
 
 
 // Traitement d'un fichier gpx
-app.get('/api/getGpxFile/:fileName', (req, res) => {
-  decodeGpx(`${directory}\\${req.params.fileName}`)
+app.post('/api/GpxFile/:fileName/:traceur', (req, res) => {
+  console.log(`backend.js : traceur : ${req.params.traceur}`)
+  decodeGpx(`${directory}\\${req.params.fileName}`, `${req.params.traceur}`)
     .then(retour => {
-      if (retour !== 0) { console.error(`Retour de la promise : ${retour}`) }
+      if (retour.circuitId !== 0) { console.log(`Retour de la promise : ${retour.circuitId}, ${retour.isPresent}`) }
 
       /** Il faut : 
        * - decoder le fichier
@@ -75,7 +76,13 @@ app.get('/api/getGpxFile/:fileName', (req, res) => {
        * - mettre à jour le fichier json
        * - créer la vignette  */
       res.set('Content-Type', 'application/json')
-      res.send({ gpx: "OK" })
+      if (retour.circuitId === 0) {
+        res.send({ gpx: "Present" })
+      } else if (retour.isPresent) {
+        res.send({ gpx: "Semblable" })
+      } else {
+        res.send({ gpx: "OK" })
+      }
     })
     .catch(err => {
       console.error(`Erreur : ${err}`)

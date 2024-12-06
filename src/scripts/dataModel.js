@@ -15,8 +15,9 @@ let objet = {}
  *              {editeur: string, editeurId: number, nom: string, url: string}
  *              {commune: string}, 
  *              {status: string},
- *              {long: number, lat: number}]} data 
- * @returns {promises<{status: <text>}>}
+ *              {long: number, lat: number},
+ *              {traceur: string}]} data 
+ * @returns {promises<{idTrace: <number>, isPresent: <boolena>}>}
  */
 export const addTrace = (data) => {
   return new Promise((resolve, reject) => {
@@ -29,24 +30,28 @@ export const addTrace = (data) => {
         circuitId: 0,
         nom: data[1].nom,
         villeDepart: getIdCommune(data[2].commune),
-        traceur: 0,
+        traceur: getIdTraceur(data[5].traceur),
         editeur: data[1].editeurId,
-        source: data[1].url,
+        url: data[1].url,
         distance: data[0].distance,
         denivele: data[0].denivele,
         depart: data[4],
         sommet: sommet,
         isoDateTime: horodatage.toISOString()
       }
-
-      const idTrace = addCircuit(circuit)
+      console.log(`dataModel.js : addTrace() : avant appel de addCircuit`)
+      const retourAddCircuit = addCircuit(circuit)
+      console.log(`dataModel.js : addTrace() : après appel de addCircuit`)
 
       // Il faut retourner l'Id du circuit créé , 
-      // pour archiver la vignette et le fichier GEOjson
-      fs.writeFileSync(fichier, JSON.stringify(objet))
-      resolve({ idTrace: idTrace })
+
+      if (retourAddCircuit.circuitId !== 0) {
+        fs.writeFileSync(fichier, JSON.stringify(objet))
+        // Il faut  archiver la vignette et le fichier GEOjson
+      }
+      resolve(retourAddCircuit)
     } catch ({ e }) {
-      console.error(`addTrace Erreur : ${e}`)
+      console.error(`dataModel.js : addTrace() : Erreur : ${e}`)
       reject(e)
     }
   })
@@ -91,35 +96,47 @@ function getIdTraceur(traceur) {
 
 function addCircuit(circuit) {
   // On verifie grossièrement que le circuit n'est pas déja présent.
-  console.log("addCircuit")
+  console.log("dataModel.js : addCircuit")
 
-  let peutEtrePresent = false
+  let isPresent = false
   for (let key = 1; key < objet.circuits.length; key++) {
     if (circuit.nom === objet.circuits[key].nom) {
-      return 0
+      // console.warn(`dataModel.js : addCircuit() : on a le même nom de circuit`)
+      return { circuitId: 0, isPresent: true }
     }
     if (circuit.url === objet.circuits[key].url) {
-      return 0
+      // console.warn(`dataModel.js : addCircuit() : on a la même URL de trace`)
+      return { circuitId: 0, isPresent: true }
     }
-
-    // Si les coordonnées de départ sont trop eloignées on passe à l'occurence suivante
-    else if ((parseInt(circuit.depart.lng * 100) !== parseInt(objet.circuits[key.depart.lng * 100])) ||
-      (parseInt(circuit.depart.lat * 100) !== parseInt(objet.circuits[key.depart.lat * 100]))) continue
+    // // Si les coordonnées de départ sont trop eloignées on passe à l'occurence suivante
+    else if ((Math.round(circuit.depart.lon * 100) !== Math.round(objet.circuits[key].depart.lon * 100)) ||
+      (Math.round(circuit.depart.lat * 100) !== Math.round(objet.circuits[key].depart.lat * 100))) {
+      // console.warn(`dataModel.js : addCircuit() : departs éloignés, idCircuit : ${key}`)
+      continue
+    }
     // Si on a plus de 5 km d'écart sur la distance on passe à l'occurence suivante
-    else if (Math.abs(circuit.distance - objet.circuits[key].distance) > 5) continue
+    else if (Math.abs(circuit.distance - objet.circuits[key].distance) > 5) {
+      // console.warn(`dataModel.js : addCircuit() : distances > 5 km, idCircuit : ${key}`)
+      continue
+    }
     // Si le point culminant à plus de 10 m d'écart on passe à l'occurence suivante
-    else if (Math.abs(circuit.sommet.altitude - objet.circuits[key].sommet.altitude) > 10) continue
+    else if (Math.abs(circuit.sommet.altitude - objet.circuits[key].sommet.altitude) > 10) {
+      // console.warn(`dataModel.js : addCircuit() : D+  > 10 m, idCircuit : ${key}`)
+      continue
+    }
     // Si le point culminant se situe à moins de 5 km d'écart on passe à l'occurence suivante
-    else if (Math.abs(circuit.sommet.km - objet.circuits[key].sommet.km) > 5) continue
+    else if (Math.abs(circuit.sommet.km - objet.circuits[key].sommet.km) > 5) {
+      // console.warn(`dataModel.js : addCircuit() : sommets  > 5 km, idCircuit : ${key}`)
+      continue
+    }
     else {
-      peutEtrePresent = true
+      isPresent = true
+      console.warn("Circuit probablement déja présent !")
     }
   }
-  if (peutEtrePresent === false) {
-    circuit.circuitId = objet.circuits.length
-    objet.circuits.push(circuit)
-    return circuit.circuitId
-  }
-  else
-    return 0
+  const circuitId = objet.circuits.length
+  console.log(`dataModel.js : addCircuit : circuitId = ${circuitId}`)
+  circuit.circuitId = circuitId
+  objet.circuits.push(circuit)
+  return { circuitId: circuitId, isPresent: isPresent }
 }

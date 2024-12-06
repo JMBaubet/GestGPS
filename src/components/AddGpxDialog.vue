@@ -16,7 +16,7 @@
         <v-list 
         v-if="items.length > 0"
         max-height="220"
-        bg-color="primary"
+        bg-color="indigo"
         density="compact" 
         :items>
 
@@ -24,7 +24,6 @@
           v-for="(item) in items"
           :key="item"
           :value="item"
-          color="white"
           @click="choix(item)"
         >
         <v-list-item-subtitle v-text="item"></v-list-item-subtitle>
@@ -39,9 +38,9 @@
           :items=itemsTraceurs
           v-model="select"
           density="compact" 
-          color="primary"
+          color="indigo-lighten-1"
           label="Sélectionnez l'éditeur de la trace ou créez en un !"
-          @update:model-value="getTraceur(select)"
+          @update:model-value="selectTraceur(select)"
         ></v-combobox>
       </v-col>
      
@@ -97,7 +96,7 @@
   const traceur = ref()
 
   function choix(fichier) {
-    console.log(`Choix fichier : ${fichier}`)
+    console.log(`src/components/AddGpxDialog.vue : Le fichier ${fichier} a été sélectionné`)
     if (fichier !== selection.value) {
       isDisabled.value = false
       selection.value = fichier
@@ -108,9 +107,9 @@
     }
   }
 
-  function getTraceur(items) {
+  function selectTraceur(items) {
     traceur.value=items
-    console.log(`On met à jour le nom du traceur : ${items}`)
+    console.log(`src/components/AddGpxDialog.vue : Le traceur ${items} a été sélectionné.`)
   }
 
 
