@@ -4,13 +4,16 @@
   "commentaires": "Fichier JSON d'exemple pour la recherche simplifiée des circuits trace GPS.",
   "villes": [
     "Inconnue",
+    "Magny-le-Hongre",
+    "Laguiole",
+    "Altea",
     "Calp"
   ],
   "traceurs": [
-    "undefined",
+    "Indéterminé",
     "VCVE",
     "Emotion Bike",
-    "JM baubet"
+    "JM Baubet"
   ],
   "editeurs": [
     "Inconnu",
@@ -32,69 +35,45 @@
       "depart": {
         "lng": 34.34345,
         "lat": 2.344556
-      },
-      "sommet": {
-        "altitude": 1523,
-        "km": 52.34
-      },
-      "isoDateTime": "2024-10-02T08:30:00Z"
+      }
     },
     {
       "circuitId": 1,
-      "nom": "100Km vers le nord",
-      "villeDepart": 1,
-      "traceur": 3,
-      "editeur": 1,
-      "url": "https://www.strava.com/routes/3271207506140373930",
-      "distance": "103.22",
-      "denivele": 760,
-      "depart": {
-        "lon": "2.81600",
-        "lat": "48.86489"
-      },
-      "sommet": {
-        "altitude": 167,
-        "km": "66.37"
-      },
-      "isoDateTime": "2024-12-06T14:55:37.109Z"
-    },
-    {
-      "circuitId": 2,
       "nom": "test_strava OK",
-      "villeDepart": 1,
+      "villeDepart": 3,
       "traceur": 3,
       "editeur": 1,
       "url": "https://www.strava.com/routes/3273755882380524710",
-      "distance": "8.67",
-      "denivele": 121,
+      "distance": "8.98",
+      "denivele": 122,
       "depart": {
         "lon": "-0.03851",
         "lat": "38.60945"
       },
       "sommet": {
-        "altitude": 122,
-        "km": "6.50"
+        "altitude": 126,
+        "km": "6.81"
       },
-      "isoDateTime": "2024-12-06T14:56:02.553Z"
+      "isoDateTime": "2024-12-09T14:21:17.414Z"
     },
     {
-      "circuitId": 3,
-      "nom": "test_openRunner",
-      "villeDepart": 1,
+      "circuitId": 2,
+      "nom": "2022 Calpe oct antennes",
+      "villeDepart": 4,
       "traceur": 3,
       "editeur": 4,
-      "url": "https://www.openrunner.com/route-details/19966700",
-      "distance": "8.73",
-      "denivele": 163,
+      "url": "https://www.openrunner.com/route-details/15488524",
+      "distance": "42.14",
+      "denivele": 775,
       "depart": {
-        "lon": "-0.03854",
-        "lat": "38.60952"
+        "lon": "0.07262",
+        "lat": "38.65000"
       },
       "sommet": {
-        "altitude": 126,
-        "km": "5.91"
+        "altitude": 421,
+        "km": "17.94"
       },
-      "isoDateTime": "2024-12-06T14:57:14.095Z"
+      "isoDateTime": "2024-12-09T14:21:42.327Z"
     }
   ]
 }

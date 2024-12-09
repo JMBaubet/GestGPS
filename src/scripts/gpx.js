@@ -9,15 +9,77 @@
 
 import fs from "fs"
 import xml2js from 'xml2js'                 // Pour convertir le trace gpx en JSON
+import * as dotenv from 'dotenv'
 import { createVignette, getGommune } from "./requestsMapbox.js"
 import { getDistanceDPlus } from "./distanceDenivele.js"
 import { getData } from "./getDatas.js"
 import { addTrace } from "./dataModel.js"
+import { zpad } from "./utils.js"
+
+dotenv.config()
+const dataDirectory = process.env.DATA_DIRECTORY
 
 // les variables globales
 let arriveeLat = 0                          // Latitude du point d'arrivée
 let arriveeLong = 0                         // longitude du point d'arrivée
 let ville = ""                              // Ville de départ. (Utilisée pour filtrer les traces)
+
+
+function archivage(id, lineString) {
+  console.log(`gpx.js : archivage : id : ${id}`)
+  // On crée le repertoire d'archivage DATA_DIRECTORY
+  // voir https://www.geeksforgeeks.org/how-to-create-a-directory-using-node-js/#using-nodejs-fsmkdir
+  try {
+    fs.accessSync(dataDirectory)
+  } catch {
+    console.log('On va créer le dossier')
+    const rep = fs.mkdirSync(dataDirectory, { recursive: true })
+    if (rep === undefined) {
+      console.error(`gpx.js : archivage : impossible de créer le dossier : ${dataDirectory}`)
+      return false
+    }
+  }
+  try {
+    fs.chmodSync(dataDirectory, 0o770)
+  } catch (err) {
+    console.error(`gpx.js : archivage : impossible de faire une chmod sur le dossier : ${dataDirectory}`)
+    return false
+  }
+
+  const newDirectory = `${dataDirectory}` + zpad(id, 6) + `\\`
+  try {
+    fs.accessSync(newDirectory)
+  } catch {
+    console.log('On va créer le dossier')
+    const rep = fs.mkdirSync(newDirectory, { recursive: true })
+    if (rep === undefined) {
+      console.error(`gpx.js : archivage : impossible de créer le dossier : ${newDirectory}`)
+      return false
+    }
+  }
+  try {
+    fs.chmodSync(newDirectory, 0o770)
+  } catch (err) {
+    console.error(`gpx.js : archivage : impossible de faire une chmod sur le dossier : ${newDirectory}`)
+    return false
+  }
+  try {
+    fs.writeFileSync(newDirectory + `lineString.json`, JSON.stringify(lineString));
+  } catch (err) {
+    console.error(`gpx.js : archivage : impossible d'enregistrer le fichier lineString`)
+    return false
+  }
+
+  // On range la vignette dans le dossier
+  try {
+    fs.renameSync('./src/assets/tmp/vignette.png', newDirectory + `vignette.png`)
+  } catch (err) {
+    console.error(`gpx.js : archivage : impossible d'enregistrer la vignette`)
+    return false
+  }
+  return true
+}
+
 
 
 /**
@@ -69,10 +131,11 @@ export const decodeGpx = (fichier, traceur) => {
             let nbPts = 0
             lineString = '{"type": "Feature","geometry": {"type": "LineString","coordinates":['
             // Pour les 4 premiers point on ne corrige pas l'altitude
-            for (let key = 4; key < 4; key++) {
+            for (let key = 0; key < 4; key++) {
               lineString = lineString + '[' +
                 Number.parseFloat(trkpt[key].$.lon).toFixed(5) + ',' +
                 Number.parseFloat(trkpt[key].$.lat).toFixed(5) + ',' +
+                parseInt(trkpt[key].ele) + ',' +
                 parseInt(trkpt[key].ele) + '],'
             }
 
@@ -87,7 +150,8 @@ export const decodeGpx = (fichier, traceur) => {
               lineString = lineString + '[' +
                 Number.parseFloat(trkpt[key].$.lon).toFixed(5) + ',' +
                 Number.parseFloat(trkpt[key].$.lat).toFixed(5) + ',' +
-                altitude + '],'
+                altitude + ',' +
+                parseInt(trkpt[key].ele) + '],'
             }
 
             // Pour les 4 derniers points on ne lisse pas l'altitude
@@ -95,6 +159,7 @@ export const decodeGpx = (fichier, traceur) => {
               lineString = lineString + '[' +
                 Number.parseFloat(trkpt[key].$.lon).toFixed(5) + ',' +
                 Number.parseFloat(trkpt[key].$.lat).toFixed(5) + ',' +
+                parseInt(trkpt[key].ele) + ',' +
                 parseInt(trkpt[key].ele) + '],'
             }
 
@@ -115,20 +180,19 @@ export const decodeGpx = (fichier, traceur) => {
             Promise.all([
               getDistanceDPlus(lineString),
               getData(fichier, objetGpx),
-              // getGommune(departLat, departLong, accessToken),
-              // createVignette(trkpt.length, lineString, departLat, departLong, arriveeLat, arriveeLong, accessToken)
+              getGommune(departLat, departLong, accessToken),
+              createVignette(trkpt.length, lineString, departLat, departLong, arriveeLat, arriveeLong, accessToken)
             ])
               .then((donneesGpx) => {
                 /**
                  * @todo mettre a jour le fichier data.json
                  */
-                donneesGpx.push({ commune: "Calp" })
-                donneesGpx.push({ status: "OK" })
                 donneesGpx.push({ lon: departLong, lat: departLat })
                 donneesGpx.push({ traceur: traceur })
                 addTrace(donneesGpx)
                   .then((result) => {
                     console.log(`gpx.js : decodeGpx : circuitId : ${result.circuitId}, isPresent : ${result.isPresent}`)
+                    archivage(result.circuitId, lineString)
                     resolve(result)
 
                   })
@@ -137,7 +201,7 @@ export const decodeGpx = (fichier, traceur) => {
                   })
               })
               .catch((e) => {
-                console.error(`${e}`)
+                console.error(`gpx.js : decodeGpx : Promises.all Erreur : ${e}`)
                 reject(e)
               })
           })

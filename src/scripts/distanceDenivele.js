@@ -13,13 +13,15 @@ export const getDistanceDPlus = (lineString) => {
       let distanceSommet = 0
       let denivele = 0
       for (let index = 0; index < lineStringObjet["geometry"]["coordinates"].length - 1; index++) {
-        let [lon1, lat1, dev1] = lineStringObjet["geometry"]["coordinates"][index]
-        let [lon2, lat2, dev2] = lineStringObjet["geometry"]["coordinates"][index + 1]
+        let [lon1, lat1, dev1, alt1] = lineStringObjet["geometry"]["coordinates"][index]
+        //console.log(`${lon1}, ${lat1}, ${dev1}, ${alt1} `)
+        let [lon2, lat2, dev2, alt2] = lineStringObjet["geometry"]["coordinates"][index + 1]
         distance = distance + haversine({ lat: lat1, lon: lon1 }, { lat: lat2, lon: lon2 })
-        if (dev2 > dev1)
+        if (dev2 > dev1) {
           denivele = denivele + dev2 - dev1
-        if (dev1 > sommet) {
-          sommet = dev1
+        }
+        if (parseInt(alt1) > sommet) {
+          sommet = parseInt(alt1)
           distanceSommet = distance
         }
       }
@@ -28,6 +30,7 @@ export const getDistanceDPlus = (lineString) => {
       resolve({ distance: distance, denivele: denivele, ptCulminant: sommet, distSommet: distanceSommet })
     }
     catch ({ e }) {
+      console.error(`distanceDenivle: getDistanceDPlus: erreur: ${e} `)
       reject(e)
     }
   })

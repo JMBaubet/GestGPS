@@ -3,9 +3,14 @@
  */
 
 import fs from 'fs'
+import * as dotenv from 'dotenv'
 
-const fichier = "./src/assets/dataModel.json"
+dotenv.config()
+const dataDirectory = process.env.DATA_DIRECTORY
+const configFile = process.env.CONFIG_FILE
 
+//const fichier = "./src/assets/dataModel.json"
+const fichier = `${dataDirectory}${configFile}`
 let objet = {}
 
 
@@ -21,11 +26,25 @@ let objet = {}
  */
 export const addTrace = (data) => {
   return new Promise((resolve, reject) => {
+    let buffer
     try {
-      const horodatage = new Date()
+      //console.log(fichier)
+      buffer = fs.readFileSync(fichier)
+    } catch (err) {
+      if (err.code === 'ENOENT') {
+        //console.error('File not found!');
+        const e = new Error(`${fichier}`)
+        e.name = 'File not Found'
+        reject(e)
+      } else {
+        throw err;
+      }
+    }
 
-      objet = JSON.parse(fs.readFileSync(fichier))
+    try {
+      objet = JSON.parse(buffer)
       let sommet = { altitude: data[0].ptCulminant, km: data[0].distSommet }
+      const horodatage = new Date()
       let circuit = {
         circuitId: 0,
         nom: data[1].nom,
@@ -66,7 +85,7 @@ export const addTrace = (data) => {
  */
 function getIdCommune(commune) {
   let key = 0
-  console.log(`getCommune : ${commune}`)
+  console.log(`dataModel.js : getIdCommune : ${commune}`)
   for (key = 0; key < objet.villes.length; key++) {
     //console.log(objet.villes[key])
     if (objet.villes[key] === commune) return key

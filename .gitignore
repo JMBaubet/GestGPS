@@ -24,3 +24,7 @@ pnpm-debug.log*
 
 # Espace temporaire
 src/assets/tmp
+
+#Espace des données applicatives
+src/assets/dataModel.json
+src/assets/data

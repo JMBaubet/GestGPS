@@ -65,16 +65,17 @@ app.get('/api/GpxFiles/', (req, res) => {
 
 // Traitement d'un fichier gpx
 app.post('/api/GpxFile/:fileName/:traceur', (req, res) => {
-  console.log(`backend.js : traceur : ${req.params.traceur}`)
+  console.log(`backend.js : Traceur sélectionné : ${req.params.traceur}`)
   decodeGpx(`${directory}\\${req.params.fileName}`, `${req.params.traceur}`)
     .then(retour => {
-      if (retour.circuitId !== 0) { console.log(`Retour de la promise : ${retour.circuitId}, ${retour.isPresent}`) }
+      console.log(`backend.js : Retour de la promise : ${retour.circuitId}, ${retour.isPresent}`)
 
       /** Il faut : 
-       * - decoder le fichier
-       * - archiver le fichier gpx dans l'appli
-       * - mettre à jour le fichier json
-       * - créer la vignette  */
+       * - decoder le fichier                     // C Fait
+       * - mettre à jour le fichier json          // C fait 
+       * - archiver le fichier lineString.json dans l'appli   // A faire
+       * - archiver la vignette                   // A faire
+       * */
       res.set('Content-Type', 'application/json')
       if (retour.circuitId === 0) {
         res.send({ gpx: "Present" })

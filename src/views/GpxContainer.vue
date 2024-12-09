@@ -134,7 +134,12 @@
         break;
         case 'NetworkError when attempting to fetch resource.':
           if (alarmes.value.findIndex(alarme => alarme.id == 3) === -1) {
-            alarmes.value.push({id: 3, type: 'error', text:"Le backend est absent"})
+            alarmes.value.push({
+              id: 3, 
+              type: 'error', 
+              text:"Le backend est absent",
+              icon: " mdi-lan-disconnect"
+            })
           }
         break;
       }    
