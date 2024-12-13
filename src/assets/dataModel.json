@@ -3,20 +3,21 @@
   "auteur": "Jean-Marc Baubet",
   "commentaires": "Fichier JSON d'exemple pour la recherche simplifiée des circuits trace GPS.",
   "villes": [
-    "Inconnue",
     "Magny-le-Hongre",
     "Laguiole",
     "Altea",
-    "Calp"
+    "Calp",
+    "Nice"
   ],
   "traceurs": [
-    "Indéterminé",
+    " ",
     "VCVE",
     "Emotion Bike",
-    "JM Baubet"
+    "JM Baubet",
+    "undefined"
   ],
   "editeurs": [
-    "Inconnu",
+    " ",
     "Strava",
     "Garmin",
     "RideWithGps",
@@ -24,23 +25,9 @@
   ],
   "circuits": [
     {
-      "idCircuit": 0,
-      "nom": "exemple",
-      "villeDepart": 2,
-      "traceur": 3,
-      "editeur": 3,
-      "url": "http://...",
-      "distance": 128.23,
-      "denivele": 0,
-      "depart": {
-        "lng": 34.34345,
-        "lat": 2.344556
-      }
-    },
-    {
-      "circuitId": 1,
+      "circuitId": "000000",
       "nom": "test_strava OK",
-      "villeDepart": 3,
+      "villeDepart": 2,
       "traceur": 3,
       "editeur": 1,
       "url": "https://www.strava.com/routes/3273755882380524710",
@@ -57,9 +44,9 @@
       "isoDateTime": "2024-12-09T14:21:17.414Z"
     },
     {
-      "circuitId": 2,
+      "circuitId": "000001",
       "nom": "2022 Calpe oct antennes",
-      "villeDepart": 4,
+      "villeDepart": 3,
       "traceur": 3,
       "editeur": 4,
       "url": "https://www.openrunner.com/route-details/15488524",
@@ -74,6 +61,82 @@
         "km": "17.94"
       },
       "isoDateTime": "2024-12-09T14:21:42.327Z"
+    },
+    {
+      "circuitId": "000002",
+      "nom": "2022 Calpe sélection oct",
+      "villeDepart": 3,
+      "traceur": 2,
+      "editeur": 4,
+      "url": "https://www.openrunner.com/route-details/15488684",
+      "distance": "74.33",
+      "denivele": 1354,
+      "depart": {
+        "lon": "0.07256",
+        "lat": "38.64998"
+      },
+      "sommet": {
+        "altitude": 633,
+        "km": "33.98"
+      },
+      "isoDateTime": "2024-12-11T14:48:32.963Z"
+    },
+    {
+      "circuitId": "000003",
+      "nom": "Bosses du 77bis",
+      "villeDepart": 0,
+      "traceur": 3,
+      "editeur": 3,
+      "url": "https://ridewithgps.com/routes/38852973",
+      "distance": "70.23",
+      "denivele": 817,
+      "depart": {
+        "lon": "2.81636",
+        "lat": "48.86435"
+      },
+      "sommet": {
+        "altitude": 150,
+        "km": "41.94"
+      },
+      "isoDateTime": "2024-12-11T14:50:09.297Z"
+    },
+    {
+      "circuitId": "000004",
+      "nom": "2024 laguiole 126 pont",
+      "villeDepart": 1,
+      "traceur": 2,
+      "editeur": 4,
+      "url": "https://www.openrunner.com/route-details/19103491",
+      "distance": "126.53",
+      "denivele": 2032,
+      "depart": {
+        "lon": "2.86039",
+        "lat": "44.69215"
+      },
+      "sommet": {
+        "altitude": 1297,
+        "km": "116.47"
+      },
+      "isoDateTime": "2024-12-11T19:50:48.094Z"
+    },
+    {
+      "circuitId": "000005",
+      "nom": "Etape du Tour de France 2024 - Nice > Col de la Couillole",
+      "villeDepart": 4,
+      "traceur": 4,
+      "editeur": 1,
+      "url": "https://www.strava.com/routes/3151949565008953956",
+      "distance": "138.85",
+      "denivele": 4507,
+      "depart": {
+        "lon": "7.27447",
+        "lat": "43.69780"
+      },
+      "sommet": {
+        "altitude": 1670,
+        "km": "138.85"
+      },
+      "isoDateTime": "2024-12-13T14:28:36.480Z"
     }
   ]
 }

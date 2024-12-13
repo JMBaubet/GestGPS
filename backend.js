@@ -8,6 +8,8 @@ import path from 'path'
 
 import { decodeGpx } from './src/scripts/gpx.js'
 import { getTraceurs } from './src/scripts/traceurs.js'
+import { getVilles } from './src/scripts/villes.js'
+import { getCircuits } from './src/scripts/circuits.js'
 
 const app = express()
 dotenv.config()
@@ -93,6 +95,21 @@ app.post('/api/GpxFile/:fileName/:traceur', (req, res) => {
     })
 })
 
+// Obtension des circuits
+app.get('/api/circuits/', (req, res) => {
+  getCircuits()
+    .then(data => {
+      res.set('Content-Type', 'application/json')
+      res.send(data)
+    })
+    .catch(err => {
+      console.error(`Erreur : ${err}`)
+      res.setHeader('Content-Type', 'application/json');
+      res.status(500)
+      res.json({ error: `L'objet dataModel ne peut être récupérée !` })
+    })
+})
+
 // Obtension de la liste des traceurs connus dans dataModel.json
 app.get('/api/traceurs/', (req, res) => {
   getTraceurs()
@@ -105,6 +122,21 @@ app.get('/api/traceurs/', (req, res) => {
       res.setHeader('Content-Type', 'application/json');
       res.status(500)
       res.json({ error: `La liste des traceurs ne peut être récupérée !` })
+    })
+})
+
+// Obtension de la liste des villes de départ connus dans dataModel.json
+app.get('/api/villes/', (req, res) => {
+  getVilles()
+    .then(listeVilles => {
+      res.set('Content-Type', 'application/json')
+      res.send(listeVilles)
+    })
+    .catch(err => {
+      console.error(`Erreur : ${err}`)
+      res.setHeader('Content-Type', 'application/json');
+      res.status(500)
+      res.json({ error: `La liste des villes de départ ne peut être récupérée !` })
     })
 })
 

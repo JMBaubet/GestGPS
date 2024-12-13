@@ -4,12 +4,12 @@
 
 import fs from 'fs'
 import * as dotenv from 'dotenv'
+import { zpad } from './utils.js'
 
 dotenv.config()
 const dataDirectory = process.env.DATA_DIRECTORY
 const configFile = process.env.CONFIG_FILE
 
-//const fichier = "./src/assets/dataModel.json"
 const fichier = `${dataDirectory}${configFile}`
 let objet = {}
 
@@ -155,7 +155,7 @@ function addCircuit(circuit) {
   }
   const circuitId = objet.circuits.length
   console.log(`dataModel.js : addCircuit : circuitId = ${circuitId}`)
-  circuit.circuitId = circuitId
+  circuit.circuitId = zpad(circuitId, 6)
   objet.circuits.push(circuit)
   return { circuitId: circuitId, isPresent: isPresent }
 }

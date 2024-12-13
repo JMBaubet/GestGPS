@@ -3,15 +3,14 @@ const fichier = "./src/assets/dataModel.json"
 let objet = {}
 
 
-export const getTraceurs = () => {
+export const getVilles = () => {
   return new Promise((resolve, reject) => {
     try {
       objet = JSON.parse(fs.readFileSync(fichier))
-      resolve(objet.traceurs.sort())
+      resolve(objet.villes.sort())
     } catch ({ e }) {
-      console.error(`getTraceurs Erreur : ${e}`)
+      console.error(`getVilles Erreur : ${e}`)
       reject(e)
     }
   })
 }
-
