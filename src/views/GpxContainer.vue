@@ -16,8 +16,14 @@
     >
     </MenuToolbar>
     <Fitre
-    :items-villes
-    :items-traceurs
+      :items-villes
+      :items-traceurs
+      :dist-min
+      :dist-max
+      :deniv-min
+      :deniv-max
+      @filtreVille="filtreVille"
+      @filtreTraceur="filtreTraceur"
     >
     </Fitre>
     <v-container  class="hidden-md-and-up">
@@ -103,7 +109,7 @@
   import AddGpxDialog from '@/components/AddGpxDialog.vue';
   import MsgAlert from '@/components/MsgAlert.vue';
 
-  const circuits = ref({})
+  
   const circuitsAffiches = ref({})
   const noGpxFileReady = ref(true)
   const noFitFileReady = ref(true)
@@ -125,6 +131,7 @@
 
 
   onMounted(() => {
+    getMinMax()
     window.addEventListener("resize", nbCircuits)
     backEndIsRuning()
     intervalIsRunning = setInterval( backEndIsRuning, 5000)
@@ -167,8 +174,11 @@ function nbCircuits() {
 
       if (alarmes.value.findIndex(alarme => alarme.id == 3) !== -1) {
         alarmes.value.splice([alarmes.value.findIndex(alarme => alarme.id == 3)], 1)    
-        //getTraceurs()
-        //getVilles()
+        nbCircuits()
+        getCircuits()
+        getMinMax()
+        getTraceurs()
+        getVilles()
       }
       const reception = await response.json();
       //console.log(`${reception.gpx}, ${reception.fit}`)
@@ -223,6 +233,10 @@ function nbCircuits() {
   const items = ref()
   const itemsTraceurs = ref()
   const itemsVilles = ref()
+  const distMin = ref()
+  const distMax = ref()
+  const denivMin = ref()
+  const denivMax = ref(0)
 
   const name = ref("Test")
 
@@ -274,12 +288,29 @@ function nbCircuits() {
     })
   }
 
+  let paramVille = ""
+  let paramTraceur = ""
+
+  /*************************************
+  *  Filtre de la ville               *
+  *************************************/
+  function filtreVille(ville) {
+    paramVille = ville
+  }
+
+  /*************************************
+  *  Filtre du traceur                 *
+  *************************************/
+  function filtreTraceur(traceur) {
+    paramTraceur = traceur
+  }
+    
   /************************************
-  * Lecture des circuits              *
+  * Lecture de tous les circuits      *
   ************************************/
   function getCircuits() {
     console.log(`GpxContainerView : getCirtuits`)
-    const url = `http://localhost:4000/api/circuits/`
+    const url = `http://localhost:4000/api/circuits/${page.value}/${nbCircuitsAffiches}`
     fetch(url, {method:'GET', signal: AbortSignal.timeout(1000)})
     .then((rep, err) => {
       //console.log(`Réponse : ${rep.status} : ${rep.ok}, ${rep.statusText}`)
@@ -291,7 +322,7 @@ function nbCircuits() {
       }
     })
     .then((rep, err) => {
-      circuits.value = rep.circuits
+      circuitsAffiches.value = rep.circuits
       totalCircuits = rep.totalCircuits
       
       console.log(`GpxContainerView : getCirtuits : totalCircuits : ${totalCircuits}, nbCirtAff : ${nbCircuitsAffiches}`)
@@ -300,8 +331,7 @@ function nbCircuits() {
         nbPages.value = ~~(totalCircuits / nbCircuitsAffiches) + 1
       } else {
         nbPages.value = totalCircuits / nbCircuitsAffiches
-      }
-      circuitsAffiches.value = circuits.value.slice((page.value - 1) * nbCircuitsAffiches, page.value * nbCircuitsAffiches)
+      }      
       console.log(`${circuitsAffiches.value.length}`)
     })
 
@@ -310,6 +340,39 @@ function nbCircuits() {
       items.value=`Text : ${err}`
     })
   }
+
+  /************************************
+  * Lecture des min Max              *
+  ************************************/
+  function getMinMax() {
+    const url = `http://localhost:4000/api/circuitsMinMax/`
+    fetch(url, {method:'GET', signal: AbortSignal.timeout(1000)})
+    .then((rep, err) => {
+      //console.log(`Réponse : ${rep.status} : ${rep.ok}, ${rep.statusText}`)
+      if (rep.ok)
+        return rep.json()
+      else {
+        // si rep KO on passe le N° d'err et le text
+        throw `${rep.status}, ${rep.statusText}` 
+      }
+    })
+    .then((rep, err) => {
+
+      // #TODO voir pourquoi on ne peut pas rendre dynamic les range-slider avec ces paramètres !
+      distMin.value = rep.distMin
+      distMax.value = rep.distMax
+      denivMin.value = rep.denivMin
+      denivMax.value = rep.denivMax
+      console.log(`GpxContainer.vue : getMinMax : ${denivMin.value}, ${denivMax.value}, ${distMin.value}, ${distMax.value}`)
+    })
+
+    .catch(err => {
+      //traitement des erreurs
+      items.value=`Text : ${err}`
+    })
+  }
+
+
 
   /************************************
   * Lecture des traceurs              *
@@ -427,7 +490,9 @@ function nbCircuits() {
    ****************************************/
   function updatePage() {
     console.log(`GpxContainervue : Changement de page : ${page.value}`)
-    circuitsAffiches.value = circuits.value.slice((page.value - 1) * nbCircuitsAffiches, page.value * nbCircuitsAffiches)
+   
+    getCircuits()
+//    circuitsAffiches.value = circuits.value.slice((page.value - 1) * nbCircuitsAffiches, page.value * nbCircuitsAffiches)
   }
 
 </script>

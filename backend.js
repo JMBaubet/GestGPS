@@ -9,7 +9,7 @@ import path from 'path'
 import { decodeGpx } from './src/scripts/gpx.js'
 import { getTraceurs } from './src/scripts/traceurs.js'
 import { getVilles } from './src/scripts/villes.js'
-import { getCircuits } from './src/scripts/circuits.js'
+import { getCircuits, getcircuitsMinMax } from './src/scripts/circuits.js'
 
 const app = express()
 dotenv.config()
@@ -95,9 +95,11 @@ app.post('/api/GpxFile/:fileName/:traceur', (req, res) => {
     })
 })
 
-// Obtension des circuits
-app.get('/api/circuits/', (req, res) => {
-  getCircuits()
+// récupération des circuits à afficher
+app.get('/api/circuits/:page/:nombre/:ville?', (req, res) => {
+  getCircuits(req.params.page, req.params.nombre)
+    // app.get('/api/circuits/:page/:nombre/:ville?', (req, res) => {
+    //   getCircuits(req.params.page, req.params.nombre, req.params.ville)
     .then(data => {
       res.set('Content-Type', 'application/json')
       res.send(data)
@@ -106,9 +108,25 @@ app.get('/api/circuits/', (req, res) => {
       console.error(`Erreur : ${err}`)
       res.setHeader('Content-Type', 'application/json');
       res.status(500)
-      res.json({ error: `L'objet dataModel ne peut être récupérée !` })
+      res.json({ error: `Les circuits ne peuvent être récupérés !` })
     })
 })
+
+// récupération des min max 
+app.get('/api/circuitsMinMax/', (req, res) => {
+  getcircuitsMinMax()
+    .then(data => {
+      res.set('Content-Type', 'application/json')
+      res.send(data)
+    })
+    .catch(err => {
+      console.error(`Erreur : ${err}`)
+      res.setHeader('Content-Type', 'application/json');
+      res.status(500)
+      res.json({ error: `Les min & Max ne peuvent être récupérés !` })
+    })
+})
+
 
 // Obtension de la liste des traceurs connus dans dataModel.json
 app.get('/api/traceurs/', (req, res) => {

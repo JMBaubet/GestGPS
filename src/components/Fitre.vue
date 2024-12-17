@@ -2,115 +2,105 @@
   <div class="pa-0" >
     <v-toolbar compact floating class="pa-1" color="grey-darken-3">
       <v-combobox
+        :items=itemsVilles
+        @update:menu="selectVille"
+        v-model="ville"
         max-width="200"
         label="Ville de Départ"
-        :items=itemsVilles
       ></v-combobox>
       <v-divider
         class="mx-1 align-self-center"
         thickness="5"
         vertical
       ></v-divider>
+      
       <v-combobox
+        :items=itemsTraceurs
+        @update:menu="selectTraceur"
+        v-model="traceur"
         label="Traceur"
         max-width="200"
-        :items=itemsTraceurs
       ></v-combobox>
       <v-divider
         class="mx-1 align-self-center"
         thickness="5"
         vertical
       ></v-divider>
-
-      <v-range-slider
-        v-model="valueDistance"
-        min="20"
-        max="250"
-        step="5"
-        density="compact"
-        label="Dist."
+      <Slider
+        :min="distMin"
+        :max="distMax"
+        step=5
+        label="Dist. "
+        unite="km"
       >
-        <template v-slot:prepend>
-          <v-text-field
-            v-model="valueDistance[0]"
-            density="compact"
-            style="width: 80px"
-            type="number"
-            variant="outlined"
-            hide-details
-            single-line
-          ></v-text-field>
-        </template>
-        <template v-slot:append>
-          <v-text-field
-            v-model="valueDistance[1]"
-            density="compact"
-            style="width: 80px"
-            type="number"
-            variant="outlined"
-            hide-details
-            single-line
-          ></v-text-field>
-        </template>
-      </v-range-slider>
+      </Slider>
       <v-divider
         class="mx-1 align-self-center"
         thickness="5"
         vertical
       ></v-divider>
 
-      <v-range-slider
-        v-model="valueDeniv"
-        min="50"
-        max="4500"
-        step="5"
-        density="compact"
-        label="D+"
+      <Slider
+        :min="denivMin"
+        :max="denivMax"
+        step=20
+        label="D+ "
+        unite="m"
       >
-        <template v-slot:prepend>
-          <v-text-field
-            v-model="valueDeniv[0]"
-            density="compact"
-            style="width: 100px"
-            type="number"
-            variant="outlined"
-            hide-details
-            single-line
-          ></v-text-field>
-        </template>
-        <template v-slot:append>
-          <v-text-field
-            v-model="valueDeniv[1]"
-            density="compact"
-            style="width: 100px"
-            type="number"
-            variant="outlined"
-            hide-details
-            single-line
-          ></v-text-field>
-        </template>
-      </v-range-slider>
+      </Slider>
     </v-toolbar>
   </div>
 </template>
 
 <script setup>
+import { ref } from 'vue';
+import Slider from './Slider.vue';
 
-import { ref, onMounted } from 'vue';
 
-
+const DISTANCE_MIN = parseInt(import.meta.env.VITE_FILTRE_DISTANCE_MIN)
+const DISTANCE_MAX = parseInt(import.meta.env.VITE_FILTRE_DISTANCE_MAX)
+const DENIV_MIN = parseInt(import.meta.env.VITE_FILTRE_DENIV_MIN)
+const DENIV_MAX = parseInt(import.meta.env.VITE_FILTRE_DENIV_MAX)
 
 const props = defineProps({
-    vueDialogGpx : Boolean,
     itemsVilles : Array,
-    itemsTraceurs : Array,
+    itemsTraceurs : Array
+    // #TODO voir pourquoi on ne peut pas passer les min et max en properties
+    // distMin : Number,
+    // distMax : Number,
+    // denivMin : Number,
+    // denivMax : Number
   }) 
 
-const valueDistance = ref([40,200])
-const valueDeniv = ref([100,4500])
+  const ville = ref(null)
+  const traceur = ref(null)
 
-onMounted(() => {
+const distMin = ref(DISTANCE_MIN)
+const distMax = ref(DISTANCE_MAX)
+const denivMin = ref(DENIV_MIN)
+const denivMax = ref(DENIV_MAX)
 
-})
+const emit = defineEmits(['filtreVille', 'filtreTraceur', 'filtreDistance', 'filtreDeniv'])
 
+
+let villePrecedente = null
+function selectVille() {
+  if  (ville.value !== villePrecedente) {
+    console.log(`Filtre.vue ${ville.value}`)
+    villePrecedente = ville.value
+    // On peut emettre le signal avec la ville en paramètre
+    emit('filtreVille', ville.value) 
+  }
+}
+
+let traceurPrecedent = null
+function selectTraceur() {
+  if  (traceur.value !== traceurPrecedent) {
+    console.log(`Filtre.vue ${traceur.value}`)
+    traceurPrecedent = traceur.value
+    // On peut emettre le signal avec le traceur en paramètre
+    emit('filtreTraceur', traceur.value) 
+  }
+  
+}
 </script>

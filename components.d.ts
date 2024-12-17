@@ -14,5 +14,6 @@ declare module 'vue' {
     ParcoursCard: typeof import('./src/components/ParcoursCard.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    Slider: typeof import('./src/components/Slider.vue')['default']
   }
 }
