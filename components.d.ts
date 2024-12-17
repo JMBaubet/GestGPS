@@ -8,10 +8,12 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     AddGpxDialog: typeof import('./src/components/AddGpxDialog.vue')['default']
+    Fitre: typeof import('./src/components/Fitre.vue')['default']
     MenuToolbar: typeof import('./src/components/MenuToolbar.vue')['default']
     MsgAlert: typeof import('./src/components/MsgAlert.vue')['default']
     ParcoursCard: typeof import('./src/components/ParcoursCard.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    Slider: typeof import('./src/components/Slider.vue')['default']
   }
 }
