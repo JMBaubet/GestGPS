@@ -12,39 +12,82 @@
     :no-gpx-file-ready
     :no-fit-file-ready
     @AddGpxFile="getGpxFiles"
-      @affMap="myMap"
+    @affMap="myMap"
     >
     </MenuToolbar>
-
+    <Fitre
+      :items-villes
+      :items-traceurs
+      :dist-min
+      :dist-max
+      :deniv-min
+      :deniv-max
+      @filtreVille="filtreVille"
+      @filtreTraceur="filtreTraceur"
+    >
+    </Fitre>
     <v-container  class="hidden-md-and-up">
     <v-row justify="space-between">
-        <v-col  class="d-flex justify-center">
-      <ParcoursCard></ParcoursCard></v-col>
+      <v-col  class="d-flex justify-center" v-for="(circuit, key) in circuitsAffiches">
+        <ParcoursCard
+        :name="circuit.nom"
+        :distance="circuit.distance"
+        :denivele="circuit.denivele"
+        :top="circuit.sommet.altitude"
+        :top-distance="circuit.sommet.km"
+        :vignette="'src/assets/data/' + circuit.circuitId + '/vignette.png'"
+        ></ParcoursCard>
+      </v-col>
     </v-row>
   </v-container>
     <v-container class="hidden-sm-and-down hidden-lg-and-up">
     <v-row 
       justify="space-between">
-      <v-col class="d-flex justify-center" v-for="n in 2" :key="n" cols="12" sm="6">
-        <ParcoursCard></ParcoursCard>
+      <v-col class="d-flex justify-center" v-for="(circuit, key) in circuitsAffiches" cols="12" sm="6">
+        <ParcoursCard
+        :name="circuit.nom"
+        :distance="circuit.distance"
+        :denivele="circuit.denivele"
+        :top="circuit.sommet.altitude"
+        :top-distance="circuit.sommet.km"
+        :vignette="'src/assets/data/' + circuit.circuitId + '/vignette.png'"
+        ></ParcoursCard>
       </v-col>
     </v-row>
   </v-container>
     <v-container class="hidden-md-and-down hidden-xl-and-up">
     <v-row justify="space-between">
-      <v-col class="d-flex justify-center" v-for="n in 3" :key="n" cols="12" sm="4">
-        <ParcoursCard></ParcoursCard>
+      <v-col class="d-flex justify-center" v-for="(circuit, key) in circuitsAffiches" cols="12" sm="5">
+        <ParcoursCard
+        :name="circuit.nom"
+        :distance="circuit.distance"
+        :denivele="circuit.denivele"
+        :top="circuit.sommet.altitude"
+        :top-distance="circuit.sommet.km"
+        :vignette="'src/assets/data/' + circuit.circuitId + '/vignette.png'"
+        ></ParcoursCard>
       </v-col>
     </v-row>
   </v-container>
   <v-container  class="hidden-lg-and-down">
     <v-row  justify="space-between">
-      <v-col class="d-flex justify-center" v-for="n in 4" :key="n" cols="12" sm="3">
-        <ParcoursCard></ParcoursCard>
+      <v-col class="d-flex justify-center" v-for="(circuit, key) in circuitsAffiches"  cols="12" sm="3" >
+        <ParcoursCard
+        :name="circuit.nom"
+        :distance="circuit.distance"
+        :denivele="circuit.denivele"
+        :top="circuit.sommet.altitude"
+        :top-distance="circuit.sommet.km"
+        :vignette="'src/assets/data/' + circuit.circuitId + '/vignette.png'"
+        ></ParcoursCard>
       </v-col>
     </v-row>
   </v-container>
-
+  <v-pagination 
+    :length=nbPages
+    v-model="page"
+    @click="updatePage()">
+ </v-pagination>
   <AddGpxDialog 
     :vue-dialog-gpx
     :items
@@ -62,14 +105,21 @@
   import { useRouter } from 'vue-router';
   import ParcoursCard from '@/components/ParcoursCard.vue';
   import MenuToolbar from '@/components/MenuToolbar.vue';
+  import Fitre from '@/components/Fitre.vue';
   import AddGpxDialog from '@/components/AddGpxDialog.vue';
   import MsgAlert from '@/components/MsgAlert.vue';
 
-
-
+  
+  const circuitsAffiches = ref({})
   const noGpxFileReady = ref(true)
   const noFitFileReady = ref(true)
   const alarmes = ref([])
+  const nbPages = ref(1)
+  const page = ref(1)
+  let totalCircuits = 0
+  let nbCircuitsAffiches = 0
+
+
 
   function delAlarme(id) {
     alarmes.value.splice([alarmes.value.findIndex(alarme => alarme.id == id)], 1)
@@ -77,14 +127,41 @@
   }
 
   let intervalIsRunning
+  
+
+
   onMounted(() => {
+    getMinMax()
+    window.addEventListener("resize", nbCircuits)
     backEndIsRuning()
     intervalIsRunning = setInterval( backEndIsRuning, 5000)
+    nbCircuits()
+    getTraceurs()
+    getVilles()
   })
 
   onUnmounted(() => {
+    window.removeEventListener("resize", nbCircuits)
     clearInterval(intervalIsRunning)
   })
+
+function nbCircuits() {    
+  // Il faut connaitre la résolution pour afficher le nombre exacte de circuits
+  const largeurFenetre = window.innerWidth
+  let nb 
+  if (largeurFenetre > 1919) 
+    nb = 8 // 4 colonnes et 2 rangées
+  else if (largeurFenetre > 959) 
+    nb = 4 // 2 colonnes et 2 rangées
+ else 
+    nb = 2 // 1 colonne et 2 rangées
+
+  if (nb !== nbCircuitsAffiches) {
+    nbCircuitsAffiches = nb
+    getCircuits()
+  }
+}  
+
 
   async function backEndIsRuning() {  
     const url = "http://localhost:4000/api/isRunning"
@@ -97,6 +174,11 @@
 
       if (alarmes.value.findIndex(alarme => alarme.id == 3) !== -1) {
         alarmes.value.splice([alarmes.value.findIndex(alarme => alarme.id == 3)], 1)    
+        nbCircuits()
+        getCircuits()
+        getMinMax()
+        getTraceurs()
+        getVilles()
       }
       const reception = await response.json();
       //console.log(`${reception.gpx}, ${reception.fit}`)
@@ -146,22 +228,23 @@
     }
   }
 
-
-
-
-
   // Ajout d'une trace GPX
   const vueDialogGpx = ref(false)
   const items = ref()
-  const itemsTraceurs = ref()
+  const itemsTraceurs = ref([])
+  const itemsVilles = ref([])
+  const distMin = ref()
+  const distMax = ref()
+  const denivMin = ref()
+  const denivMax = ref(0)
+
+  const name = ref("Test")
 
 
   function close() {
     // console.log("reception du signal close" )
     vueDialogGpx.value=false
   }
-
-
 
   const router = useRouter()
 
@@ -196,6 +279,7 @@
       items.value = rep
       vueDialogGpx.value=true
       console.log(`Fichiers : ${rep}`)
+      getCircuits()
     })
 
     .catch(err => {
@@ -203,6 +287,92 @@
       itemsFichiers.value=`Text : ${err}`
     })
   }
+
+  let paramVille = ""
+  let paramTraceur = ""
+
+  /*************************************
+  *  Filtre de la ville               *
+  *************************************/
+  function filtreVille(ville) {
+    paramVille = ville
+  }
+
+  /*************************************
+  *  Filtre du traceur                 *
+  *************************************/
+  function filtreTraceur(traceur) {
+    paramTraceur = traceur
+  }
+    
+  /************************************
+  * Lecture de tous les circuits      *
+  ************************************/
+  function getCircuits() {
+    console.log(`GpxContainerView : getCirtuits`)
+    const url = `http://localhost:4000/api/circuits/${page.value}/${nbCircuitsAffiches}`
+    fetch(url, {method:'GET', signal: AbortSignal.timeout(1000)})
+    .then((rep, err) => {
+      //console.log(`Réponse : ${rep.status} : ${rep.ok}, ${rep.statusText}`)
+      if (rep.ok)
+        return rep.json()
+      else {
+        // si rep KO on passe le N° d'err et le text
+        throw `${rep.status}, ${rep.statusText}` 
+      }
+    })
+    .then((rep, err) => {
+      circuitsAffiches.value = rep.circuits
+      totalCircuits = rep.totalCircuits
+      
+      console.log(`GpxContainerView : getCirtuits : totalCircuits : ${totalCircuits}, nbCirtAff : ${nbCircuitsAffiches}`)
+      // Il faut mettre à jour le nombre de pages
+      if ((totalCircuits % nbCircuitsAffiches) !== 0) {
+        nbPages.value = ~~(totalCircuits / nbCircuitsAffiches) + 1
+      } else {
+        nbPages.value = totalCircuits / nbCircuitsAffiches
+      }      
+      console.log(`${circuitsAffiches.value.length}`)
+    })
+
+    .catch(err => {
+      //traitement des erreurs
+      items.value=`Text : ${err}`
+    })
+  }
+
+  /************************************
+  * Lecture des min Max              *
+  ************************************/
+  function getMinMax() {
+    const url = `http://localhost:4000/api/circuitsMinMax/`
+    fetch(url, {method:'GET', signal: AbortSignal.timeout(1000)})
+    .then((rep, err) => {
+      //console.log(`Réponse : ${rep.status} : ${rep.ok}, ${rep.statusText}`)
+      if (rep.ok)
+        return rep.json()
+      else {
+        // si rep KO on passe le N° d'err et le text
+        throw `${rep.status}, ${rep.statusText}` 
+      }
+    })
+    .then((rep, err) => {
+
+      // #TODO voir pourquoi on ne peut pas rendre dynamic les range-slider avec ces paramètres !
+      distMin.value = rep.distMin
+      distMax.value = rep.distMax
+      denivMin.value = rep.denivMin
+      denivMax.value = rep.denivMax
+      console.log(`GpxContainer.vue : getMinMax : ${denivMin.value}, ${denivMax.value}, ${distMin.value}, ${distMax.value}`)
+    })
+
+    .catch(err => {
+      //traitement des erreurs
+      items.value=`Text : ${err}`
+    })
+  }
+
+
 
   /************************************
   * Lecture des traceurs              *
@@ -220,9 +390,45 @@
       }
     })
     .then((rep, err) => {
-      itemsTraceurs.value = rep
+      itemsTraceurs.value = []
+      for (let id = 0; id < rep.length; id++) {
+        itemsTraceurs.value.push(rep[id].nom)
+      }
+    })
+    .catch(err => {
+      //traitement des erreurs
+      items.value=`GpxContainer.vue, getTraceurs : ${err}`
+    })
+  }
+
+
+  /************************************
+  * Lecture des villes de départ      *
+  ************************************/
+  function getVilles() {
+    const url = `http://localhost:4000/api/villes/`
+    fetch(url, {method:'GET', signal: AbortSignal.timeout(1000)})
+    .then((rep, err) => {
+      //console.log(`Réponse : ${rep.status} : ${rep.ok}, ${rep.statusText}`)
+      if (rep.ok)
+        return rep.json()
+      else {
+        // si rep KO on passe le N° d'err et le text
+        throw `${rep.status}, ${rep.statusText}` 
+      }
+    })
+    .then((rep, err) => {
+      itemsVilles.value = []
+      for (let id = 0; id < rep.length; id++) {
+        itemsVilles.value.push(rep[id].nom)
+      }
+
+
+      //itemsVilles.value = rep
+
+      //itemsVilles.value.shift()
       // vueDialogGpx.value=true
-      console.log(`Traceurs : ${rep}`)
+      console.log(`Villes : ${rep}`)
     })
 
     .catch(err => {
@@ -283,6 +489,16 @@
       items.value=`Text : ${err}`
     })
 
+  }
+
+  /****************************************
+   * Changement de page                   * 
+   ****************************************/
+  function updatePage() {
+    console.log(`GpxContainervue : Changement de page : ${page.value}`)
+   
+    getCircuits()
+//    circuitsAffiches.value = circuits.value.slice((page.value - 1) * nbCircuitsAffiches, page.value * nbCircuitsAffiches)
   }
 
 </script>

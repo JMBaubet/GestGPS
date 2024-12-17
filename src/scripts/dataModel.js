@@ -4,12 +4,13 @@
 
 import fs from 'fs'
 import * as dotenv from 'dotenv'
+import { zpad } from './utils.js'
+import { v6 as uuidv6 } from 'uuid'
 
 dotenv.config()
 const dataDirectory = process.env.DATA_DIRECTORY
 const configFile = process.env.CONFIG_FILE
 
-//const fichier = "./src/assets/dataModel.json"
 const fichier = `${dataDirectory}${configFile}`
 let objet = {}
 
@@ -81,36 +82,41 @@ export const addTrace = (data) => {
  * Si la commune n'existe pas elle est ajoutée automatiquement
  * 
  * @param {string} commune 
- * @returns {number} 
+ * @returns {string} 
  */
 function getIdCommune(commune) {
   let key = 0
   console.log(`dataModel.js : getIdCommune : ${commune}`)
   for (key = 0; key < objet.villes.length; key++) {
-    //console.log(objet.villes[key])
-    if (objet.villes[key] === commune) return key
+    console.log(objet.villes[key].nom)
+    if (objet.villes[key].nom === commune) {
+      return objet.villes[key].id
+    }
   }
-  objet.villes.push(commune)
+  const id = uuidv6()
+  objet.villes.push({ id: id, nom: commune })
   //fs.writeFileSync(fichier, JSON.stringify(objet))
-  return key
+  return id
 }
 
 /**
- * Retourne l'Id de l'organisateur. 
- * Si la commune n'existe pas elle est ajoutée automatiquement
+ * Retourne l'Id du traceur . 
+ * Si le traceur n'existe pas il est ajouté automatiquement
  * 
  * @param {string} traceur 
- * @returns {number} 
+ * @returns {string} 
  */
 function getIdTraceur(traceur) {
   let key = 0
   for (key = 0; key < objet.traceurs.length; key++) {
     //console.log(objet.traceurs[key])
-    if (objet.traceurs[key] === traceur) return key
+    if (objet.traceurs[key].nom === traceur)
+      return objet.traceurs[key].id
   }
-  objet.traceurs.push(traceur)
+  const id = uuidv6()
+  objet.traceurs.push({ id: id, nom: traceur })
   //fs.writeFileSync(fichier, JSON.stringify(objet))
-  return key
+  return id
 }
 
 function addCircuit(circuit) {
@@ -155,7 +161,7 @@ function addCircuit(circuit) {
   }
   const circuitId = objet.circuits.length
   console.log(`dataModel.js : addCircuit : circuitId = ${circuitId}`)
-  circuit.circuitId = circuitId
+  circuit.circuitId = zpad(circuitId, 6)
   objet.circuits.push(circuit)
   return { circuitId: circuitId, isPresent: isPresent }
 }
