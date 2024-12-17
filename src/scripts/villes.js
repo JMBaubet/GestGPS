@@ -7,7 +7,11 @@ export const getVilles = () => {
   return new Promise((resolve, reject) => {
     try {
       objet = JSON.parse(fs.readFileSync(fichier))
-      resolve(objet.villes.sort())
+      let villes = objet.villes.slice(0)
+      villes.sort(function (a, b) {
+        return a.nom < b.nom ? -1 : a.nom > b.nom ? 1 : 0
+      })
+      resolve(villes)
     } catch ({ e }) {
       console.error(`getVilles Erreur : ${e}`)
       reject(e)

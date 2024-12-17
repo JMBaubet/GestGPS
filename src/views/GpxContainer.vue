@@ -231,8 +231,8 @@ function nbCircuits() {
   // Ajout d'une trace GPX
   const vueDialogGpx = ref(false)
   const items = ref()
-  const itemsTraceurs = ref()
-  const itemsVilles = ref()
+  const itemsTraceurs = ref([])
+  const itemsVilles = ref([])
   const distMin = ref()
   const distMax = ref()
   const denivMin = ref()
@@ -390,7 +390,12 @@ function nbCircuits() {
       }
     })
     .then((rep, err) => {
-      itemsTraceurs.value = rep
+      itemsTraceurs.value = []
+      for (let id = 0; id < rep.length; id++) {
+        itemsTraceurs.value.push(rep[id].nom)
+      }
+
+      // itemsTraceurs.value = rep
       //itemsTraceurs.value.shift()
       // vueDialogGpx.value=true
       console.log(`Traceurs : ${rep}`)
@@ -419,7 +424,14 @@ function nbCircuits() {
       }
     })
     .then((rep, err) => {
-      itemsVilles.value = rep
+      itemsVilles.value = []
+      for (let id = 0; id < rep.length; id++) {
+        itemsVilles.value.push(rep[id].nom)
+      }
+
+
+      //itemsVilles.value = rep
+
       //itemsVilles.value.shift()
       // vueDialogGpx.value=true
       console.log(`Villes : ${rep}`)

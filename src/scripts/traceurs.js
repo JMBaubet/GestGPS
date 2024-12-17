@@ -7,7 +7,11 @@ export const getTraceurs = () => {
   return new Promise((resolve, reject) => {
     try {
       objet = JSON.parse(fs.readFileSync(fichier))
-      resolve(objet.traceurs.sort())
+      let traceurs = objet.traceurs.slice(0)
+      traceurs.sort(function (a, b) {
+        return a.nom < b.nom ? -1 : a.nom > b.nom ? 1 : 0
+      })
+      resolve(traceurs)
     } catch ({ e }) {
       console.error(`getTraceurs Erreur : ${e}`)
       reject(e)
