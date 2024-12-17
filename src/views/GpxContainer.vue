@@ -394,16 +394,10 @@ function nbCircuits() {
       for (let id = 0; id < rep.length; id++) {
         itemsTraceurs.value.push(rep[id].nom)
       }
-
-      // itemsTraceurs.value = rep
-      //itemsTraceurs.value.shift()
-      // vueDialogGpx.value=true
-      console.log(`Traceurs : ${rep}`)
     })
-
     .catch(err => {
       //traitement des erreurs
-      items.value=`Text : ${err}`
+      items.value=`GpxContainer.vue, getTraceurs : ${err}`
     })
   }
 
