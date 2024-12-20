@@ -6,7 +6,7 @@ import os from 'os'
 import fs from 'fs'
 import path from 'path'
 
-import { decodeGpx } from './src/scripts/gpx.js'
+import { decodeTraceGpx } from './src/scripts/gpx.js'
 import { getTraceurs } from './src/scripts/traceurs.js'
 import { getVilles } from './src/scripts/villes.js'
 import { getCircuits, getcircuitsMinMax } from './src/scripts/circuits.js'
@@ -22,7 +22,6 @@ const options = cors.CorsOptions = {
   origin: allowedOrigins
 };
 app.use(cors(options))
-
 app.use(morgan('tiny'))
 
 const directory = os.homedir() + "\\downloads"
@@ -38,37 +37,35 @@ app.get('/api/isRunning/', (req, res) => {
     .then(filesDir => {
       const gpxFiles = filesDir.filter(el => path.extname(el) === '.gpx')
       const fitFiles = filesDir.filter(el => path.extname(el) === '.fit')
-      res.set('Content-Type', 'application/json')
-      res.send({ gpx: `${gpxFiles.length}`, fit: `${fitFiles.length}` })
+      res.setHeader('Content-Type', 'application/json')
+      res.status(200).send({ gpx: `${gpxFiles.length}`, fit: `${fitFiles.length}` })
     })
     .catch(err => {
       res.setHeader('Content-Type', 'application/json');
-      res.status(500)
-      res.json({ error: `Le dossier ${directory} n'a pas été trouvé !` })
+      res.status(500).send({ id: 1000, error: `${directory} indisponible !` })
     })
 
 })
 
-// Obtention de la liste des fichiers *.gpx présents dans download.
+// Obtention de la liste des fichiers *.gpx présents dans downloads.
 app.get('/api/GpxFiles/', (req, res) => {
   fs.promises.readdir(directory)
     .then(filesDir => {
       const gpxFiles = filesDir.filter(el => path.extname(el) === '.gpx')
       res.setHeader('Content-Type', 'application/json');
-      res.send(gpxFiles)
+      res.status(200).send(gpxFiles)
     })
     .catch(err => {
       res.setHeader('Content-Type', 'application/json');
-      res.status(500)
-      res.json.send({ error: `Le dossier ${directory} n'a pas été trouvé !` })
+      res.status(500).send({ id: 1001, error: `Le dossier ${directory} n'a pas été trouvé !` })
     })
 })
 
 
 // Traitement d'un fichier gpx
 app.post('/api/GpxFile/:fileName/:traceur', (req, res) => {
-  console.log(`backend.js : Traceur sélectionné : ${req.params.traceur}`)
-  decodeGpx(`${directory}\\${req.params.fileName}`, `${req.params.traceur}`)
+  //console.log(`backend.js : Traceur sélectionné : ${req.params.traceur}`)
+  decodeTraceGpx(`${directory}\\${req.params.fileName}`, `${req.params.traceur}`)
     .then(retour => {
       console.log(`backend.js : Retour de la promise : ${retour.circuitId}, ${retour.isPresent}`)
 
@@ -78,7 +75,8 @@ app.post('/api/GpxFile/:fileName/:traceur', (req, res) => {
        * - archiver le fichier lineString.json dans l'appli   // A faire
        * - archiver la vignette                   // A faire
        * */
-      res.set('Content-Type', 'application/json')
+      res.setHeader('Content-Type', 'application/json')
+      res.status(200)
       if (retour.circuitId === 0) {
         res.send({ gpx: "Present" })
       } else if (retour.isPresent) {
@@ -90,8 +88,7 @@ app.post('/api/GpxFile/:fileName/:traceur', (req, res) => {
     .catch(err => {
       console.error(`Erreur : ${err}`)
       res.setHeader('Content-Type', 'application/json');
-      res.status(500)
-      res.json({ error: `Le fichier ${req.params.fileName} n'a pas pu être traité !` })
+      res.status(500).send({ id: 1010, error: `Le fichier ${req.params.fileName} n'a pas pu être traité !` })
     })
 })
 
@@ -101,14 +98,13 @@ app.get('/api/circuits/:page/:nombre/:ville?', (req, res) => {
     // app.get('/api/circuits/:page/:nombre/:ville?', (req, res) => {
     //   getCircuits(req.params.page, req.params.nombre, req.params.ville)
     .then(data => {
-      res.set('Content-Type', 'application/json')
-      res.send(data)
+      res.setHeader('Content-Type', 'application/json')
+      res.status(200).send(data)
     })
     .catch(err => {
       console.error(`Erreur : ${err}`)
       res.setHeader('Content-Type', 'application/json');
-      res.status(500)
-      res.json({ error: `Les circuits ne peuvent être récupérés !` })
+      res.status(500).send({ id: 1020, error: `Les circuits ne peuvent être récupérés !` })
     })
 })
 
@@ -116,14 +112,13 @@ app.get('/api/circuits/:page/:nombre/:ville?', (req, res) => {
 app.get('/api/circuitsMinMax/', (req, res) => {
   getcircuitsMinMax()
     .then(data => {
-      res.set('Content-Type', 'application/json')
-      res.send(data)
+      res.setHeader('Content-Type', 'application/json')
+      res.status(200).send(data)
     })
     .catch(err => {
       console.error(`Erreur : ${err}`)
       res.setHeader('Content-Type', 'application/json');
-      res.status(500)
-      res.json({ error: `Les min & Max ne peuvent être récupérés !` })
+      res.status(500).send({ id: 1050, error: `Les min & Max ne peuvent être récupérés !` })
     })
 })
 
@@ -132,14 +127,13 @@ app.get('/api/circuitsMinMax/', (req, res) => {
 app.get('/api/traceurs/', (req, res) => {
   getTraceurs()
     .then(listeTraceurs => {
-      res.set('Content-Type', 'application/json')
-      res.send(listeTraceurs)
+      res.setHeader('Content-Type', 'application/json')
+      res.status(200).send(listeTraceurs)
     })
     .catch(err => {
       console.error(`Erreur : ${err}`)
       res.setHeader('Content-Type', 'application/json');
-      res.status(500)
-      res.json({ error: `La liste des traceurs ne peut être récupérée !` })
+      res.status(500).send({ id: 1030, error: `La liste des traceurs ne peut être récupérée !` })
     })
 })
 
@@ -147,32 +141,31 @@ app.get('/api/traceurs/', (req, res) => {
 app.get('/api/villes/', (req, res) => {
   getVilles()
     .then(listeVilles => {
-      res.set('Content-Type', 'application/json')
-      res.send(listeVilles)
+      res.setHeader('Content-Type', 'application/json')
+      res.status(200).send(listeVilles)
     })
     .catch(err => {
       console.error(`Erreur : ${err}`)
       res.setHeader('Content-Type', 'application/json');
-      res.status(500)
-      res.json({ error: `La liste des villes de départ ne peut être récupérée !` })
+      res.status(500).send({ id: 1040, error: `La liste des villes de départ ne peut être récupérée !` })
     })
 })
 
 //Définition de 2 points de terminaison pour test
 //réponse OK
 app.get('/', (req, res) => {
-  res.set('Content-Type', 'text/html');
-  res.send("Hello world")
+  res.setHeader('Content-Type', 'text/html');
+  res.status(200).send("Hello world")
 })
 // Réponse Erreur sur le serveur
 app.get('/err', (req, res) => {
-  res.set('Content-Type', 'application/html');
-  res.status(500)
-  res.send({ error: `Une erreur s'est produite sur le serveur !` })
+  res.setHeader('Content-Type', 'application/json');
+  res.status(500).send({ id: 9999, error: `Une erreur s'est produite sur le serveur !` })
 })
 
 app.all('*', (req, res) => {
-  res.status(404).send('404! Page not found');
+  res.setHeader('Content-Type', 'application/json');
+  res.status(404).send({ id: 404, error: '404! Page not found' });
 });
 
 /************************ 

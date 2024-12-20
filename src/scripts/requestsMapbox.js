@@ -114,10 +114,21 @@ export const createVignette = (nbPts, lineString, departLat, departLong, arrivee
   })
 }
 
-/** 
- * Promise d'obtention la commune de départ 
+
+/**
+ * @typedef returnCommune
+ * @type {object}
+ * @property {String} commune
  */
-export const getGommune = (lat, long, accessToken) => {
+
+/**
+ * Cette fonction retourne un nom de commune en fonction des coordonnées géograpiques données. 
+ * @param {number} lat - La latitude du point en décimale
+ * @param {number} long - La longitude du point en décimale
+ * @param {string} accessToken - Le token pour MapBox
+ * @returns {Promise<returnCommune>} - le nom de la commune
+ */
+export const getCommune = (lat, long, accessToken) => {
   return new Promise((resolve, reject) => {
     const url = `https://api.mapbox.com/search/geocode/v6/reverse?longitude=${long}&latitude=${lat}&access_token=${accessToken}`
     fetch(url, { method: 'GET', signal: AbortSignal.timeout(1000) })

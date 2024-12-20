@@ -1,7 +1,12 @@
 import fs from 'fs'
-const fichier = "./src/assets/dataModel.json"
-let objet = {}
+import * as dotenv from 'dotenv'
 
+dotenv.config()
+const dataDirectory = process.env.DATA_DIRECTORY
+const configFile = process.env.CONFIG_FILE
+const fichier = `${dataDirectory}${configFile}`
+
+let objet = {}
 
 export const getTraceurs = () => {
   return new Promise((resolve, reject) => {
@@ -12,7 +17,7 @@ export const getTraceurs = () => {
         return a.nom < b.nom ? -1 : a.nom > b.nom ? 1 : 0
       })
       resolve(traceurs)
-    } catch ({ e }) {
+    } catch (e) {
       console.error(`getTraceurs Erreur : ${e}`)
       reject(e)
     }

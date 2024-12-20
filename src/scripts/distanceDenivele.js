@@ -1,9 +1,25 @@
-/**
- * Promise de calcul du denivelé et de la distance
- * 
- */
+
+import { promises } from 'dns'
 import haversine from 'haversine-distance'  // pour calculer la distance entre 2 points
 
+
+/**
+ * @typedef distanceDPlus
+ * @type {object}
+ * @property {number} distance
+ * @property {number} denivele
+ * @property {number} ptCulminant
+ * @property {number} distSommet
+ */
+
+/**
+ * @desc A partir de la chaîne lineString, cette fonction retourne 
+ * - la distance de la trace, le dénivelé positif,
+ * - le sommet le plus haut et la distance à laquelle il se situe. 
+ * @param {string} lineString 
+ * 
+ * @returns {Promise<distanceDPlus>}
+ */
 export const getDistanceDPlus = (lineString) => {
   return new Promise((resolve, reject) => {
     try {
@@ -29,8 +45,8 @@ export const getDistanceDPlus = (lineString) => {
       distanceSommet = Number.parseFloat(distanceSommet / 1000).toFixed(2)
       resolve({ distance: distance, denivele: denivele, ptCulminant: sommet, distSommet: distanceSommet })
     }
-    catch ({ e }) {
-      console.error(`distanceDenivle: getDistanceDPlus: erreur: ${e} `)
+    catch (e) {
+      console.error(`distanceDenivele: getDistanceDPlus: erreur: ${e} `)
       reject(e)
     }
   })

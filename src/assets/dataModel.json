@@ -26,6 +26,10 @@
     {
       "id": "1efbc6d8-76b0-6650-a84b-497b01794172",
       "nom": "Moustiers-Sainte-Marie"
+    },
+    {
+      "id": "1efbdf41-bb56-6f80-bbc0-331d3ec39669",
+      "nom": "Urdos"
     }
   ],
   "traceurs": [
@@ -228,6 +232,101 @@
         "km": "59.81"
       },
       "isoDateTime": "2024-12-17T12:19:32.613Z"
+    },
+    {
+      "circuitId": "000009",
+      "nom": "2024 calpe configue 127km",
+      "villeDepart": "1efbc5e8-6e61-6cb0-98e5-28e908a21c9b",
+      "traceur": "1efbc6ef-36ac-6560-9463-9aa5a8bd41b0",
+      "editeur": 4,
+      "url": "https://www.openrunner.com/route-details/18127943",
+      "distance": "129.48",
+      "denivele": 2425,
+      "depart": {
+        "lon": "0.07272",
+        "lat": "38.65093"
+      },
+      "sommet": {
+        "altitude": 972,
+        "km": "82.37"
+      },
+      "isoDateTime": "2024-12-18T20:57:06.382Z"
+    },
+    {
+      "circuitId": "000010",
+      "nom": "ViAragon#1 ",
+      "villeDepart": "1efbdf41-bb56-6f80-bbc0-331d3ec39669",
+      "traceur": "1efbc6ef-36ac-6560-9463-9aa5a8bd41b0",
+      "editeur": 4,
+      "url": "https://www.openrunner.com/route-details/16587328",
+      "distance": "46.45",
+      "denivele": 995,
+      "depart": {
+        "lon": "-0.55450",
+        "lat": "42.87212"
+      },
+      "sommet": {
+        "altitude": 1636,
+        "km": "14.80"
+      },
+      "isoDateTime": "2024-12-19T10:29:20.631Z"
+    },
+    {
+      "circuitId": "000011",
+      "nom": "2024 laguiole 142 aubrac",
+      "villeDepart": "1efbc5e7-9eae-6680-9111-f212309e97a4",
+      "traceur": "1efbc6ef-36ac-6560-9463-9aa5a8bd41b0",
+      "editeur": 4,
+      "url": "https://www.openrunner.com/route-details/19103779",
+      "distance": "143.70",
+      "denivele": 2136,
+      "depart": {
+        "lon": "2.86026",
+        "lat": "44.69212"
+      },
+      "sommet": {
+        "altitude": 1374,
+        "km": "15.77"
+      },
+      "isoDateTime": "2024-12-20T15:32:13.024Z"
+    },
+    {
+      "circuitId": "000012",
+      "nom": "2024 laguiole 69km",
+      "villeDepart": "1efbc5e7-9eae-6680-9111-f212309e97a4",
+      "traceur": "1efbc6ef-36ac-6560-9463-9aa5a8bd41b0",
+      "editeur": 4,
+      "url": "https://www.openrunner.com/route-details/19103370",
+      "distance": "69.96",
+      "denivele": 1066,
+      "depart": {
+        "lon": "2.86036",
+        "lat": "44.69218"
+      },
+      "sommet": {
+        "altitude": 1359,
+        "km": "13.40"
+      },
+      "isoDateTime": "2024-12-20T15:37:18.713Z"
+    },
+    {
+      "circuitId": "000013",
+      "nom": "100Km vers le nord",
+      "villeDepart": "1efbc5e4-3b7c-6740-b757-868676e63193",
+      "traceur": "1efbc6ef-36ac-6560-9463-9aa5a8bd41b0",
+      "editeur": 1,
+      "url": "https://www.strava.com/routes/3271207506140373930",
+      "distance": "103.29",
+      "denivele": 760,
+      "depart": {
+        "lon": "2.81600",
+        "lat": "48.86489"
+      },
+      "sommet": {
+        "altitude": 172,
+        "km": "66.36"
+      },
+      "isoDateTime": "2024-12-20T15:46:21.140Z"
     }
   ]
 }

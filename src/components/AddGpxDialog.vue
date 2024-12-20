@@ -4,75 +4,71 @@
     :model-value="vueDialogGpx"
   > 
     <v-card class="mx-auto" width="550">
-    
       <v-card-title v-if="items.length > 0">Liste des fichiers disponibles.</v-card-title>
       <v-card-title v-else>Il n'y a pas de fichier disponible pour l'import.</v-card-title>
       <v-card-subtitle v-if="items.length === 0">Veuillez au préalable, ajouter une trace gpx dans le dossier Téléchargement !</v-card-subtitle>
       <v-card-subtitle v-else-if="items.length === 1">Veuillez séléctionner l'unique fichier à importer.</v-card-subtitle>
       <v-card-subtitle v-else="items.length > 1 ">Séléctionnez un des fichiers à importer.</v-card-subtitle>
-
      
       <v-col cols="12">
         <v-list 
-        v-if="items.length > 0"
-        max-height="220"
-        bg-color="indigo"
-        density="compact" 
-        :items>
-
-        <v-list-item
-          v-for="(item) in items"
-          :key="item"
-          :value="item"
-          @click="choix(item)"
+          v-if="items.length > 0"
+            :items
+            max-height="220"
+            bg-color="indigo"
+            density="compact" 
         >
-        <v-list-item-subtitle v-text="item"></v-list-item-subtitle>
-        </v-list-item>
-      </v-list>
-    </v-col>
-
+          <v-list-item
+            v-for="(item) in items"
+              :key="item"
+              :value="item"
+              @click="choix(item)"
+          >
+            <v-list-item-subtitle v-text="item"></v-list-item-subtitle>
+          </v-list-item>
+        </v-list>
+      </v-col>
     
       <v-col cols="8">
         <h5>Personne ou association qui a fait la trace :</h5><br>
         <v-combobox
           :items=itemsTraceurs
+          @update:model-value="selectTraceur(select)"
           v-model="select"
           density="compact" 
           color="indigo-lighten-1"
           label="Sélectionnez l'éditeur de la trace ou créez en un !"
-          @update:model-value="selectTraceur(select)"
         ></v-combobox>
       </v-col>
      
 
       <v-card-actions  v-if="items.length > 0">
-      <v-btn
-        color="warning"
-        text="Cancel"
-        variant="elevated"
-        prepend-icon="mdi-cancel"
-        @click="emit('closeAddGpxDialog')" 
-      ></v-btn>
+        <v-btn
+          color="warning"
+          text="Cancel"
+          variant="elevated"
+          prepend-icon="mdi-cancel"
+          @click="emit('closeAddGpxDialog')" 
+        ></v-btn>
 
-      <v-btn
-        color="primary"
-        text="Importer"
-        variant="elevated"
-        prepend-icon="mdi-file-import-outline"
-        :disabled=isDisabled
-        @click="importGpx()" 
-      ></v-btn>
+        <v-btn
+          :disabled=isDisabled
+          @click="importGpx()" 
+          color="primary"
+          text="Importer"
+          variant="elevated"
+          prepend-icon="mdi-file-import-outline"
+        ></v-btn>
       </v-card-actions>
 
       <v-card-actions  v-else>
-      <v-btn
-        color="primary"
-        text="OK"
-        variant="elevated"
-        prepend-icon="mdi-alert-circle-check-outline"
-        @click="emit('closeAddGpxDialog')" 
-      ></v-btn>
-
+        <v-btn
+          @click="emit('closeAddGpxDialog')" 
+          color="primary"
+          text="OK"
+          variant="elevated"
+          prepend-icon="mdi-alert-circle-check-outline"
+        ></v-btn>
       </v-card-actions>
       
     </v-card>
@@ -89,14 +85,15 @@
     itemsTraceurs : Array,
   }) 
 
-  const isDisabled = ref(true)
   const emit = defineEmits(['closeAddGpxDialog', 'importGpxFile'])
-  
-  const  selection = ref()
+
+  const isDisabled = ref(true)
+  const selection = ref()
   const traceur = ref()
+  const select = ref()
 
   function choix(fichier) {
-    console.log(`src/components/AddGpxDialog.vue : Le fichier ${fichier} a été sélectionné`)
+    //console.log(`AddGpxDialog.vue, choix : Le fichier ${fichier} a été sélectionné`)
     if (fichier !== selection.value) {
       isDisabled.value = false
       selection.value = fichier
@@ -109,12 +106,12 @@
 
   function selectTraceur(items) {
     traceur.value=items
-    console.log(`src/components/AddGpxDialog.vue : Le traceur ${items} a été sélectionné.`)
+    //console.log(`AddGpxDialog.vue, selectTraceur : Le traceur ${items} a été sélectionné.`)
   }
 
 
   function importGpx() {
-    //console.log(`on va importer ${selection.value}`)
+    //console.log(`AddGpxDialog.vue, importGpx : On va importer ${selection.value}`)
     emit('closeAddGpxDialog')
     emit('importGpxFile', selection.value, traceur.value) 
   }

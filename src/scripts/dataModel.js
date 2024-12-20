@@ -4,14 +4,15 @@
 
 import fs from 'fs'
 import * as dotenv from 'dotenv'
-import { zpad } from './utils.js'
 import { v6 as uuidv6 } from 'uuid'
+import { zpad } from './utils.js'
 
 dotenv.config()
 const dataDirectory = process.env.DATA_DIRECTORY
 const configFile = process.env.CONFIG_FILE
 
 const fichier = `${dataDirectory}${configFile}`
+
 let objet = {}
 
 
@@ -23,7 +24,7 @@ let objet = {}
  *              {status: string},
  *              {long: number, lat: number},
  *              {traceur: string}]} data 
- * @returns {promises<{idTrace: <number>, isPresent: <boolena>}>}
+ * @returns {promises<{idTrace: <number>, isPresent: <boolean>}>}
  */
 export const addTrace = (data) => {
   return new Promise((resolve, reject) => {
@@ -70,7 +71,7 @@ export const addTrace = (data) => {
         // Il faut  archiver la vignette et le fichier GEOjson
       }
       resolve(retourAddCircuit)
-    } catch ({ e }) {
+    } catch (e) {
       console.error(`dataModel.js : addTrace() : Erreur : ${e}`)
       reject(e)
     }

@@ -10,11 +10,12 @@
 import fs from "fs"
 import xml2js from 'xml2js'                 // Pour convertir le trace gpx en JSON
 import * as dotenv from 'dotenv'
-import { createVignette, getGommune } from "./requestsMapbox.js"
+import { createVignette, getCommune } from "./requestsMapbox.js"
 import { getDistanceDPlus } from "./distanceDenivele.js"
-import { getData } from "./getDatas.js"
+import { getEditeurUrl } from "./data.js"
 import { addTrace } from "./dataModel.js"
 import { zpad } from "./utils.js"
+import { promises } from "dns"
 
 dotenv.config()
 const dataDirectory = process.env.DATA_DIRECTORY
@@ -24,9 +25,16 @@ let arriveeLat = 0                          // Latitude du point d'arrivée
 let arriveeLong = 0                         // longitude du point d'arrivée
 let ville = ""                              // Ville de départ. (Utilisée pour filtrer les traces)
 
-
+/**
+ * @desc Cette fonction archive dans un répertoire les données relatives à la trace GPS qui est importée. Ces données sont : 
+ * - La vignette du tracé,
+ * - le fichier lineString.json qui servira à la visualisation 3D.
+ * @param {number} id Id du circuit 
+ * @param {string} lineString Fichier Ligne pour mapbox
+ * @returns {boolean} true si archivage OK
+ */
 function archivage(id, lineString) {
-  console.log(`gpx.js : archivage : id : ${id}`)
+  //console.log(`gpx.js : archivage : id : ${id}`)
   // On crée le repertoire d'archivage DATA_DIRECTORY
   // voir https://www.geeksforgeeks.org/how-to-create-a-directory-using-node-js/#using-nodejs-fsmkdir
   try {
@@ -63,6 +71,7 @@ function archivage(id, lineString) {
     console.error(`gpx.js : archivage : impossible de faire une chmod sur le dossier : ${newDirectory}`)
     return false
   }
+
   try {
     fs.writeFileSync(newDirectory + `lineString.json`, JSON.stringify(lineString));
   } catch (err) {
@@ -83,12 +92,14 @@ function archivage(id, lineString) {
 
 
 /**
- * decodeGpx
- * @param {string} fichier 
- * @param {string} traceur 
- * @returns promise 
+ * Promesse qui extrait les principales informations d'une trace gpx. 
+ * - La distance, le dénivelé Positif, la ville de départ, le logiciel d'édition, l'URL du fichier... 
+ * - Ces informations sont archivées dans le fichier dataModel.json.
+ * @param {string} fichier Nom du fichier en obsolu
+ * @param {string} traceur Nom de la personne ou de l'association qui a créé la trace gpx
+ * @returns {promises}
  */
-export const decodeGpx = (fichier, traceur) => {
+export const decodeTraceGpx = (fichier, traceur) => {
   return new Promise((resolve, reject) => {
 
     // definition des variables pour mise à jour du fichier data.json
@@ -175,12 +186,12 @@ export const decodeGpx = (fichier, traceur) => {
 
 
             /**
-             * Lancemeent des promesses
+             * Lancement des promesses
              */
             Promise.all([
               getDistanceDPlus(lineString),
-              getData(fichier, objetGpx),
-              getGommune(departLat, departLong, accessToken),
+              getEditeurUrl(fichier, objetGpx),
+              getCommune(departLat, departLong, accessToken),
               createVignette(trkpt.length, lineString, departLat, departLong, arriveeLat, arriveeLong, accessToken)
             ])
               .then((donneesGpx) => {
@@ -191,7 +202,7 @@ export const decodeGpx = (fichier, traceur) => {
                 donneesGpx.push({ traceur: traceur })
                 addTrace(donneesGpx)
                   .then((result) => {
-                    console.log(`gpx.js : decodeGpx : circuitId : ${result.circuitId}, isPresent : ${result.isPresent}`)
+                    //console.log(`gpx.js : decodeTraceGpx : circuitId : ${result.circuitId}, isPresent : ${result.isPresent}`)
                     archivage(result.circuitId, lineString)
                     resolve(result)
 
@@ -201,7 +212,7 @@ export const decodeGpx = (fichier, traceur) => {
                   })
               })
               .catch((e) => {
-                console.error(`gpx.js : decodeGpx : Promises.all Erreur : ${e}`)
+                console.error(`gpx.js : decodeTraceGpx : Promises.all Erreur : ${e}`)
                 reject(e)
               })
           })

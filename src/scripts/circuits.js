@@ -19,7 +19,7 @@ export const getCircuits = (page, nombre) => {
         circuits: objet.circuits.sort().reverse().slice((page - 1) * nombre, page * nombre),
         totalCircuits: objet.circuits.length
       })
-    } catch ({ e }) {
+    } catch (e) {
       console.error(`getCircuits Erreur : ${e}`)
       reject(e)
     }
@@ -45,7 +45,7 @@ export const getCircuits = (page, nombre) => {
 //         .catch(err => {
 //           console.error(`Erreur : ${err}`)
 //         })
-//     } catch ({ e }) {
+//     } catch (e) {
 //       console.error(`getCircuits Erreur : ${e}`)
 //       reject(e)
 //     }
@@ -72,7 +72,7 @@ export const getcircuitsMinMax = () => {
         distMin: distanceMin,
         distMax: distanceMax
       })
-    } catch ({ e }) {
+    } catch (e) {
       console.error(`circuit : getCircuitsMinMax Erreur : ${e}`)
       reject(e)
     }

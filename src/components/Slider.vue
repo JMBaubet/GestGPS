@@ -36,8 +36,7 @@
 </script>
 
 <style scoped>
-.v-range-slider.v-input--horizontal {
-  margin-inline: -10px -10px;
-}
-
+  .v-range-slider.v-input--horizontal {
+    margin-inline: -10px -10px;
+  }
 </style>

@@ -2,8 +2,7 @@
   <div  style="z-index:1100; opacity:0.75; margin-left: 24px ;">
     <v-container class="position-absolute pa-2" max-width="500">
       <v-timeline 
-      
-      density="compact"
+        density="compact"
         line-thickness="0"
         truncate-line="both"
         side="end">
@@ -33,11 +32,11 @@
 
 
 <script setup>
-import{ref} from 'vue'
+  import{ref} from 'vue'
 
-const props = defineProps({
-  alarmes: Array,
-  }) 
+  const props = defineProps({
+    alarmes: Array,
+    }) 
 
   const emit = defineEmits(['closeAlarme'])
 

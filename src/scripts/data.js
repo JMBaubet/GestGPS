@@ -1,7 +1,7 @@
 /**
  * Promise de lecture des données diverses
  */
-export const getData = (fileName, objetGpx) => {
+export const getEditeurUrl = (fileName, objetGpx) => {
   return new Promise((resolve, reject) => {
 
     let editeur = undefined
@@ -94,7 +94,7 @@ export const getData = (fileName, objetGpx) => {
         reject(e)
       }
       resolve({ editeur: editeur, editeurId: editeurId, nom: nomTrace, url: urlOrigine })
-    } catch ({ e }) {
+    } catch (e) {
       reject(e)
     }
   })
