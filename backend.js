@@ -67,7 +67,7 @@ app.post('/api/GpxFile/:fileName/:traceur', (req, res) => {
   //console.log(`backend.js : Traceur sélectionné : ${req.params.traceur}`)
   decodeTraceGpx(`${directory}\\${req.params.fileName}`, `${req.params.traceur}`)
     .then(retour => {
-      console.log(`backend.js : Retour de la promise : ${retour.circuitId}, ${retour.isPresent}`)
+      console.log(`backend.js : Retour de la promise : ${retour.circuitId}, ${retour.peutEtrePresent}`)
 
       /** Il faut : 
        * - decoder le fichier                     // C Fait

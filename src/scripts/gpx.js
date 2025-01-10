@@ -1,21 +1,11 @@
-//gpx.js
-// Traitement des fichiers gpx par le backend.
-/** Il faut : 
- * - decoder le fichier
- * - archiver le fichier gpx dans l'appli
- * - mettre à jour le fichier json
- * - créer la vignette  */
-
-
 import fs from "fs"
 import xml2js from 'xml2js'                 // Pour convertir le trace gpx en JSON
 import * as dotenv from 'dotenv'
 import { createVignette, getCommune } from "./requestsMapbox.js"
 import { getDistanceDPlus } from "./distanceDenivele.js"
 import { getEditeurUrl } from "./data.js"
-import { addTrace } from "./dataModel.js"
-import { zpad } from "./utils.js"
-import { promises } from "dns"
+import { addCircuit2dataModel } from "./dataModel.js"
+import { archiveDataCircuit } from "./archiveDataCircuit.js"
 
 dotenv.config()
 const dataDirectory = process.env.DATA_DIRECTORY
@@ -24,71 +14,6 @@ const dataDirectory = process.env.DATA_DIRECTORY
 let arriveeLat = 0                          // Latitude du point d'arrivée
 let arriveeLong = 0                         // longitude du point d'arrivée
 let ville = ""                              // Ville de départ. (Utilisée pour filtrer les traces)
-
-/**
- * @desc Cette fonction archive dans un répertoire les données relatives à la trace GPS qui est importée. Ces données sont : 
- * - La vignette du tracé,
- * - le fichier lineString.json qui servira à la visualisation 3D.
- * @param {number} id Id du circuit 
- * @param {string} lineString Fichier Ligne pour mapbox
- * @returns {boolean} true si archivage OK
- */
-function archivage(id, lineString) {
-  //console.log(`gpx.js : archivage : id : ${id}`)
-  // On crée le repertoire d'archivage DATA_DIRECTORY
-  // voir https://www.geeksforgeeks.org/how-to-create-a-directory-using-node-js/#using-nodejs-fsmkdir
-  try {
-    fs.accessSync(dataDirectory)
-  } catch {
-    console.log('On va créer le dossier')
-    const rep = fs.mkdirSync(dataDirectory, { recursive: true })
-    if (rep === undefined) {
-      console.error(`gpx.js : archivage : impossible de créer le dossier : ${dataDirectory}`)
-      return false
-    }
-  }
-  try {
-    fs.chmodSync(dataDirectory, 0o770)
-  } catch (err) {
-    console.error(`gpx.js : archivage : impossible de faire une chmod sur le dossier : ${dataDirectory}`)
-    return false
-  }
-
-  const newDirectory = `${dataDirectory}` + zpad(id, 6) + `\\`
-  try {
-    fs.accessSync(newDirectory)
-  } catch {
-    console.log('On va créer le dossier')
-    const rep = fs.mkdirSync(newDirectory, { recursive: true })
-    if (rep === undefined) {
-      console.error(`gpx.js : archivage : impossible de créer le dossier : ${newDirectory}`)
-      return false
-    }
-  }
-  try {
-    fs.chmodSync(newDirectory, 0o770)
-  } catch (err) {
-    console.error(`gpx.js : archivage : impossible de faire une chmod sur le dossier : ${newDirectory}`)
-    return false
-  }
-
-  try {
-    fs.writeFileSync(newDirectory + `lineString.json`, JSON.stringify(lineString));
-  } catch (err) {
-    console.error(`gpx.js : archivage : impossible d'enregistrer le fichier lineString`)
-    return false
-  }
-
-  // On range la vignette dans le dossier
-  try {
-    fs.renameSync('./src/assets/tmp/vignette.png', newDirectory + `vignette.png`)
-  } catch (err) {
-    console.error(`gpx.js : archivage : impossible d'enregistrer la vignette`)
-    return false
-  }
-  return true
-}
-
 
 
 /**
@@ -130,12 +55,11 @@ export const decodeTraceGpx = (fichier, traceur) => {
     // Transformation du fichier gpx en objet javascript
     const parser = new xml2js.Parser()
     fs.promises.readFile(fichier)
-      .then((data) => {
-        parser.parseStringPromise(data)
+      .then((rep, err) => {
+        parser.parseStringPromise(rep)
           .then((objetGpx) => {
             // extraction des points de passage
             trkpt = objetGpx.gpx.trk[0].trkseg[0].trkpt
-
 
             // Création du JSON lineString avec l'altitude lissée sur 9 points
             //console.log(trkpt.length)
@@ -182,9 +106,9 @@ export const decodeTraceGpx = (fichier, traceur) => {
             departLong = Number.parseFloat(trkpt[0].$.lon).toFixed(5)
             arriveeLat = Number.parseFloat(trkpt[trkpt.length - 1].$.lat).toFixed(5)
             arriveeLong = Number.parseFloat(trkpt[trkpt.length - 1].$.lon).toFixed(5)
-
-
-
+            return objetGpx
+          })
+          .then((objetGpx) => {
             /**
              * Lancement des promesses
              */
@@ -194,32 +118,66 @@ export const decodeTraceGpx = (fichier, traceur) => {
               getCommune(departLat, departLong, accessToken),
               createVignette(trkpt.length, lineString, departLat, departLong, arriveeLat, arriveeLong, accessToken)
             ])
-              .then((donneesGpx) => {
-                /**
-                 * @todo mettre a jour le fichier data.json
-                 */
-                donneesGpx.push({ lon: departLong, lat: departLat })
-                donneesGpx.push({ traceur: traceur })
-                addTrace(donneesGpx)
-                  .then((result) => {
-                    //console.log(`gpx.js : decodeTraceGpx : circuitId : ${result.circuitId}, isPresent : ${result.isPresent}`)
-                    archivage(result.circuitId, lineString)
-                    resolve(result)
 
+              .then((retPromesses) => {
+                // console.log("Les promesses sont toutes OK")
+                const horodatage = new Date()
+                let donneesGpx = {
+                  circuitId: "",
+                  nom: retPromesses[1].nom,
+                  villeDepart: retPromesses[2].commune,
+                  traceur: traceur,
+                  editeurId: retPromesses[1].editeurId,
+                  url: retPromesses[1].url,
+                  distance: retPromesses[0].distance,
+                  denivele: retPromesses[0].denivele,
+                  depart: {
+                    lon: departLong,
+                    lat: departLat
+                  },
+                  sommet: {
+                    altitude: retPromesses[0].sommet,
+                    km: retPromesses[0].distSommet
+                  },
+                  isoDateTime: horodatage.toISOString()
+                }
+
+                //console.log(donneesGpx)
+
+                addCircuit2dataModel(donneesGpx)
+                  .then((result) => {
+                    archiveDataCircuit(result.circuitId, lineString)
+                      .then(() => {
+                        resolve(result)
+                      })
+                      .catch((err) => {
+                        reject(err)
+                      })
                   })
-                  .catch((e) => {
-                    reject(e)
+                  .catch((err) => {
+                    console.error(`catch addCircuit2dataModel : ${err.error}`)
+                    reject(err)
                   })
+
               })
-              .catch((e) => {
-                console.error(`gpx.js : decodeTraceGpx : Promises.all Erreur : ${e}`)
-                reject(e)
+              .catch((err) => {
+                console.error(`catch parser : ${err}`)
+                reject(err)
               })
+
+          })
+          .catch((err) => {
+            console.error(`catch parser : ${err}`)
+            reject(err)
           })
       })
-      .catch((e) => {
-        console.log(`${e}`)
-        reject(e)
+      .catch((err) => {
+        console.error(`catch readFile: ${err}`)
+        reject(err)
       })
+
   })
 }
+
+
+

@@ -6,7 +6,7 @@
       cover>
     </v-img>
     <v-card-item class="pa-0">
-      <v-card-text >
+      <v-card-text class="py-0">
         <v-row class="ma-0">
           <v-col class="pb-2 pl-0" cols="12" sm="10">
             <h2>{{name}}</h2>

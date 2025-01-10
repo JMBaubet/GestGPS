@@ -424,7 +424,6 @@ function getMinMax() {
   fetch(url, { method: 'GET', signal: AbortSignal.timeout(1000) })
   .then((rep, err) => {
     return rep.json()
-
   })
   .then((json, err) => {
     if (typeof(json.error) === "undefined") { // On recoit la réponse attendu

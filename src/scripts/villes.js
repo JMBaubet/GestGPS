@@ -4,7 +4,7 @@ import * as dotenv from 'dotenv'
 dotenv.config()
 const dataDirectory = process.env.DATA_DIRECTORY
 const configFile = process.env.CONFIG_FILE
-const fichier = `${dataDirectory}${configFile}`
+const fichier = `${configFile}`
 
 let objet = {}
 

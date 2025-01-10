@@ -2,7 +2,7 @@
  * Promises de génération de l'image static MapBox
  */
 import fs from "fs"
-import polyline from '@mapbox/polyline'     // Pour encoder l'URL pour la générationde la vignette
+import polyline from '@mapbox/polyline'     // Pour encoder l'URL pour la génération de la vignette
 import isPng from 'is-png'                  // Pour vérifier que la vignette est correctement générée
 import simplify from 'simplify-geojson'     // Pour réduire la taille de l'URL
 
@@ -18,99 +18,116 @@ import simplify from 'simplify-geojson'     // Pour réduire la taille de l'URL
 */
 export const createVignette = (nbPts, lineString, departLat, departLong, arriveeLat, arriveeLong, accessToken) => {
   return new Promise((resolve, reject) => {
-    try {
+    // Lecture des paramètres de génération de la vignette
+    const vignetteLargeur = process.env.VIGNETTE_LARGEUR                          // Largeur en pixel
+    const vignetteHauteur = process.env.VIGNETTE_HAUTEUR                          // Hauteur en pixel
+    const vignetteFondCarte = process.env.VIGNETTE_FOND_DE_CARTE                  // Style du fond de carte 
+    const vignetteIconDepartSymbol = process.env.VIGNETTE_ICON_DEPART_SYMBOL      // Icon du point de départ
+    const vignetteIconDepartCouleur = process.env.VIGNETTE_ICON_DEPART_COULEUR    // Couleur de l'icon de départ
+    const vignetteIconArriveeSymbol = process.env.VIGNETTE_ICON_ARRIVEE_SYMBOL    // Icon du point d'arrivée
+    const vignetteIconArriveeCouleur = process.env.VIGNETTE_ICON_ARRIVEE_COULEUR  // Couleur de l'icon d'arrivée
+    const vignetteTackWidth = process.env.VIGNETTE_TRACK_WIDTH                    // Epaisseur de la trace en pixel   
+    const vignetteTrackCouleur = process.env.VIGNETTE_TRACK_COULEUR               // Couleur de la trace dur 3 digits
+    const vignetteTrackOpacite = process.env.VIGNETTE_TRACK_OPACITE               // Opacité de la trace
 
-      // Lecture des paramètres de génération de la vignette
-      const vignetteLargeur = process.env.VIGNETTE_LARGEUR                          // Largeur en pixel
-      const vignetteHauteur = process.env.VIGNETTE_HAUTEUR                          // Hauteur en pixel
-      const vignetteFondCarte = process.env.VIGNETTE_FOND_DE_CARTE                  // Style du fond de carte 
-      const vignetteIconDepartSymbol = process.env.VIGNETTE_ICON_DEPART_SYMBOL      // Icon du point de départ
-      const vignetteIconDepartCouleur = process.env.VIGNETTE_ICON_DEPART_COULEUR    // Couleur de l'icon de départ
-      const vignetteIconArriveeSymbol = process.env.VIGNETTE_ICON_ARRIVEE_SYMBOL    // Icon du point d'arrivée
-      const vignetteIconArriveeCouleur = process.env.VIGNETTE_ICON_ARRIVEE_COULEUR  // Couleur de l'icon d'arrivée
-      const vignetteTackWidth = process.env.VIGNETTE_TRACK_WIDTH                    // Epaisseur de la trace en pixel   
-      const vignetteTrackCouleur = process.env.VIGNETTE_TRACK_COULEUR               // Couleur de la trace dur 3 digits
-      const vignetteTrackOpacite = process.env.VIGNETTE_TRACK_OPACITE               // Opacité de la trace
+    // On optimise le nombre de points pour ne pas dépasser 8Ko sur l'URL 
+    // Si nombre de point > 4000 tolérance de simplify = 0.0005
+    // sinon si nombre de point > 1500 tolérance de simplify = 0.0001
+    // Sinon pas besoin de simplifier
+    let minimized = ""
+    if (nbPts > 4000)
+      minimized = simplify(JSON.parse(lineString), 0.0005)
+    else if (nbPts > 1500)
+      minimized = simplify(JSON.parse(lineString), 0.0001)
+    else
+      minimized = JSON.parse(lineString)
 
-      // On optimise le nombre de points pour ne pas dépasser 8Ko sur l'URL 
-      // Si nombre de point > 4000 tolérance de simplify = 0.0005
-      // sinon si nombre de point > 1500 tolérance de simplify = 0.0001
-      // Sinon pas besoin de simplifier
-      let minimized = ""
-      if (nbPts > 4000)
-        minimized = simplify(JSON.parse(lineString), 0.0005)
-      else if (nbPts > 1500)
-        minimized = simplify(JSON.parse(lineString), 0.0001)
-      else
-        minimized = JSON.parse(lineString)
-
-      // Dans mapbox il y-a un bug si deux points consécutifs ont la même lattitude ou longitude
-      // On balaye l'objet json pour éliminer le second point
-      for (let index = 0; index < minimized["geometry"]["coordinates"].length - 1; index++) {
-        let [x1, y1] = minimized["geometry"]["coordinates"][index]
-        let [x2, y2] = minimized["geometry"]["coordinates"][index + 1]
-        if ((x1 === x2) || (y1 === y2)) {
-          minimized["geometry"]["coordinates"].splice(index--, 1)
-        }
+    // Dans mapbox il y-a un bug si deux points consécutifs ont la même lattitude ou longitude
+    // On balaye l'objet json pour éliminer le second point
+    for (let index = 0; index < minimized["geometry"]["coordinates"].length - 1; index++) {
+      let [x1, y1] = minimized["geometry"]["coordinates"][index]
+      let [x2, y2] = minimized["geometry"]["coordinates"][index + 1]
+      if ((x1 === x2) || (y1 === y2)) {
+        minimized["geometry"]["coordinates"].splice(index--, 1)
       }
-
-      // On encode l'objet json pour réduite la taillde l'URL
-      const lineStringEncodee = polyline.fromGeoJSON(minimized)
-
-      // On prépare l'URL
-      let urlVignette = `https://api.mapbox.com/styles/v1/mapbox/${vignetteFondCarte}/static/`
-      urlVignette = urlVignette + `path-${vignetteTackWidth}+${vignetteTrackCouleur}-${vignetteTrackOpacite}(${lineStringEncodee})`
-      urlVignette = urlVignette + `,pin-s-${vignetteIconDepartSymbol}+${vignetteIconDepartCouleur}(${departLong},${departLat})`
-      urlVignette = urlVignette + `,pin-s-${vignetteIconArriveeSymbol}+${vignetteIconArriveeCouleur}(${arriveeLong},${arriveeLat})`
-      urlVignette = urlVignette + `/auto/${vignetteLargeur}x${vignetteHauteur}@2x?access_token=${accessToken}`
-      // Il faut encoder l'URL pour passer les catactères spéciaux qui  peuvent être présent dans fichierEncode
-
-      //console.log(urlVignette)
-      const urlEncode = encodeURI(urlVignette)
-
-      // On vérifie avant de lancer la requete que l'URL n'est pas trop longue
-      if (urlEncode.length > 8100) {
-        const e = new Error(`L'URL pour la vignette est trop longue ${urlEncode.length} !`)
-        e.name = 'urlToLong'
-        throw e
-      }
-
-      fetch(urlEncode, { method: 'GET', signal: AbortSignal.timeout(5000) })
-        // On attend la réponse du serveur MapBox 
-        .then(response => {
-          if (!response.ok) {
-            const e = new Error(`Status code: ${response.status}`);
-            e.name = "myHttpError"
-            throw e
-          }
-          // L'image PNG est normalement retounée dans le body sous forme d'un buffer
-          return response.arrayBuffer();
-        })
-        .then(imageBuffer => {
-          // On teste si on a une image png dans le buffer
-          // Si un problème s'est produit c'est un text qui est dans le body
-          if (isPng(new Uint8Array(imageBuffer))) {
-            // The 'imageBuffer' now contains the binary data of the image.
-            // On enregistre le fichier png
-            fs.writeFile('./src/assets/tmp/vignette.png', Buffer.from(imageBuffer), err => {
-              if (err) {
-                reject(err)
-              } else {
-                resolve({ status: "OK" })
-              }
-            })
-          } else {
-            const e = new Error(`L'image n'est pas un PNG`);
-            e.name = "myPngError"
-            throw e
-          }
-        })
-        .catch(error => {
-          reject(error);
-        })
-    } catch (e) {
-      reject(e)
     }
+
+    // On encode l'objet json pour réduite la taillde l'URL
+    const lineStringEncodee = polyline.fromGeoJSON(minimized)
+
+    // On prépare l'URL
+    let urlVignette = `https://api.mapbox.com/styles/v1/mapbox/${vignetteFondCarte}/static/`
+    urlVignette = urlVignette + `path-${vignetteTackWidth}+${vignetteTrackCouleur}-${vignetteTrackOpacite}(${lineStringEncodee})`
+    urlVignette = urlVignette + `,pin-s-${vignetteIconDepartSymbol}+${vignetteIconDepartCouleur}(${departLong},${departLat})`
+    urlVignette = urlVignette + `,pin-s-${vignetteIconArriveeSymbol}+${vignetteIconArriveeCouleur}(${arriveeLong},${arriveeLat})`
+    urlVignette = urlVignette + `/auto/${vignetteLargeur}x${vignetteHauteur}@2x?access_token=${accessToken}`
+
+    // Il faut encoder l'URL pour passer les catactères spéciaux qui  peuvent être présent dans fichierEncode
+    const urlEncode = encodeURI(urlVignette)
+
+    // On vérifie avant de lancer la requete que l'URL n'est pas trop longue
+    if (urlEncode.length > 8100) {
+      reject({ id: 2024, error: "MapBox : URL trop longue !" })
+    }
+    fetch(urlEncode, { method: 'GET', signal: AbortSignal.timeout(5000) })
+      // On attend la réponse du serveur MapBox 
+      .then(repHttp => {
+        if (!repHttp.ok) {
+          switch (repHttp.status) {
+            case 401: // Err dans le token
+              reject({ id: 2025, error: "MapBox : Erreur Token sur createVignette !" })
+              break;
+            case 422: // Err dans le coordonnées
+              reject({ id: 2026, error: "MapBox : Erreur de coordonnées sur createVignette !" })
+              break;
+          }
+          reject({ id: 2027, error: "MapBox : Erreur indéterminée sur createVignette!" })
+        }
+        // L'image PNG est normalement retounée dans le body sous forme d'un buffer
+        return repHttp.arrayBuffer();
+      })
+      .then(imageBuffer => {
+        // On teste si on a une image png dans le buffer
+        // Si un problème s'est produit c'est un text qui est dans le body
+        if (isPng(new Uint8Array(imageBuffer))) {
+          // The 'imageBuffer' now contains the binary data of the image.
+          // On enregistre le fichier png
+
+          // const fsPromises = require('fs').promises; // or require('fs/promises') in v10.0.0
+          // fsPromises.writeFile(ASIN + '.json', JSON.stringify(results))
+          //   .then(() => {
+          //     console.log('JSON saved');
+          //   })
+          //   .catch(er => {
+          //     console.log(er);
+          //   });
+
+          fs.promises.writeFile('./src/assets/tmp/vignette.png', Buffer.from(imageBuffer))
+            .then(() => {
+              resolve({ status: "OK" })
+            })
+            .catch((err) => {
+              reject({ id: 2032, error: "MapBox : La vignette reçue n'a pas pu être enregistrée!" })
+            })
+
+          // fs.writeFile('./src/assets/tmp/vignette.png', Buffer.from(imageBuffer), err => {
+          //   if (err) {
+          //     reject(err)
+          //   } else {
+          //     resolve({ status: "OK" })
+          //   }
+          // })
+        } else {
+          reject({ id: 2029, error: "MapBox : La vignette reçue n'est pas un .png !" })
+        }
+      })
+      .catch(err => {
+        console.error(`MapBox : ${err}`)
+        if (`${err}`.includes("Timeout")) {          // On traite l’erreur du fetch (Time Out)
+          reject({ id: 2031, error: "MapBox : Erreur TimeOut sur createVignette" })
+        }
+        reject({ id: 2033, error: "MapBox : Erreur Promesse sur createVignette" })
+      })
   })
 }
 
@@ -131,25 +148,41 @@ export const createVignette = (nbPts, lineString, departLat, departLong, arrivee
 export const getCommune = (lat, long, accessToken) => {
   return new Promise((resolve, reject) => {
     const url = `https://api.mapbox.com/search/geocode/v6/reverse?longitude=${long}&latitude=${lat}&access_token=${accessToken}`
+    //console.log(url)
     fetch(url, { method: 'GET', signal: AbortSignal.timeout(1000) })
-      .then(repHttp => {
+      .then(repHttp => { // On a recu
         if (repHttp.ok)
           return repHttp.json()
         else {
-          const e = new Error(`getCommune, Réponse status: ${repHttp.status}`)
-          e.name = 'httpError'
-          throw e
+          switch (repHttp.status) {
+            case 401: // Err dans le token
+              reject({ id: 2005, error: "MapBox : Erreur Token sur getCommune !" })
+              break;
+            case 422: // Err dans le coordonnées
+              reject({ id: 2006, error: "Mapbox : Erreur de coordonnées sur getCommune !" })
+              break;
+          }
+          reject({ id: 2007, error: "MapBox : Erreur indéterminée sur getCommune !" })
         }
       })
       .then((repJson) => {
-        const commune = repJson.features.find(feature => feature.properties.feature_type === "place").properties.name
-        /**
-         * @todo : Faire un test avec une erreur dans le json
-         */
-        resolve({ commune: commune })
+        if (repJson.features.lenght !== 0) {
+          const commune = repJson.features.find(feature => feature.properties.feature_type === "place").properties.name
+          resolve({ commune: commune })
+        } else {
+          reject({ id: 2009, error: "MapBox : La commune de départ n'a pas été trouvée !" })
+        }
       })
-      .catch(error => [
-        reject(error)
-      ])
+      .catch(err => {
+        console.error(`getCommune : ${err}`)
+        if (`${err}`.includes("Timeout")) {          // On traite l’erreur du fetch (Time Out)
+          reject({ id: 2001, error: "MapBox : TimeOut sur getCommune !" })
+        }
+        if (`${err}`.includes("SyntaxError: JSON.parse")) {
+          reject({ id: 2002, error: "MapBox : Format JSON sur getCommune !" })
+        }
+        reject({ id: 2003, error: "MapBox : Erreur indéterminée sur getCommune !" })
+
+      })
   })
 }

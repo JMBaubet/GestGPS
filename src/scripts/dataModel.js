@@ -4,17 +4,16 @@
 
 import fs from 'fs'
 import * as dotenv from 'dotenv'
+import haversine from 'haversine-distance'  // pour calculer la distance entre 2 points
 import { v6 as uuidv6 } from 'uuid'
 import { zpad } from './utils.js'
 
 dotenv.config()
 const dataDirectory = process.env.DATA_DIRECTORY
-const configFile = process.env.CONFIG_FILE
+const fichier = process.env.CONFIG_FILE
 
-const fichier = `${dataDirectory}${configFile}`
-
+let peutEtrePresent = 0
 let objet = {}
-
 
 /**
  * 
@@ -23,60 +22,89 @@ let objet = {}
  *              {commune: string}, 
  *              {status: string},
  *              {long: number, lat: number},
- *              {traceur: string}]} data 
+ *              {traceur: string}]} newCircuit 
  * @returns {promises<{idTrace: <number>, isPresent: <boolean>}>}
  */
-export const addTrace = (data) => {
+export const addCircuit2dataModel = (newCircuit) => {
   return new Promise((resolve, reject) => {
-    let buffer
-    try {
-      //console.log(fichier)
-      buffer = fs.readFileSync(fichier)
-    } catch (err) {
-      if (err.code === 'ENOENT') {
-        //console.error('File not found!');
-        const e = new Error(`${fichier}`)
-        e.name = 'File not Found'
-        reject(e)
-      } else {
-        throw err;
-      }
-    }
+    fs.promises.readFile(fichier, { encoding: 'utf8' })
+      .then((buffer, err) => {
+        try {
+          objet = JSON.parse(buffer.toString())
+        } catch (err) {
+          console.error(`addCircuit2dataModel : Erreur lecture JSON : ${err}`)
+          reject({ id: 2068, error: `addCircuit2dataModel, json : ${err}` })
+        }
 
-    try {
-      objet = JSON.parse(buffer)
-      let sommet = { altitude: data[0].ptCulminant, km: data[0].distSommet }
-      const horodatage = new Date()
-      let circuit = {
-        circuitId: 0,
-        nom: data[1].nom,
-        villeDepart: getIdCommune(data[2].commune),
-        traceur: getIdTraceur(data[5].traceur),
-        editeur: data[1].editeurId,
-        url: data[1].url,
-        distance: data[0].distance,
-        denivele: data[0].denivele,
-        depart: data[4],
-        sommet: sommet,
-        isoDateTime: horodatage.toISOString()
-      }
-      console.log(`dataModel.js : addTrace() : avant appel de addCircuit`)
-      const retourAddCircuit = addCircuit(circuit)
-      console.log(`dataModel.js : addTrace() : après appel de addCircuit`)
+        newCircuit.traceur = getIdTraceur(newCircuit.traceur, objet)
+        newCircuit.villeDepart = getIdCommune(newCircuit.villeDepart, objet)
 
-      // Il faut retourner l'Id du circuit créé , 
 
-      if (retourAddCircuit.circuitId !== 0) {
-        fs.writeFileSync(fichier, JSON.stringify(objet))
-        // Il faut  archiver la vignette et le fichier GEOjson
-      }
-      resolve(retourAddCircuit)
-    } catch (e) {
-      console.error(`dataModel.js : addTrace() : Erreur : ${e}`)
-      reject(e)
-    }
+        for (let key = 0; key < objet.circuits.length; key++) {
+          if (newCircuit.url === objet.circuits[key].url) {
+            console.warn(`dataModel.js : addCircuit2dataModel : on a la même URL de trace`)
+            return reject({ id: 2061, error: `Circuit déjà présent !` })
+          }
+          if (newCircuit.nom === objet.circuits[key].nom) {
+            // console.warn(`dataModel.js : addCircuit() : on a le même nom de circuit`)
+            peutEtrePresent = 1
+            break;
+          }
+          // // Si les coordonnées de départ sont trop eloignées on passe à l'occurence suivante
+          if (haversine({ lat: newCircuit.depart.lat, lon: newCircuit.depart.lon },
+            { lat: objet.circuits[key].depart.lat, lon: objet.circuits[key].depart.lon }) > 250) {
+            continue
+          }
+          // Si on a plus de 5 km d'écart sur la distance on passe à l'occurence suivante
+          else if (Math.abs(newCircuit.distance - objet.circuits[key].distance) > 5) {
+            // console.warn(`dataModel.js : addCircuit() : distances > 5 km, idCircuit : ${key}`)
+            continue
+          }
+          // Si le point culminant à plus de 10 m d'écart on passe à l'occurence suivante
+          else if (Math.abs(newCircuit.sommet.altitude - objet.circuits[key].sommet.altitude) > 10) {
+            // console.warn(`dataModel.js : addCircuit() : D+  > 10 m, idCircuit : ${key}`)
+            continue
+          }
+          // Si le point culminant se situe à moins de 5 km d'écart on passe à l'occurence suivante
+          else if (Math.abs(newCircuit.sommet.km - objet.circuits[key].sommet.km) > 5) {
+            // console.warn(`dataModel.js : addCircuit() : sommets  > 5 km, idCircuit : ${key}`)            console.log("distanceSommet")
+            continue
+          }
+          else {
+            peutEtrePresent = 2
+            console.warn("Circuit probablement déja présent !")
+            break;
+          }
+
+        }
+
+        // On est prêt a insérer le nouveau circuit
+        const circuitIndex = objet.indexCircuits + 1
+        // console.log(`dataModel.js : addCircuit : circuitIndex = ${circuitIndex}`)
+        newCircuit.circuitId = zpad(circuitIndex, 6)
+        objet.circuits.push(newCircuit)
+        objet.indexCircuits = circuitIndex
+
+        // Il faut enregistrer l'objet dans dataModel.json
+        fs.promises.writeFile(fichier, JSON.stringify(objet))
+          .then(() => {
+            resolve({ circuitId: circuitIndex, peutEtrePresent: peutEtrePresent })
+          })
+          .catch((err) => {
+            console.error("addCircuit2dataModel: Erreur d'ecriture")
+            reject({ id: 2067, error: `addCircuit2dataModel, Ecriture  dataModel.json : ${err}` })
+          })
+      })
+      .catch((err) => { //Read fichier datModel.json
+        console.error(`addCircuit2dataModel, erreur : ${err.message}`)
+        reject({ id: 2069, error: `Erreur lecture dataModel.json : ${err}` })
+      })
   })
 }
+
+
+
+
 
 /**
  * Retourne l'Id de la commune. 
@@ -89,14 +117,12 @@ function getIdCommune(commune) {
   let key = 0
   console.log(`dataModel.js : getIdCommune : ${commune}`)
   for (key = 0; key < objet.villes.length; key++) {
-    console.log(objet.villes[key].nom)
     if (objet.villes[key].nom === commune) {
       return objet.villes[key].id
     }
   }
   const id = uuidv6()
   objet.villes.push({ id: id, nom: commune })
-  //fs.writeFileSync(fichier, JSON.stringify(objet))
   return id
 }
 
@@ -116,53 +142,7 @@ function getIdTraceur(traceur) {
   }
   const id = uuidv6()
   objet.traceurs.push({ id: id, nom: traceur })
-  //fs.writeFileSync(fichier, JSON.stringify(objet))
   return id
 }
 
-function addCircuit(circuit) {
-  // On verifie grossièrement que le circuit n'est pas déja présent.
-  console.log("dataModel.js : addCircuit")
 
-  let isPresent = false
-  for (let key = 1; key < objet.circuits.length; key++) {
-    if (circuit.nom === objet.circuits[key].nom) {
-      // console.warn(`dataModel.js : addCircuit() : on a le même nom de circuit`)
-      return { circuitId: 0, isPresent: true }
-    }
-    if (circuit.url === objet.circuits[key].url) {
-      // console.warn(`dataModel.js : addCircuit() : on a la même URL de trace`)
-      return { circuitId: 0, isPresent: true }
-    }
-    // // Si les coordonnées de départ sont trop eloignées on passe à l'occurence suivante
-    else if ((Math.round(circuit.depart.lon * 100) !== Math.round(objet.circuits[key].depart.lon * 100)) ||
-      (Math.round(circuit.depart.lat * 100) !== Math.round(objet.circuits[key].depart.lat * 100))) {
-      // console.warn(`dataModel.js : addCircuit() : departs éloignés, idCircuit : ${key}`)
-      continue
-    }
-    // Si on a plus de 5 km d'écart sur la distance on passe à l'occurence suivante
-    else if (Math.abs(circuit.distance - objet.circuits[key].distance) > 5) {
-      // console.warn(`dataModel.js : addCircuit() : distances > 5 km, idCircuit : ${key}`)
-      continue
-    }
-    // Si le point culminant à plus de 10 m d'écart on passe à l'occurence suivante
-    else if (Math.abs(circuit.sommet.altitude - objet.circuits[key].sommet.altitude) > 10) {
-      // console.warn(`dataModel.js : addCircuit() : D+  > 10 m, idCircuit : ${key}`)
-      continue
-    }
-    // Si le point culminant se situe à moins de 5 km d'écart on passe à l'occurence suivante
-    else if (Math.abs(circuit.sommet.km - objet.circuits[key].sommet.km) > 5) {
-      // console.warn(`dataModel.js : addCircuit() : sommets  > 5 km, idCircuit : ${key}`)
-      continue
-    }
-    else {
-      isPresent = true
-      console.warn("Circuit probablement déja présent !")
-    }
-  }
-  const circuitId = objet.circuits.length
-  console.log(`dataModel.js : addCircuit : circuitId = ${circuitId}`)
-  circuit.circuitId = zpad(circuitId, 6)
-  objet.circuits.push(circuit)
-  return { circuitId: circuitId, isPresent: isPresent }
-}

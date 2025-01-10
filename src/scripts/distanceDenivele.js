@@ -1,5 +1,3 @@
-
-import { promises } from 'dns'
 import haversine from 'haversine-distance'  // pour calculer la distance entre 2 points
 
 
@@ -8,7 +6,7 @@ import haversine from 'haversine-distance'  // pour calculer la distance entre 2
  * @type {object}
  * @property {number} distance
  * @property {number} denivele
- * @property {number} ptCulminant
+ * @property {number} sommet
  * @property {number} distSommet
  */
 
@@ -43,11 +41,11 @@ export const getDistanceDPlus = (lineString) => {
       }
       distance = Number.parseFloat(distance / 1000).toFixed(2)
       distanceSommet = Number.parseFloat(distanceSommet / 1000).toFixed(2)
-      resolve({ distance: distance, denivele: denivele, ptCulminant: sommet, distSommet: distanceSommet })
+      resolve({ distance: distance, denivele: denivele, sommet: sommet, distSommet: distanceSommet })
     }
     catch (e) {
       console.error(`distanceDenivele: getDistanceDPlus: erreur: ${e} `)
-      reject(e)
+      reject({ id: 2059, error: `getDistanceDPlus : ${e} !` })
     }
   })
 }

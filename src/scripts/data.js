@@ -29,9 +29,8 @@ export const getEditeurUrl = (fileName, objetGpx) => {
           editeurId = 4
           break;
         default:
-          const e = new Error(`Editeur ${creator} non traité !`)
-          e.name = 'switchError'
-          reject(e)
+          console.error(`getEditeurUrl : Editeur ${creator} non traité !`)
+          reject({ id: 2041, error: `Editeur ${creator} non traité !` })
       }
 
       // extraction du nom de la trace dépend de l'editeur
@@ -45,10 +44,8 @@ export const getEditeurUrl = (fileName, objetGpx) => {
             nomTrace = objetGpx.gpx.trk[0].name[0]
           }
           catch {
-            codeRetour = codeRetour + 4
-            const e = new Error("les fichiers routes sont incompatibles !")
-            e.name = 'FormatError'
-            throw e
+            console.error(`getEditeurUrl : Fichier route de RideWithGps incompatible !`)
+            reject({ id: 2042, error: `Fichier route de RideWithGps incompatible !` })
           }
           break;
         case 4:   // OpenRunner le nom de la trace est précédé de son id 
@@ -57,9 +54,8 @@ export const getEditeurUrl = (fileName, objetGpx) => {
           nomTrace = tabNom[0]
           break;
         default:
-          const e = new Error(`EditeurId ${editeurId} inconnu !`)
-          e.name = 'switchError'
-          reject(e)
+          console.error(`getEditeurUrl : EditeurId ${editeurId} inconnu !`)
+          reject({ id: 2044, error: `EditeurId ${editeurId}  inconnu !` })
       }
 
       /** Extraction de l'URL dépend de l'editeur
@@ -83,19 +79,17 @@ export const getEditeurUrl = (fileName, objetGpx) => {
           urlOrigine = 'https://www.openrunner.com/route-details/' + myArrayBis[1]
           break;
         default:
-          const e = new Error(`EditeurId ${editeurId} inconnu !`)
-          e.name = 'switchError'
-          reject(e)
+          console.error(`getEditeurUrl : EditeurId ${editeurId} inconnu !`)
+          reject({ id: 2044, error: `EditeurId ${editeurId}  inconnu !` })
       }
       if (urlOrigine === undefined) {
-        console.error(`La variable urlOrigine n'est pas déterminée !`)
-        const e = new Error(`La variable urlOrigine n'est pas déterminée !`)
-        e.name = 'VarUndefined'
-        reject(e)
+        console.error(`getEditeurUrl : URL d'origine indéterminée !`)
+        reject({ id: 2044, error: `URL d'origine indéterminée` })
       }
       resolve({ editeur: editeur, editeurId: editeurId, nom: nomTrace, url: urlOrigine })
     } catch (e) {
-      reject(e)
+      console.error(`getEditeurUrl : ${e}`)
+      reject({ id: 2049, error: `Catch ${e} sur getEditeurURL` })
     }
   })
 }
