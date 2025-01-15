@@ -4,16 +4,11 @@ import * as dotenv from 'dotenv'
 import { createVignette, getCommune } from "./requestsMapbox.js"
 import { getDistanceDPlus } from "./distanceDenivele.js"
 import { getEditeurUrl } from "./data.js"
-import { addCircuit2dataModel } from "./dataModel.js"
-import { archiveDataCircuit } from "./archiveDataCircuit.js"
+import { addCircuit2dataModel, delCircuit2DataModel } from "./dataModel.js"
+import { archiveDataCircuit } from "./dataCircuit.js"
 
 dotenv.config()
 const dataDirectory = process.env.DATA_DIRECTORY
-
-// les variables globales
-let arriveeLat = 0                          // Latitude du point d'arrivée
-let arriveeLong = 0                         // longitude du point d'arrivée
-let ville = ""                              // Ville de départ. (Utilisée pour filtrer les traces)
 
 
 /**
@@ -28,22 +23,9 @@ export const decodeTraceGpx = (fichier, traceur) => {
   return new Promise((resolve, reject) => {
 
     // definition des variables pour mise à jour du fichier data.json
-    let codeRetour = 0
-    let creator = ""        // Identification du logiciel d'édition de la trace gpx
     let editeurId = 0       // Id de l'éditeur gpx
-    let editeur = ""        // Nom de l'diteur gpx
 
-    let url = ""            // Url de la trace d'origine (dépend de l'éditeur)
-    let nom = ""            // Nom de la trace
-    let organisation = ""   // Organisation créatrice de la trace (VCVE, Emotion-Bike, JMB...)
-    let latMin = 0          // Extrminté Nord de la trace
-    let latMax = 0          // Extémité Sud de la trace
-    let longMin = 0         // Extrémité Ouest de la trace
-    let longMax = 0         // Extrémité Est de la trace
-    let distance = 0        // Distance en m de la trace
-    let denivele = 0        // Dénivelé positif de la trace
     let trkpt = 0
-    let objetGpx = 0
     let lineString = ""
     let departLat = ""
     let departLong = ""
@@ -52,12 +34,26 @@ export const decodeTraceGpx = (fichier, traceur) => {
 
     const accessToken = process.env.VITE_MAPBOX_TOKEN
 
-    // Transformation du fichier gpx en objet javascript
     const parser = new xml2js.Parser()
-    fs.promises.readFile(fichier)
+
+    // Transformation du fichier gpx en objet javascript
+    fs.promises.readFile(fichier, 'utf8')
       .then((rep, err) => {
         parser.parseStringPromise(rep)
           .then((objetGpx) => {
+            // On verifie que l'on n'a pas un fichier de type Route
+            if (typeof (objetGpx.gpx.rte) === "object") {
+              console.error(`decodeTraceGpx :  Fichier type route imcompatible !`)
+              reject({ id: 2104, error: `Fichier de type route incompatible !` })
+            }
+
+            // On verifie que l'élévation est bien présente dans le fichier gpx
+            // Dans le cas de karoo ce n'est pas le cas
+            if (typeof (objetGpx.gpx.trk[0].trkseg[0].trkpt[0].ele) === "undefined") {
+              console.error(`decodeTraceGpx :  Fichier gpx imcompatible !`)
+              reject({ id: 2103, error: `Fichier incompatible !` })
+            }
+
             // extraction des points de passage
             trkpt = objetGpx.gpx.trk[0].trkseg[0].trkpt
 
@@ -151,29 +147,34 @@ export const decodeTraceGpx = (fichier, traceur) => {
                         resolve(result)
                       })
                       .catch((err) => {
-                        reject(err)
+                        // Dans ce cas il faut supprimer le circuit dans dataModel.json
+                        delCircuit2DataModel(result.circuitId)
+                          .then(() => {
+                            reject(err)
+                          })
+                          .catch((err) => {
+                            reject(err)
+                          })
                       })
                   })
                   .catch((err) => {
-                    console.error(`catch addCircuit2dataModel : ${err.error}`)
                     reject(err)
                   })
 
               })
               .catch((err) => {
-                console.error(`catch parser : ${err}`)
                 reject(err)
               })
 
           })
           .catch((err) => {
-            console.error(`catch parser : ${err}`)
-            reject(err)
+            console.error(`decodeTraceGpx : ${err}`)
+            reject({ id: 2102, error: `Erreur XML dans le fichier !` })
           })
       })
       .catch((err) => {
-        console.error(`catch readFile: ${err}`)
-        reject(err)
+        console.error(`decodeTraceGpx : ${err}`)
+        reject({ id: 2101, error: `Erreur lecture fichier !` })
       })
 
   })

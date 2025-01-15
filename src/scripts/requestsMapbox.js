@@ -13,7 +13,7 @@ import simplify from 'simplify-geojson'     // Pour réduire la taille de l'URL
  - pin-s-d+00FF00(-122.46589,37.77343),  //pin-s pour afficher le point de départ avec la lettre D, la couleur et les coordonnées (lon, lat)
  - pin-s-racetrack+f00(-122.42816,37.75965), // pins-s pour afficher le point d'arrivée avec un drapeau, ma couleur et les coordonnées (lon, lat)
  - path-5+00838F-0.9(********** chaine encodée *********) // la trace avec la largeur, la couleur et l'opacité, puis les coordonnées
- - /auto/500x300@2x?access_token=???      // Les coordonnées sont calculés automatiquement, la taille de la vignette, puis notre token
+ - /auto/500x300@2x?access_token=???      // Les coordonnées sont calculées automatiquement, la taille de la vignette, puis notre token
  -   --output nom du fichier ?
 */
 export const createVignette = (nbPts, lineString, departLat, departLong, arriveeLat, arriveeLong, accessToken) => {
@@ -29,6 +29,8 @@ export const createVignette = (nbPts, lineString, departLat, departLong, arrivee
     const vignetteTackWidth = process.env.VIGNETTE_TRACK_WIDTH                    // Epaisseur de la trace en pixel   
     const vignetteTrackCouleur = process.env.VIGNETTE_TRACK_COULEUR               // Couleur de la trace dur 3 digits
     const vignetteTrackOpacite = process.env.VIGNETTE_TRACK_OPACITE               // Opacité de la trace
+
+    const tmpDirectory = process.env.TMP_DIRECTORY
 
     // On optimise le nombre de points pour ne pas dépasser 8Ko sur l'URL 
     // Si nombre de point > 4000 tolérance de simplify = 0.0005
@@ -67,7 +69,8 @@ export const createVignette = (nbPts, lineString, departLat, departLong, arrivee
 
     // On vérifie avant de lancer la requete que l'URL n'est pas trop longue
     if (urlEncode.length > 8100) {
-      reject({ id: 2024, error: "MapBox : URL trop longue !" })
+      console.error(`MapBox : createVignette : URL trop longue !`)
+      reject({ id: 2024, error: "URL trop longue !" })
     }
     fetch(urlEncode, { method: 'GET', signal: AbortSignal.timeout(5000) })
       // On attend la réponse du serveur MapBox 
@@ -75,58 +78,60 @@ export const createVignette = (nbPts, lineString, departLat, departLong, arrivee
         if (!repHttp.ok) {
           switch (repHttp.status) {
             case 401: // Err dans le token
-              reject({ id: 2025, error: "MapBox : Erreur Token sur createVignette !" })
+              console.error(`MapBox: Erreur Token sur createVignette !`)
+              reject({ id: 2025, error: "Erreur Token !" })
               break;
             case 422: // Err dans le coordonnées
-              reject({ id: 2026, error: "MapBox : Erreur de coordonnées sur createVignette !" })
+              repHttp.json().then(reponse => {
+                if ((reponse.message.indexOf("marker") !== -1) || (reponse.message.indexOf("Symbol") !== -1)) {
+                  console.error(`MapBox: Erreur de Marker sur createVignette !`)
+                  reject({ id: 2028, error: "Erreur de marker !" })
+                } else {
+                  console.error(`MapBox: Erreur de coordonnées sur createVignette !`)
+                  reject({ id: 2026, error: "Erreur de coordonnées !" })
+                }
+              })
               break;
+            default:
+              console.error(`MapBox: createVignette : Code erreur http ${repHttp.status}`)
+              reject({ id: 2027, error: `Erreur http ${repHttp.status} !` })
           }
-          reject({ id: 2027, error: "MapBox : Erreur indéterminée sur createVignette!" })
-        }
-        // L'image PNG est normalement retounée dans le body sous forme d'un buffer
-        return repHttp.arrayBuffer();
-      })
-      .then(imageBuffer => {
-        // On teste si on a une image png dans le buffer
-        // Si un problème s'est produit c'est un text qui est dans le body
-        if (isPng(new Uint8Array(imageBuffer))) {
-          // The 'imageBuffer' now contains the binary data of the image.
-          // On enregistre le fichier png
-
-          // const fsPromises = require('fs').promises; // or require('fs/promises') in v10.0.0
-          // fsPromises.writeFile(ASIN + '.json', JSON.stringify(results))
-          //   .then(() => {
-          //     console.log('JSON saved');
-          //   })
-          //   .catch(er => {
-          //     console.log(er);
-          //   });
-
-          fs.promises.writeFile('./src/assets/tmp/vignette.png', Buffer.from(imageBuffer))
-            .then(() => {
-              resolve({ status: "OK" })
+        } else {
+          // L'image PNG est normalement retounée dans le body sous forme d'un buffer
+          repHttp.arrayBuffer()
+            .then(imageBuffer => {
+              // On teste si on a une image png dans le buffer
+              // Si un problème s'est produit c'est un text qui est dans le body
+              if (isPng(new Uint8Array(imageBuffer))) {
+                // The 'imageBuffer' now contains the binary data of the image.
+                fs.promises.writeFile(tmpDirectory + 'vignette.png', Buffer.from(imageBuffer))
+                  .then(() => {
+                    resolve({ status: "OK" })
+                  })
+                  .catch((err) => {
+                    console.error(`Mapbox : createVignette : ${err}.`)
+                    reject({ id: 2032, error: "Enregistrement de la vignette !" })
+                  })
+              } else {
+                console.error(`Mapbox : createVignette : Le format attendu n'est pas un png !`)
+                reject({ id: 2029, error: "Le format attendu n'est pas un png !" })
+              }
             })
             .catch((err) => {
-              reject({ id: 2032, error: "MapBox : La vignette reçue n'a pas pu être enregistrée!" })
-            })
+              console.error(`MapBox: createVignette : ${err}`)
+              reject({ id: 2034, error: "Traitement image !" })
 
-          // fs.writeFile('./src/assets/tmp/vignette.png', Buffer.from(imageBuffer), err => {
-          //   if (err) {
-          //     reject(err)
-          //   } else {
-          //     resolve({ status: "OK" })
-          //   }
-          // })
-        } else {
-          reject({ id: 2029, error: "MapBox : La vignette reçue n'est pas un .png !" })
+            })
         }
       })
       .catch(err => {
-        console.error(`MapBox : ${err}`)
         if (`${err}`.includes("Timeout")) {          // On traite l’erreur du fetch (Time Out)
-          reject({ id: 2031, error: "MapBox : Erreur TimeOut sur createVignette" })
+          console.log(`MapBox : createVignette : TimeOut !`)
+          reject({ id: 2031, error: "TimeOut mapbox !" })
+        } else {
+          console.error(`MapBox : createVignette : ${err}`)
+          reject({ id: 2033, error: "Erreur fetch vers mapbox !" })
         }
-        reject({ id: 2033, error: "MapBox : Erreur Promesse sur createVignette" })
       })
   })
 }
@@ -150,38 +155,47 @@ export const getCommune = (lat, long, accessToken) => {
     const url = `https://api.mapbox.com/search/geocode/v6/reverse?longitude=${long}&latitude=${lat}&access_token=${accessToken}`
     //console.log(url)
     fetch(url, { method: 'GET', signal: AbortSignal.timeout(1000) })
-      .then(repHttp => { // On a recu
+      .then((repHttp) => { // On a recu
         if (repHttp.ok)
-          return repHttp.json()
+          repHttp.json()
+            .then((repJson) => {
+              if (repJson.features.length !== 0) {
+                const commune = repJson.features.find(feature => feature.properties.feature_type === "place").properties.name
+                resolve({ commune: commune })
+              } else {
+                console.error(`MapBox: getCommune : La commune de départ n'a pas pu être trouvée !`)
+                reject({ id: 2009, error: "Commune de départ introuvable !" })
+              }
+            })
+            .catch((err) => {
+              console.error(`MapBox: getCommune : ${err}`)
+              reject({ id: 2002, error: "Problème format JSON !" })
+            })
+
         else {
           switch (repHttp.status) {
             case 401: // Err dans le token
-              reject({ id: 2005, error: "MapBox : Erreur Token sur getCommune !" })
+              console.error(`MapBox: Erreur Token sur getCommune !`)
+              reject({ id: 2005, error: "Erreur Token !" })
               break;
             case 422: // Err dans le coordonnées
-              reject({ id: 2006, error: "Mapbox : Erreur de coordonnées sur getCommune !" })
+              console.error(`MapBox: Erreur de coordonnées sur getCommune !`)
+              reject({ id: 2006, error: "Erreur de coordonnées !" })
               break;
+            default:
+              console.error(`MapBox: getCommune : Code erreur http ${repHttp.status}`)
+              reject({ id: 2007, error: `Erreur http ${repHttp.status} !` })
           }
-          reject({ id: 2007, error: "MapBox : Erreur indéterminée sur getCommune !" })
         }
       })
-      .then((repJson) => {
-        if (repJson.features.lenght !== 0) {
-          const commune = repJson.features.find(feature => feature.properties.feature_type === "place").properties.name
-          resolve({ commune: commune })
-        } else {
-          reject({ id: 2009, error: "MapBox : La commune de départ n'a pas été trouvée !" })
-        }
-      })
-      .catch(err => {
-        console.error(`getCommune : ${err}`)
+      .catch((err) => {
         if (`${err}`.includes("Timeout")) {          // On traite l’erreur du fetch (Time Out)
-          reject({ id: 2001, error: "MapBox : TimeOut sur getCommune !" })
+          console.error(`MapBox : getCommune : TimeOut !`)
+          reject({ id: 2001, error: "TimeOut mapbox !" })
+        } else {
+          console.error(`MapBox : getCommune : ${err}`)
+          reject({ id: 2003, error: "Erreur fetch vers mapbox!" })
         }
-        if (`${err}`.includes("SyntaxError: JSON.parse")) {
-          reject({ id: 2002, error: "MapBox : Format JSON sur getCommune !" })
-        }
-        reject({ id: 2003, error: "MapBox : Erreur indéterminée sur getCommune !" })
 
       })
   })

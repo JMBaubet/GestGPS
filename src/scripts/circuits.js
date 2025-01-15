@@ -28,30 +28,7 @@ export const getCircuits = (page, nombre) => {
 }
 
 
-// export const getCircuits = (page, nombre, ville) => {
-//   return new Promise((resolve, reject) => {
-//     try {
-//       getIdVille(ville)
-//         .then(id => {
-//           console.log(`circuits.js ville :  ${id})}`)
-//           objet = JSON.parse(fs.readFileSync(fichier))
-//           // #TODO On doit filtrer la ville 
-//           //const villeSelect  = objet.filter(circuit => objet.circuits.villeDepart === id)
-//           resolve({
-//             circuits: objet.circuits.sort().reverse().slice((page - 1) * nombre, page * nombre),
-//             totalCircuits: objet.circuits.length
-//           })
-//         })
-//         .catch(err => {
-//           console.error(`Erreur : ${err}`)
-//         })
-//     } catch (e) {
-//       console.error(`getCircuits Erreur : ${e}`)
-//       reject(e)
-//     }
-//   })
 
-// }
 
 export const getcircuitsMinMax = () => {
   return new Promise((resolve, reject) => {

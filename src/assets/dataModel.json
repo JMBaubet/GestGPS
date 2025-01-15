@@ -1,1 +1,295 @@
-{"description":"fichier de configuration ","auteur":"Jean-Marc Baubet","commentaires":"Fichier JSON d'exemple pour la recherche simplifiée des circuits trace GPS.","villes":[{"id":"1efbc5e4-3b7c-6740-b757-868676e63193","nom":"Magny-le-Hongre"},{"id":"1efbc5e7-9eae-6680-9111-f212309e97a4","nom":"Laguiole"},{"id":"1efbc5e8-1177-62c0-a944-81711a2887ef","nom":"Altea"},{"id":"1efbc5e8-6e61-6cb0-98e5-28e908a21c9b","nom":"Calp"},{"id":"1efbc5e8-e6f6-6ef0-80a3-d62dbc0fbec0","nom":"Nice"},{"id":"1efbc6d8-76b0-6650-a84b-497b01794172","nom":"Moustiers-Sainte-Marie"},{"id":"1efbdf41-bb56-6f80-bbc0-331d3ec39669","nom":"Urdos"}],"traceurs":[{"id":"1efbc6ed-9f4f-6ab0-ab48-2c70df375988","nom":" "},{"id":"1efbc6ee-27ef-6410-9e74-6aba1319c321","nom":"VCVE"},{"id":"1efbc6ee-8ff6-61d0-abf9-d343a39b6ebd","nom":"Emotion Bike"},{"id":"1efbc6ee-e773-6930-bf0d-be71a743a100","nom":"JM Baubet"},{"id":"1efbc6ef-36ac-6560-9463-9aa5a8bd41b0","nom":"undefined"}],"editeurs":[" ","Strava","Garmin","RideWithGps","OpenRunner"],"indexCircuits":13,"circuits":[{"circuitId":"000000","nom":"test_strava OK","villeDepart":"1efbc5e8-1177-62c0-a944-81711a2887ef","traceur":"1efbc6ee-e773-6930-bf0d-be71a743a100","editeur":1,"url":"https://www.strava.com/routes/3273755882380524710","distance":"8.98","denivele":122,"depart":{"lon":"-0.03851","lat":"38.60945"},"sommet":{"altitude":126,"km":"6.81"},"isoDateTime":"2024-12-09T14:21:17.414Z"},{"circuitId":"000001","nom":"2022 Calpe oct antennes","villeDepart":"1efbc5e8-6e61-6cb0-98e5-28e908a21c9b","traceur":"1efbc6ee-e773-6930-bf0d-be71a743a100","editeur":4,"url":"https://www.openrunner.com/route-details/15488524","distance":"42.14","denivele":775,"depart":{"lon":"0.07262","lat":"38.65000"},"sommet":{"altitude":421,"km":"17.94"},"isoDateTime":"2024-12-09T14:21:42.327Z"},{"circuitId":"000002","nom":"2022 Calpe sélection oct","villeDepart":"1efbc5e8-6e61-6cb0-98e5-28e908a21c9b","traceur":"1efbc6ee-8ff6-61d0-abf9-d343a39b6ebd","editeur":4,"url":"https://www.openrunner.com/route-details/15488684","distance":"74.33","denivele":1354,"depart":{"lon":"0.07256","lat":"38.64998"},"sommet":{"altitude":633,"km":"33.98"},"isoDateTime":"2024-12-11T14:48:32.963Z"},{"circuitId":"000003","nom":"Bosses du 77bis","villeDepart":"1efbc5e4-3b7c-6740-b757-868676e63193","traceur":"1efbc6ee-e773-6930-bf0d-be71a743a100","editeur":3,"url":"https://ridewithgps.com/routes/38852973","distance":"70.23","denivele":817,"depart":{"lon":"2.81636","lat":"48.86435"},"sommet":{"altitude":150,"km":"41.94"},"isoDateTime":"2024-12-11T14:50:09.297Z"},{"circuitId":"000004","nom":"2024 laguiole 126 pont","villeDepart":"1efbc5e7-9eae-6680-9111-f212309e97a4","traceur":"1efbc6ee-8ff6-61d0-abf9-d343a39b6ebd","editeur":4,"url":"https://www.openrunner.com/route-details/19103491","distance":"126.53","denivele":2032,"depart":{"lon":"2.86039","lat":"44.69215"},"sommet":{"altitude":1297,"km":"116.47"},"isoDateTime":"2024-12-11T19:50:48.094Z"},{"circuitId":"000005","nom":"Etape du Tour de France 2024 - Nice > Col de la Couillole","villeDepart":"1efbc5e8-e6f6-6ef0-80a3-d62dbc0fbec0","traceur":"1efbc6ef-36ac-6560-9463-9aa5a8bd41b0","editeur":1,"url":"https://www.strava.com/routes/3151949565008953956","distance":"138.85","denivele":4507,"depart":{"lon":"7.27447","lat":"43.69780"},"sommet":{"altitude":1670,"km":"138.85"},"isoDateTime":"2024-12-13T14:28:36.480Z"},{"circuitId":"000006","nom":"95 du nord au sud","villeDepart":"1efbc5e4-3b7c-6740-b757-868676e63193","traceur":"1efbc6ee-e773-6930-bf0d-be71a743a100","editeur":1,"url":"https://www.strava.com/routes/3193884060234529088","distance":"95.09","denivele":455,"depart":{"lon":"2.81661","lat":"48.86461"},"sommet":{"altitude":162,"km":"17.34"},"isoDateTime":"2024-12-17T11:52:51.100Z"},{"circuitId":"000007","nom":"2025 greoux verdon 90","villeDepart":"1efbc6d8-76b0-6650-a84b-497b01794172","traceur":"1efbc6ee-8ff6-61d0-abf9-d343a39b6ebd","editeur":4,"url":"https://www.openrunner.com/route-details/19730076","distance":"89.87","denivele":2472,"depart":{"lon":"6.21819","lat":"43.84480"},"sommet":{"altitude":1209,"km":"21.44"},"isoDateTime":"2024-12-17T11:53:28.116Z"},{"circuitId":"000008","nom":"Multien 8h30 G1","villeDepart":"1efbc5e4-3b7c-6740-b757-868676e63193","traceur":"1efbc6ee-27ef-6410-9e74-6aba1319c321","editeur":4,"url":"https://www.openrunner.com/route-details/undefined","distance":"86.97","denivele":476,"depart":{"lon":"2.81351","lat":"48.86385"},"sommet":{"altitude":177,"km":"59.81"},"isoDateTime":"2024-12-17T12:19:32.613Z"},{"circuitId":"000009","nom":"2024 calpe configue 127km","villeDepart":"1efbc5e8-6e61-6cb0-98e5-28e908a21c9b","traceur":"1efbc6ef-36ac-6560-9463-9aa5a8bd41b0","editeur":4,"url":"https://www.openrunner.com/route-details/18127943","distance":"129.48","denivele":2425,"depart":{"lon":"0.07272","lat":"38.65093"},"sommet":{"altitude":972,"km":"82.37"},"isoDateTime":"2024-12-18T20:57:06.382Z"},{"circuitId":"000010","nom":"ViAragon#1 ","villeDepart":"1efbdf41-bb56-6f80-bbc0-331d3ec39669","traceur":"1efbc6ef-36ac-6560-9463-9aa5a8bd41b0","editeur":4,"url":"https://www.openrunner.com/route-details/16587328","distance":"46.45","denivele":995,"depart":{"lon":"-0.55450","lat":"42.87212"},"sommet":{"altitude":1636,"km":"14.80"},"isoDateTime":"2024-12-19T10:29:20.631Z"},{"circuitId":"000011","nom":"2024 laguiole 142 aubrac","villeDepart":"1efbc5e7-9eae-6680-9111-f212309e97a4","traceur":"1efbc6ef-36ac-6560-9463-9aa5a8bd41b0","editeur":4,"url":"https://www.openrunner.com/route-details/19103779","distance":"143.70","denivele":2136,"depart":{"lon":"2.86026","lat":"44.69212"},"sommet":{"altitude":1374,"km":"15.77"},"isoDateTime":"2024-12-20T15:32:13.024Z"},{"circuitId":"000012","nom":"2024 laguiole 69km","villeDepart":"1efbc5e7-9eae-6680-9111-f212309e97a4","traceur":"1efbc6ef-36ac-6560-9463-9aa5a8bd41b0","editeur":4,"url":"https://www.openrunner.com/route-details/19103370","distance":"69.96","denivele":1066,"depart":{"lon":"2.86036","lat":"44.69218"},"sommet":{"altitude":1359,"km":"13.40"},"isoDateTime":"2024-12-20T15:37:18.713Z"},{"circuitId":"000013","nom":"100Km vers le nord","villeDepart":"1efbc5e4-3b7c-6740-b757-868676e63193","traceur":"1efbc6ef-36ac-6560-9463-9aa5a8bd41b0","editeurId":1,"url":"https://www.strava.com/routes/3271207506140373930","distance":"103.29","denivele":760,"depart":{"lon":"2.81600","lat":"48.86489"},"sommet":{"altitude":172,"km":"66.36"},"isoDateTime":"2025-01-10T15:52:05.648Z"}]}
+{
+  "description": "fichier de configuration ",
+  "auteur": "Jean-Marc Baubet",
+  "commentaires": "Fichier JSON d'exemple pour la recherche simplifiée des circuits trace GPS.",
+  "villes": [
+    {
+      "id": "1efbc5e4-3b7c-6740-b757-868676e63193",
+      "nom": "Magny-le-Hongre"
+    },
+    {
+      "id": "1efbc5e7-9eae-6680-9111-f212309e97a4",
+      "nom": "Laguiole"
+    },
+    {
+      "id": "1efbc5e8-1177-62c0-a944-81711a2887ef",
+      "nom": "Altea"
+    },
+    {
+      "id": "1efbc5e8-6e61-6cb0-98e5-28e908a21c9b",
+      "nom": "Calp"
+    },
+    {
+      "id": "1efbc5e8-e6f6-6ef0-80a3-d62dbc0fbec0",
+      "nom": "Nice"
+    },
+    {
+      "id": "1efbc6d8-76b0-6650-a84b-497b01794172",
+      "nom": "Moustiers-Sainte-Marie"
+    },
+    {
+      "id": "1efbdf41-bb56-6f80-bbc0-331d3ec39669",
+      "nom": "Urdos"
+    }
+  ],
+  "traceurs": [
+    {
+      "id": "1efbc6ed-9f4f-6ab0-ab48-2c70df375988",
+      "nom": " "
+    },
+    {
+      "id": "1efbc6ee-27ef-6410-9e74-6aba1319c321",
+      "nom": "VCVE"
+    },
+    {
+      "id": "1efbc6ee-8ff6-61d0-abf9-d343a39b6ebd",
+      "nom": "Emotion Bike"
+    },
+    {
+      "id": "1efbc6ee-e773-6930-bf0d-be71a743a100",
+      "nom": "JM Baubet"
+    },
+    {
+      "id": "1efbc6ef-36ac-6560-9463-9aa5a8bd41b0",
+      "nom": "undefined"
+    }
+  ],
+  "editeurs": [
+    " ",
+    "Strava",
+    "Garmin",
+    "RideWithGps",
+    "OpenRunner"
+  ],
+  "indexCircuits": 12,
+  "circuits": [
+    {
+      "circuitId": "000001",
+      "nom": "2022 Calpe oct antennes",
+      "villeDepart": "1efbc5e8-6e61-6cb0-98e5-28e908a21c9b",
+      "traceur": "1efbc6ee-e773-6930-bf0d-be71a743a100",
+      "editeur": 4,
+      "url": "https://www.openrunner.com/route-details/15488524",
+      "distance": "42.14",
+      "denivele": 775,
+      "depart": {
+        "lon": "0.07262",
+        "lat": "38.65000"
+      },
+      "sommet": {
+        "altitude": 421,
+        "km": "17.94"
+      },
+      "isoDateTime": "2024-12-09T14:21:42.327Z"
+    },
+    {
+      "circuitId": "000002",
+      "nom": "2022 Calpe sélection oct",
+      "villeDepart": "1efbc5e8-6e61-6cb0-98e5-28e908a21c9b",
+      "traceur": "1efbc6ee-8ff6-61d0-abf9-d343a39b6ebd",
+      "editeur": 4,
+      "url": "https://www.openrunner.com/route-details/15488684",
+      "distance": "74.33",
+      "denivele": 1354,
+      "depart": {
+        "lon": "0.07256",
+        "lat": "38.64998"
+      },
+      "sommet": {
+        "altitude": 633,
+        "km": "33.98"
+      },
+      "isoDateTime": "2024-12-11T14:48:32.963Z"
+    },
+    {
+      "circuitId": "000003",
+      "nom": "Bosses du 77bis",
+      "villeDepart": "1efbc5e4-3b7c-6740-b757-868676e63193",
+      "traceur": "1efbc6ee-e773-6930-bf0d-be71a743a100",
+      "editeur": 3,
+      "url": "https://ridewithgps.com/routes/38852973",
+      "distance": "70.23",
+      "denivele": 817,
+      "depart": {
+        "lon": "2.81636",
+        "lat": "48.86435"
+      },
+      "sommet": {
+        "altitude": 150,
+        "km": "41.94"
+      },
+      "isoDateTime": "2024-12-11T14:50:09.297Z"
+    },
+    {
+      "circuitId": "000004",
+      "nom": "2024 laguiole 126 pont",
+      "villeDepart": "1efbc5e7-9eae-6680-9111-f212309e97a4",
+      "traceur": "1efbc6ee-8ff6-61d0-abf9-d343a39b6ebd",
+      "editeur": 4,
+      "url": "https://www.openrunner.com/route-details/19103491",
+      "distance": "126.53",
+      "denivele": 2032,
+      "depart": {
+        "lon": "2.86039",
+        "lat": "44.69215"
+      },
+      "sommet": {
+        "altitude": 1297,
+        "km": "116.47"
+      },
+      "isoDateTime": "2024-12-11T19:50:48.094Z"
+    },
+    {
+      "circuitId": "000005",
+      "nom": "Etape du Tour de France 2024 - Nice > Col de la Couillole",
+      "villeDepart": "1efbc5e8-e6f6-6ef0-80a3-d62dbc0fbec0",
+      "traceur": "1efbc6ef-36ac-6560-9463-9aa5a8bd41b0",
+      "editeur": 1,
+      "url": "https://www.strava.com/routes/3151949565008953956",
+      "distance": "138.85",
+      "denivele": 4507,
+      "depart": {
+        "lon": "7.27447",
+        "lat": "43.69780"
+      },
+      "sommet": {
+        "altitude": 1670,
+        "km": "138.85"
+      },
+      "isoDateTime": "2024-12-13T14:28:36.480Z"
+    },
+    {
+      "circuitId": "000006",
+      "nom": "95 du nord au sud",
+      "villeDepart": "1efbc5e4-3b7c-6740-b757-868676e63193",
+      "traceur": "1efbc6ee-e773-6930-bf0d-be71a743a100",
+      "editeur": 1,
+      "url": "https://www.strava.com/routes/3193884060234529088",
+      "distance": "95.09",
+      "denivele": 455,
+      "depart": {
+        "lon": "2.81661",
+        "lat": "48.86461"
+      },
+      "sommet": {
+        "altitude": 162,
+        "km": "17.34"
+      },
+      "isoDateTime": "2024-12-17T11:52:51.100Z"
+    },
+    {
+      "circuitId": "000007",
+      "nom": "2025 greoux verdon 90",
+      "villeDepart": "1efbc6d8-76b0-6650-a84b-497b01794172",
+      "traceur": "1efbc6ee-8ff6-61d0-abf9-d343a39b6ebd",
+      "editeur": 4,
+      "url": "https://www.openrunner.com/route-details/19730076",
+      "distance": "89.87",
+      "denivele": 2472,
+      "depart": {
+        "lon": "6.21819",
+        "lat": "43.84480"
+      },
+      "sommet": {
+        "altitude": 1209,
+        "km": "21.44"
+      },
+      "isoDateTime": "2024-12-17T11:53:28.116Z"
+    },
+    {
+      "circuitId": "000008",
+      "nom": "Multien 8h30 G1",
+      "villeDepart": "1efbc5e4-3b7c-6740-b757-868676e63193",
+      "traceur": "1efbc6ee-27ef-6410-9e74-6aba1319c321",
+      "editeur": 4,
+      "url": "https://www.openrunner.com/route-details/undefined",
+      "distance": "86.97",
+      "denivele": 476,
+      "depart": {
+        "lon": "2.81351",
+        "lat": "48.86385"
+      },
+      "sommet": {
+        "altitude": 177,
+        "km": "59.81"
+      },
+      "isoDateTime": "2024-12-17T12:19:32.613Z"
+    },
+    {
+      "circuitId": "000009",
+      "nom": "2024 calpe configue 127km",
+      "villeDepart": "1efbc5e8-6e61-6cb0-98e5-28e908a21c9b",
+      "traceur": "1efbc6ef-36ac-6560-9463-9aa5a8bd41b0",
+      "editeur": 4,
+      "url": "https://www.openrunner.com/route-details/18127943",
+      "distance": "129.48",
+      "denivele": 2425,
+      "depart": {
+        "lon": "0.07272",
+        "lat": "38.65093"
+      },
+      "sommet": {
+        "altitude": 972,
+        "km": "82.37"
+      },
+      "isoDateTime": "2024-12-18T20:57:06.382Z"
+    },
+    {
+      "circuitId": "000010",
+      "nom": "ViAragon#1 ",
+      "villeDepart": "1efbdf41-bb56-6f80-bbc0-331d3ec39669",
+      "traceur": "1efbc6ef-36ac-6560-9463-9aa5a8bd41b0",
+      "editeur": 4,
+      "url": "https://www.openrunner.com/route-details/16587328",
+      "distance": "46.45",
+      "denivele": 995,
+      "depart": {
+        "lon": "-0.55450",
+        "lat": "42.87212"
+      },
+      "sommet": {
+        "altitude": 1636,
+        "km": "14.80"
+      },
+      "isoDateTime": "2024-12-19T10:29:20.631Z"
+    },
+    {
+      "circuitId": "000011",
+      "nom": "2024 laguiole 142 aubrac",
+      "villeDepart": "1efbc5e7-9eae-6680-9111-f212309e97a4",
+      "traceur": "1efbc6ef-36ac-6560-9463-9aa5a8bd41b0",
+      "editeur": 4,
+      "url": "https://www.openrunner.com/route-details/19103779",
+      "distance": "143.70",
+      "denivele": 2136,
+      "depart": {
+        "lon": "2.86026",
+        "lat": "44.69212"
+      },
+      "sommet": {
+        "altitude": 1374,
+        "km": "15.77"
+      },
+      "isoDateTime": "2024-12-20T15:32:13.024Z"
+    },
+    {
+      "circuitId": "000012",
+      "nom": "2024 laguiole 69km",
+      "villeDepart": "1efbc5e7-9eae-6680-9111-f212309e97a4",
+      "traceur": "1efbc6ef-36ac-6560-9463-9aa5a8bd41b0",
+      "editeur": 4,
+      "url": "https://www.openrunner.com/route-details/19103370",
+      "distance": "69.96",
+      "denivele": 1066,
+      "depart": {
+        "lon": "2.86036",
+        "lat": "44.69218"
+      },
+      "sommet": {
+        "altitude": 1359,
+        "km": "13.40"
+      },
+      "isoDateTime": "2024-12-20T15:37:18.713Z"
+    }
+  ]
+}

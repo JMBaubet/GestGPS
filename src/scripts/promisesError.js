@@ -51,7 +51,7 @@ export const traiteErreur = (json, alarmes) => {
     alarmes.value.push({
       id: json.id,
       type: 'error',
-      text: json.error,
+      text: `${json.id} : ${json.error}`,
       closable: true,
       icon: "mdi-alert-box-outline"
     })

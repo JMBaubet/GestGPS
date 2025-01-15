@@ -69,12 +69,6 @@ app.post('/api/GpxFile/:fileName/:traceur', (req, res) => {
     .then(retour => {
       console.log(`backend.js : Retour de la promise : ${retour.circuitId}, ${retour.peutEtrePresent}`)
 
-      /** Il faut : 
-       * - decoder le fichier                     // C Fait
-       * - mettre à jour le fichier json          // C fait 
-       * - archiver le fichier lineString.json dans l'appli   // A faire
-       * - archiver la vignette                   // A faire
-       * */
       res.setHeader('Content-Type', 'application/json')
       res.status(200)
       if (retour.circuitId === 0) {
@@ -86,9 +80,10 @@ app.post('/api/GpxFile/:fileName/:traceur', (req, res) => {
       }
     })
     .catch(err => {
-      console.error(`Erreur : ${err}`)
+      console.error(`backend.js : ${err.id}`)
       res.setHeader('Content-Type', 'application/json');
-      res.status(500).send({ id: 1010, error: `Le fichier ${req.params.fileName} n'a pas pu être traité !` })
+      //res.status(500).send({ id: 1010, error: `Le fichier ${req.params.fileName} n'a pas pu être traité !` })
+      res.status(500).send(err)
     })
 })
 

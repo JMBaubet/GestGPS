@@ -38,15 +38,7 @@ export const getEditeurUrl = (fileName, objetGpx) => {
         case 1:   // Strava
         case 2:   // Garmin
         case 3:   // RideWithGps
-          // Pour RideWithGPS le format route n'est pas compatible
-          // L'objet contient objetGpx.gpx.rte[0]
-          try {
-            nomTrace = objetGpx.gpx.trk[0].name[0]
-          }
-          catch {
-            console.error(`getEditeurUrl : Fichier route de RideWithGps incompatible !`)
-            reject({ id: 2042, error: `Fichier route de RideWithGps incompatible !` })
-          }
+          nomTrace = objetGpx.gpx.trk[0].name[0]
           break;
         case 4:   // OpenRunner le nom de la trace est précédé de son id 
           const nomLong = objetGpx.gpx.trk[0].name
@@ -84,12 +76,12 @@ export const getEditeurUrl = (fileName, objetGpx) => {
       }
       if (urlOrigine === undefined) {
         console.error(`getEditeurUrl : URL d'origine indéterminée !`)
-        reject({ id: 2044, error: `URL d'origine indéterminée` })
+        reject({ id: 2043, error: `URL d'origine indéterminée !` })
       }
       resolve({ editeur: editeur, editeurId: editeurId, nom: nomTrace, url: urlOrigine })
-    } catch (e) {
-      console.error(`getEditeurUrl : ${e}`)
-      reject({ id: 2049, error: `Catch ${e} sur getEditeurURL` })
+    } catch (err) {
+      console.error(`getEditeurUrl : ${err}`)
+      reject({ id: 2049, error: `Catch : ${err} sur getEditeurURL !` })
     }
   })
 }

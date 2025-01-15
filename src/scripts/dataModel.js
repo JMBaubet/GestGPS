@@ -2,7 +2,7 @@
  * exploitation du fichier json dataModel
  */
 
-import fs from 'fs'
+import fs from 'fs/promises'
 import * as dotenv from 'dotenv'
 import haversine from 'haversine-distance'  // pour calculer la distance entre 2 points
 import { v6 as uuidv6 } from 'uuid'
@@ -16,7 +16,7 @@ let peutEtrePresent = 0
 let objet = {}
 
 /**
- * 
+ * @desc 
  * @param {Array[{ distance: number, denivele: number, ptCulminant: number, distSommet: number },
  *              {editeur: string, editeurId: number, nom: string, url: string}
  *              {commune: string}, 
@@ -27,13 +27,13 @@ let objet = {}
  */
 export const addCircuit2dataModel = (newCircuit) => {
   return new Promise((resolve, reject) => {
-    fs.promises.readFile(fichier, { encoding: 'utf8' })
+    fs.readFile(fichier, { encoding: 'utf8' })
       .then((buffer, err) => {
         try {
           objet = JSON.parse(buffer.toString())
         } catch (err) {
           console.error(`addCircuit2dataModel : Erreur lecture JSON : ${err}`)
-          reject({ id: 2068, error: `addCircuit2dataModel, json : ${err}` })
+          reject({ id: 2063, error: `Erreur dans le fichier dataModel.json !` })
         }
 
         newCircuit.traceur = getIdTraceur(newCircuit.traceur, objet)
@@ -75,7 +75,6 @@ export const addCircuit2dataModel = (newCircuit) => {
             console.warn("Circuit probablement déja présent !")
             break;
           }
-
         }
 
         // On est prêt a insérer le nouveau circuit
@@ -86,18 +85,114 @@ export const addCircuit2dataModel = (newCircuit) => {
         objet.indexCircuits = circuitIndex
 
         // Il faut enregistrer l'objet dans dataModel.json
-        fs.promises.writeFile(fichier, JSON.stringify(objet))
+        fs.writeFile(fichier, JSON.stringify(objet))
           .then(() => {
             resolve({ circuitId: circuitIndex, peutEtrePresent: peutEtrePresent })
           })
           .catch((err) => {
-            console.error("addCircuit2dataModel: Erreur d'ecriture")
-            reject({ id: 2067, error: `addCircuit2dataModel, Ecriture  dataModel.json : ${err}` })
+            console.error(`addCircuit2dataModel: Erreur d'ecriture ${err}`)
+            reject({ id: 2062, error: `Erreur Ecriture fichier dataModel.json !` })
           })
       })
       .catch((err) => { //Read fichier datModel.json
         console.error(`addCircuit2dataModel, erreur : ${err.message}`)
-        reject({ id: 2069, error: `Erreur lecture dataModel.json : ${err}` })
+        reject({ id: 2064, error: `Erreur lecture dataModel.json !` })
+      })
+  })
+}
+
+/**
+* @desc Promesse qui supprime un circuit du fichier dataModel.json
+* @param id: number, 
+* @returns {promises}
+*/
+export const delCircuit2DataModel = (id) => {
+  return new Promise((resolve, reject) => {
+    let objet = {}
+    let maxCircuitId = 0
+    let indexCircuits = 0
+    let villeDepartId = ""
+    let traceurId = ""
+    console.warn(`delCircuit2DataModel : ${id}`)
+    fs.readFile(fichier)
+      .then((buffer) => {
+        try {
+          objet = JSON.parse(buffer.toString())
+        } catch (err) {
+          console.error(`delCircuit2dataModel : Erreur lecture JSON : ${err}`)
+          reject({ id: 2065, error: `Erreur dans le fichier dataModel.json !` })
+        }
+        indexCircuits = objet.indexCircuits
+        //console.log(indexCircuits)
+        for (let key = 0; key < objet.circuits.length; key++) {
+          //console.log(objet.circuits[key].circuitId)
+          if (objet.circuits[key].circuitId === zpad(id, 6)) {
+            villeDepartId = objet.circuits[key].villeDepart
+            traceurId = objet.circuits[key].traceur
+            //console.log(`On supprime le circuit ${id}`)
+            objet.circuits.splice(key, 1)
+          }
+        }
+
+        // Si on efface le dernier circuit on met à jour indexCircuits
+        if (objet.indexCircuits === id) {
+          for (let key = 0; key < objet.circuits.length; key++) {
+            if (parseInt(objet.circuits[key].circuitId) > maxCircuitId) {
+              maxCircuitId = parseInt(objet.circuits[key].circuitId)
+              //console.log(maxCircuitId)
+            }
+          }
+          objet.indexCircuits = maxCircuitId
+        }
+
+        // On vérifier que la ville de départ et le traceur sont toujours utilisés
+        let villeIsPresent = false
+        let traceurIsPresent = false
+        for (let key = 0; key < objet.circuits.length; key++) {
+          if (objet.circuits[key].villeDepart === villeDepartId) villeIsPresent = true
+          if (objet.circuits[key].traceur === traceurId) traceurIsPresent = true
+        }
+        if (!villeIsPresent) {
+          for (let key = 0; key < objet.villes.length; key++) {
+            //console.log(objet.circuits[key].circuitId)
+            if (objet.villes[key].id === villeDepartId) {
+              console.log(`On supprime la ville ${villeDepartId}`)
+              objet.villes.splice(key, 1)
+            }
+          }
+        }
+        if (!traceurIsPresent) {
+          for (let key = 0; key < objet.traceurs.length; key++) {
+            //console.log(objet.circuits[key].circuitId)
+            if (objet.traceurs[key].id === traceurId) {
+              console.log(`On supprime le traceur ${traceurId}`)
+              objet.traceurs.splice(key, 1)
+            }
+          }
+        }
+
+        // Il faut enregistrer l'objet dans dataModel.json
+        fs.rm(fichier)
+          .then(() => {
+            fs.writeFile(fichier, JSON.stringify(objet))
+              .then(() => {
+                resolve()
+              })
+              .catch((err) => {
+                console.error(`delCircuit2dataModel: Erreur d'ecriture : ${err}`)
+                return reject({ id: 2066, error: `addTrace, Ecriture dataModel.json : ${err}` })
+              })
+
+          })
+          .catch((err) => {
+            console.error(`delCircuit2dataModel: Erreur rm : ${err}`)
+            return reject({ id: 2067, error: `Effacement de dataModel.json !` })
+          })
+
+      })
+      .catch((err) => {
+        console.error(`delCircuit2dataModel: Erreur lecture : ${err}`)
+        return reject({ id: 2068, error: `addTrace, lecture  dataModel.json : ${err}` })
       })
   })
 }

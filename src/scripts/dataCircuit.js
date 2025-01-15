@@ -4,6 +4,7 @@ import { zpad } from "./utils.js"
 
 dotenv.config()
 const dataDirectory = process.env.DATA_DIRECTORY
+const tmpDirectory = process.env.TMP_DIRECTORY
 
 
 /**
@@ -25,29 +26,57 @@ export const archiveDataCircuit = (id, lineString) => {
             // Creation du fichier
             fs.writeFile(`${newDirectory}\\lineString.json`, JSON.stringify(lineString))
               .then(() => {
-                fs.rename('./src/assets/tmp/vignette.png', newDirectory + `vignette.png`)
+                fs.rename(tmpDirectory + 'vignette.png', newDirectory + `vignette.png`)
                   .then(() => {
                     resolve()
                   })
                   .catch((err) => {
                     console.error(`archiveDataCircuit : ${err}`)
-                    reject({ id: 2074, error: "archiveDataCircuit de la vignette" })
+                    reject({ id: 2074, error: "Archive de la vignette" })
                   })
               })
               .catch((err) => {
                 console.error(`archiveDataCircuit : ${err}`)
-                reject({ id: 2073, error: "archiveDataCircuit des données" })
+                reject({ id: 2073, error: "Archivage des données" })
               })
           })
           .catch((err) => {
             console.error(`archiveDataCircuit : ${err}`)
-            reject({ id: 2072, error: "Création du dossier" })
+            reject({ id: 2072, error: "Erreur création du dossier" })
           })
       })
       .catch((err) => {
         console.error(`archiveDataCircuit : ${err}`)
-        reject({ id: 2071, error: "Access aux données" })
+        reject({ id: 2071, error: "Pas d'acces au dossier DATA_DIRECTORY !" })
       })
   })
 }
 
+
+
+/**
+ * @desc Promesse qui supprime le répertoire de données relatives à une trace GPS.
+ * @param {number} id Id du circuit 
+ * @returns {promises} 
+ */
+export const delDataCircuit = (id) => {
+  return new Promise((resolve, reject) => {
+    const directory = `${dataDirectory}` + zpad(id, 6)
+    console.log(directory)
+    fs.access(directory, fs.constants.R_OK | fs.constants.W_OK)
+      .then(() => {
+        fs.rm(directory, { recursive: true })
+          .then(() => {
+            resolve()
+          })
+          .catch((err) => {
+            console.error(`delDataCircuit : le dossier n'a pas été effacé : ${err}`)
+            reject({ id: 2077, error: `Le dossier n'a pas été effacé !` })
+          })
+      })
+      .catch((err) => {
+        console.error(`delDataCircuit : le dossier n'a pas ete trouvé : ${err}`)
+        reject({ id: 2078, error: `Le dossier n'a pas été trouvé !` })
+      })
+  })
+}

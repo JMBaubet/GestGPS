@@ -1,6 +1,5 @@
 import haversine from 'haversine-distance'  // pour calculer la distance entre 2 points
 
-
 /**
  * @typedef distanceDPlus
  * @type {object}
@@ -43,9 +42,9 @@ export const getDistanceDPlus = (lineString) => {
       distanceSommet = Number.parseFloat(distanceSommet / 1000).toFixed(2)
       resolve({ distance: distance, denivele: denivele, sommet: sommet, distSommet: distanceSommet })
     }
-    catch (e) {
-      console.error(`distanceDenivele: getDistanceDPlus: erreur: ${e} `)
-      reject({ id: 2059, error: `getDistanceDPlus : ${e} !` })
+    catch (err) {
+      console.error(`distanceDenivele: getDistanceDPlus: erreur: ${err} `)
+      reject({ id: 2059, error: `getDistanceDPlus : ${err} !` })
     }
   })
 }
