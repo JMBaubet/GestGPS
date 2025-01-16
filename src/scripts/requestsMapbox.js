@@ -126,7 +126,7 @@ export const createVignette = (nbPts, lineString, departLat, departLong, arrivee
       })
       .catch(err => {
         if (`${err}`.includes("Timeout")) {          // On traite l’erreur du fetch (Time Out)
-          console.log(`MapBox : createVignette : TimeOut !`)
+          console.error(`MapBox : createVignette : TimeOut !`)
           reject({ id: 2031, error: "TimeOut mapbox !" })
         } else {
           console.error(`MapBox : createVignette : ${err}`)

@@ -43,7 +43,7 @@
   let map = null
 
   onMounted(() => {
-    console.log(`On charge mmap props.id : ${props.id}`)
+    // console.log(`On charge mmap props.id : ${props.id}`)
     // On initialise la carte au montage du composant
     try {
       map = new mapboxgl.Map({
@@ -58,6 +58,6 @@
   })
 
   onUnmounted(() => {
-    console.log("On detruit la carte")
+    // console.log("On detruit la carte")
   })
 </script>

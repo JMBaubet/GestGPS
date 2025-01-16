@@ -15,7 +15,8 @@
       <v-col class="d-flex justify-center" v-for="(circuit, key) in circuitsAffiches">
         <ParcoursCard :name="circuit.nom" :distance="circuit.distance" :denivele="circuit.denivele"
           :top="circuit.sommet.altitude" :top-distance="circuit.sommet.km"
-          :vignette="'src/assets/data/' + circuit.circuitId + '/vignette.png'"></ParcoursCard>
+          :vignette="'src/assets/data/' + circuit.circuitId + '/vignette.png'"
+          @confirm-del-gpx-file="askDelGpxFile(circuit.circuitId, circuit.nom)"></ParcoursCard>
       </v-col>
     </v-row>
   </v-container>
@@ -24,7 +25,8 @@
       <v-col class="d-flex justify-center" v-for="(circuit, key) in circuitsAffiches" cols="12" sm="6">
         <ParcoursCard :name="circuit.nom" :distance="circuit.distance" :denivele="circuit.denivele"
           :top="circuit.sommet.altitude" :top-distance="circuit.sommet.km"
-          :vignette="'src/assets/data/' + circuit.circuitId + '/vignette.png'"></ParcoursCard>
+          :vignette="'src/assets/data/' + circuit.circuitId + '/vignette.png'"
+          @confirm-del-gpx-file="askDelGpxFile(circuit.circuitId, circuit.nom)"></ParcoursCard>
       </v-col>
     </v-row>
   </v-container>
@@ -33,7 +35,8 @@
       <v-col class="d-flex justify-center" v-for="(circuit, key) in circuitsAffiches" cols="12" sm="5">
         <ParcoursCard :name="circuit.nom" :distance="circuit.distance" :denivele="circuit.denivele"
           :top="circuit.sommet.altitude" :top-distance="circuit.sommet.km"
-          :vignette="'src/assets/data/' + circuit.circuitId + '/vignette.png'"></ParcoursCard>
+          :vignette="'src/assets/data/' + circuit.circuitId + '/vignette.png'"
+          @confirm-del-gpx-file="askDelGpxFile(circuit.circuitId, circuit.nom)"></ParcoursCard>
       </v-col>
     </v-row>
   </v-container>
@@ -42,7 +45,8 @@
       <v-col class="d-flex justify-center" v-for="(circuit, key) in circuitsAffiches" cols="12" sm="3">
         <ParcoursCard :name="circuit.nom" :distance="circuit.distance" :denivele="circuit.denivele"
           :top="circuit.sommet.altitude" :top-distance="circuit.sommet.km"
-          :vignette="'src/assets/data/' + circuit.circuitId + '/vignette.png'"></ParcoursCard>
+          :vignette="'src/assets/data/' + circuit.circuitId + '/vignette.png'"
+          @confirmDelGpxFile="askDelGpxFile(circuit.circuitId, circuit.nom)"></ParcoursCard>
       </v-col>
     </v-row>
   </v-container>
@@ -52,6 +56,10 @@
   <AddGpxDialog :vue-dialog-gpx :items :items-traceurs @close-add-gpx-dialog="closeGpxDialog"
     @import-gpx-file="addGpxFile">
   </AddGpxDialog>
+
+  <DelGpxDialog :rm-gpx-dialog :nom-gpx :id-gpx @close-del-gpx-dialog="closeDelGpxDialog" @del-gpx-File="rmGpxFile">
+  </DelGpxDialog>
+
 </template>
 
 <script setup>
@@ -61,6 +69,7 @@ import MenuToolbar from '@/components/MenuToolbar.vue';
 import Fitre from '@/components/Fitre.vue';
 import ParcoursCard from '@/components/ParcoursCard.vue';
 import AddGpxDialog from '@/components/AddGpxDialog.vue';
+import DelGpxDialog from '@/components/DelGpxDialog.vue';
 import MsgAlert from '@/components/MsgAlert.vue';
 import { traiteCatch, traiteErreur } from '@/scripts/promisesError.js'
 
@@ -82,6 +91,10 @@ const denivMin = ref()
 const denivMax = ref(0)
 
 const name = ref("Test")
+
+const rmGpxDialog = ref(false)
+const nomGpx = ref()
+const idGpx = ref()
 
 let totalCircuits = 0
 let nbCircuitsAffiches = 0
@@ -157,35 +170,35 @@ function nbCircuits() {
 function backEndIsRunning() {
   const url = "http://localhost:4000/api/isRunning"
   fetch(url, { method: 'GET', signal: AbortSignal.timeout(1000) })
-  .then((rep, err) => {  // Le backend a repondu ...
-    if (alarmes.value.findIndex(alarme => alarme.id == 3) !== -1) { // On vérifie que l'alarme est présente
-      alarmes.value.splice([alarmes.value.findIndex(alarme => alarme.id == 3)], 1)
-      // Autres traitements sur reprise de liaison avec le backend. 
-      nbCircuits()
-      getCircuits()
-      getMinMax()
-      getTraceurs()
-      getVilles()
-    }
-    return rep.json()  
-  })
-  .then((json, err) => {  // La réponse json est bien formatée ...
-    if (typeof(json.error) === "undefined") { // On recoit la réponse attendu
-      //console.log("On traite la réponse")
-      // Enable/disable bouton importation fichier gpx 
-      if (json.gpx === "0") noGpxFileReady.value = true
-      else noGpxFileReady.value = false
-      // Enable/disable bouton importation fichier gpx 
-      if (json.fit === "0") noFitFileReady.value = true
-      else noFitFileReady.value = false
+    .then((rep, err) => {  // Le backend a repondu ...
+      if (alarmes.value.findIndex(alarme => alarme.id == 3) !== -1) { // On vérifie que l'alarme est présente
+        alarmes.value.splice([alarmes.value.findIndex(alarme => alarme.id == 3)], 1)
+        // Autres traitements sur reprise de liaison avec le backend. 
+        nbCircuits()
+        getCircuits()
+        getMinMax()
+        getTraceurs()
+        getVilles()
+      }
+      return rep.json()
+    })
+    .then((json, err) => {  // La réponse json est bien formatée ...
+      if (typeof (json.error) === "undefined") { // On recoit la réponse attendu
+        //console.log("On traite la réponse")
+        // Enable/disable bouton importation fichier gpx 
+        if (json.gpx === "0") noGpxFileReady.value = true
+        else noGpxFileReady.value = false
+        // Enable/disable bouton importation fichier gpx 
+        if (json.fit === "0") noFitFileReady.value = true
+        else noFitFileReady.value = false
 
-    } else { // On reçoit une réponse de type error
-      traiteErreur(json, alarmes)
-    }
-  })
-  .catch(err => {
-    traiteCatch(err, alarmes)
-  })
+      } else { // On reçoit une réponse de type error
+        traiteErreur(json, alarmes)
+      }
+    })
+    .catch(err => {
+      traiteCatch(err, alarmes)
+    })
 }
 
 
@@ -196,32 +209,32 @@ function backEndIsRunning() {
  * @returns 
  */
 function getCircuits() {
-  console.log(`GpxContainerView : getCirtuits`)
+  // console.log(`GpxContainerView : getCirtuits`)
   const url = `http://localhost:4000/api/circuits/${page.value}/${nbCircuitsAffiches}`
   fetch(url, { method: 'GET', signal: AbortSignal.timeout(1500) })
-  .then((rep, err) => {
-    return rep.json()
-  })
-  .then((json, err) => {
-    if (typeof(json.error) === "undefined") { // On recoit la réponse attendu
-      circuitsAffiches.value = json.circuits
-      totalCircuits = json.totalCircuits
-      console.log(`GpxContainerView : getCirtuits : totalCircuits : ${totalCircuits}, nbCirtAff : ${nbCircuitsAffiches}`)
-      // On met à jour le nombre de pages
-      if ((totalCircuits % nbCircuitsAffiches) !== 0) {
-        nbPages.value = ~~(totalCircuits / nbCircuitsAffiches) + 1
-      } else {
-        nbPages.value = totalCircuits / nbCircuitsAffiches
-      }
-      console.log(`${circuitsAffiches.value.length}`)
+    .then((rep, err) => {
+      return rep.json()
+    })
+    .then((json, err) => {
+      if (typeof (json.error) === "undefined") { // On recoit la réponse attendu
+        circuitsAffiches.value = json.circuits
+        totalCircuits = json.totalCircuits
+        // console.log(`GpxContainerView : getCirtuits : totalCircuits : ${totalCircuits}, nbCirtAff : ${nbCircuitsAffiches}`)
+        // On met à jour le nombre de pages
+        if ((totalCircuits % nbCircuitsAffiches) !== 0) {
+          nbPages.value = ~~(totalCircuits / nbCircuitsAffiches) + 1
+        } else {
+          nbPages.value = totalCircuits / nbCircuitsAffiches
+        }
+        // console.log(`${circuitsAffiches.value.length}`)
 
-    } else { // On reçoit une réponse de type error
-      traiteErreur(json, alarmes)
-    }
-  })
-  .catch(err => {
-    traiteCatch(err, alarmes)
-  })
+      } else { // On reçoit une réponse de type error
+        traiteErreur(json, alarmes)
+      }
+    })
+    .catch(err => {
+      traiteCatch(err, alarmes)
+    })
 }
 
 
@@ -231,27 +244,27 @@ function getCircuits() {
  * @param  
  * @returns 
  */
- function getTraceurs() {
+function getTraceurs() {
   const url = `http://localhost:4000/api/traceurs/`
   fetch(url, { method: 'GET', signal: AbortSignal.timeout(1000) })
-  .then((rep, err) => {  // Le backend a repondu ...
-    return rep.json()  
-  })
-  .then((json, err) => {  // Lé réponse json est bien formaté ...
-    if (typeof(json.error) === "undefined") { // On recoit la réponse attendu
-      //console.log("On traite la réponse")
-      itemsTraceurs.value = []
-      for (let id = 0; id < json.length; id++) {
-        itemsTraceurs.value.push(json[id].nom)
-      }
+    .then((rep, err) => {  // Le backend a repondu ...
+      return rep.json()
+    })
+    .then((json, err) => {  // Lé réponse json est bien formaté ...
+      if (typeof (json.error) === "undefined") { // On recoit la réponse attendu
+        //console.log("On traite la réponse")
+        itemsTraceurs.value = []
+        for (let id = 0; id < json.length; id++) {
+          itemsTraceurs.value.push(json[id].nom)
+        }
 
-    } else { // On reçoit une réponse de type error
-      traiteErreur(json, alarmes)
-    }
-  })
-  .catch(err => {
-    traiteCatch(err, alarmes)
-  })
+      } else { // On reçoit une réponse de type error
+        traiteErreur(json, alarmes)
+      }
+    })
+    .catch(err => {
+      traiteCatch(err, alarmes)
+    })
 }
 
 
@@ -265,24 +278,24 @@ function getCircuits() {
 function getVilles() {
   const url = `http://localhost:4000/api/villes/`
   fetch(url, { method: 'GET', signal: AbortSignal.timeout(1000) })
-  .then((rep, err) => {  // Le backend a repondu ...
-    return rep.json()  
-  })
-  .then((json, err) => {  // Lé réponse json est bien formaté ...
-    if (typeof(json.error) === "undefined") { // On recoit la réponse attendu
-      //console.log("On traite la réponse")
-      itemsVilles.value = []
-      for (let id = 0; id < json.length; id++) {
-        itemsVilles.value.push(json[id].nom)
-      }
+    .then((rep, err) => {  // Le backend a repondu ...
+      return rep.json()
+    })
+    .then((json, err) => {  // Lé réponse json est bien formaté ...
+      if (typeof (json.error) === "undefined") { // On recoit la réponse attendu
+        //console.log("On traite la réponse")
+        itemsVilles.value = []
+        for (let id = 0; id < json.length; id++) {
+          itemsVilles.value.push(json[id].nom)
+        }
 
-    } else { // On reçoit une réponse de type error
-      traiteErreur(json, alarmes)
-    }
-  })
-  .catch(err => {
-    traiteCatch(err, alarmes)
-  })
+      } else { // On reçoit une réponse de type error
+        traiteErreur(json, alarmes)
+      }
+    })
+    .catch(err => {
+      traiteCatch(err, alarmes)
+    })
 }
 
 
@@ -296,23 +309,23 @@ function getVilles() {
 function getGpxFiles() {
   const url = `http://localhost:4000/api/GpxFiles/`
   fetch(url, { method: 'GET', signal: AbortSignal.timeout(1000) })
-  .then((rep, err) => {  // Le backend a repondu ...
-    return rep.json()  
-  })
-  .then((json, err) => {  // Lé réponse json est bien formaté ...
-    if (typeof(json.error) === "undefined") { // On recoit la réponse attendu
-      //console.log("On traite la réponse")
-      items.value = json
-      vueDialogGpx.value = true
-      //console.log(`Fichiers : ${json}`)
+    .then((rep, err) => {  // Le backend a repondu ...
+      return rep.json()
+    })
+    .then((json, err) => {  // Lé réponse json est bien formatée ...
+      if (typeof (json.error) === "undefined") { // On recoit la réponse attendu
+        //console.log("On traite la réponse")
+        items.value = json
+        vueDialogGpx.value = true
+        //console.log(`Fichiers : ${json}`)
 
-    } else { // On reçoit une réponse de type error
-      traiteErreur(json, alarmes)
-    }
-  })
-  .catch(err => {
-    traiteCatch(err, alarmes)
-  })
+      } else { // On reçoit une réponse de type error
+        traiteErreur(json, alarmes)
+      }
+    })
+    .catch(err => {
+      traiteCatch(err, alarmes)
+    })
 }
 
 
@@ -324,55 +337,105 @@ function getGpxFiles() {
 * @returns 
 */
 function addGpxFile(selection, traceur) {
-  console.log(`on va traiter ${selection}, ${traceur}`)
+  // console.log(`on va traiter ${selection}, ${traceur}`)
+  if (traceur === undefined) traceur ="Non précisé"
   const url = `http://localhost:4000/api/GpxFile/${selection}/${traceur}`
   fetch(url, { method: 'POST', signal: AbortSignal.timeout(2000) })
-  .then((rep, err) => {
-    return rep.json()
-  })
-  .then((json, err) => {
-    if (typeof(json.error) === "undefined") { // On recoit la réponse attendu
-      console.log(`reponse : ${json.gpx}`)
-      // Mettre une alarme si rep.gpx vaut Present  ou Semblable
-      switch (json.gpx) {
-        case "Present":
-          alarmes.value.push({
-            id: 10,
-            type: 'error',
-            text: "Ce circuit est déjà présent.",
-            closable: true,
-            icon: "mdi-map-marker-alert-outline"
-          })
-          break;
-        case "Semblable":
-          alarmes.value.push({
-            id: 11,
-            type: 'warning',
-            text: "Un circuit semblable est déjà présent.",
-            closable: true,
-            icon: "mdi-map-marker-distance"
-          })
-          break;
-        case "OK":
-          alarmes.value.push({
-            id: 12,
-            type: 'success',
-            text: "Le circuit a bien été importé.",
-            closable: true,
-            icon: "mdi-map-marker-distance"
-          })
-          break;
-      }
-    } else { // On reçoit une réponse de type error
-      traiteErreur(json, alarmes)
-    }
-  })
+    .then((rep, err) => {
+      return rep.json()
+    })
+    .then((json, err) => {
+      if (typeof (json.error) === "undefined") { // On recoit la réponse attendu
+        // console.log(`reponse : ${json.gpx}`)
+        // Mettre une alarme si rep.gpx vaut Present  ou Semblable
+        switch (json.gpx) {
+          case "Present":
+            alarmes.value.push({
+              id: 10,
+              type: 'error',
+              text: "Ce circuit est déjà présent.",
+              closable: true,
+              icon: "mdi-map-marker-alert-outline"
+            })
+            break;
+          case "Semblable":
+            alarmes.value.push({
+              id: 11,
+              type: 'warning',
+              text: "Un circuit semblable est déjà présent.",
+              closable: true,
+              icon: "mdi-map-marker-distance"
+            })
+            break;
+          case "OK":
+            alarmes.value.push({
+              id: 12,
+              type: 'success',
+              text: "Le circuit a bien été importé.",
+              closable: true,
+              icon: "mdi-map-marker-distance"
+            })
+            break;
+        }
+        getCircuits()
+        getTraceurs()
+        getVilles()
 
-  .catch(err => {
-    traiteCatch(err, alarmes)
-  })
+      } else { // On reçoit une réponse de type error
+        traiteErreur(json, alarmes)
+      }
+    })
+
+    .catch(err => {
+      traiteCatch(err, alarmes)
+    })
 }
 
+function askDelGpxFile(id, nom) {
+  rmGpxDialog.value = true
+  nomGpx.value = nom
+  idGpx.value = id
+
+}
+
+function closeDelGpxDialog() {
+  rmGpxDialog.value = false
+}
+
+function rmGpxFile() {
+  rmGpxDialog.value = false
+  // console.log(`On va supprimer le circuit ${idGpx.value}`)
+  const url = `http://localhost:4000/api/GpxFile/` + parseInt(idGpx.value)
+  fetch(url, { method: 'DELETE', signal: AbortSignal.timeout(2000) })
+    .then((rep) => {
+      return rep.json()
+    })
+    .then((json, err) => {
+      if (typeof (json.error) === "undefined") { // On recoit la réponse attendu
+        // console.log(`reponse : ${json.del}`)
+        // Mettre une alarme si rep.gpx vaut Present  ou Semblable
+        alarmes.value.push({
+          id: 12,
+          type: 'success',
+          text: "Le circuit a bien été  supprimé.",
+          closable: true,
+          icon: "mdi-map-marker-distance"
+        })
+        getCircuits()
+        getTraceurs()
+        getVilles()
+      } else { // On reçoit une réponse de type error
+        traiteErreur(json, alarmes)
+      }
+
+    })
+    .catch((err) => {
+      traiteCatch(err, alarmes)
+    })
+
+
+
+}
 
 /**
 * @Desc Cette fonction permet de fermer le composant AddGpxDialog.vue. 
@@ -422,25 +485,25 @@ function filtrerTraceur(traceur) {
 function getMinMax() {
   const url = `http://localhost:4000/api/circuitsMinMax/`
   fetch(url, { method: 'GET', signal: AbortSignal.timeout(1000) })
-  .then((rep, err) => {
-    return rep.json()
-  })
-  .then((json, err) => {
-    if (typeof(json.error) === "undefined") { // On recoit la réponse attendu
-      // #TODO voir pourquoi on ne peut pas rendre dynamic les range-slider avec ces paramètres !
-      distMin.value = json.distMin
-      distMax.value = json.distMax
-      denivMin.value = json.denivMin
-      denivMax.value = json.denivMax
-      //console.log(`GpxContainer.vue : getMinMax : ${denivMin.value}, ${denivMax.value}, ${distMin.value}, ${distMax.value}`)
-  
-    } else { // On reçoit une réponse de type error
-      traiteErreur(json, alarmes)
-    }
-  })
-  .catch(err => {
-    traiteCatch(err, alarmes)
-  })
+    .then((rep, err) => {
+      return rep.json()
+    })
+    .then((json, err) => {
+      if (typeof (json.error) === "undefined") { // On recoit la réponse attendu
+        // #TODO voir pourquoi on ne peut pas rendre dynamic les range-slider avec ces paramètres !
+        distMin.value = json.distMin
+        distMax.value = json.distMax
+        denivMin.value = json.denivMin
+        denivMax.value = json.denivMax
+        //console.log(`GpxContainer.vue : getMinMax : ${denivMin.value}, ${denivMax.value}, ${distMin.value}, ${distMax.value}`)
+
+      } else { // On reçoit une réponse de type error
+        traiteErreur(json, alarmes)
+      }
+    })
+    .catch(err => {
+      traiteCatch(err, alarmes)
+    })
 }
 
 
