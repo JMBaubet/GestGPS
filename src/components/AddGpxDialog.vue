@@ -8,8 +8,8 @@
         <v-card-subtitle v-if="items.length === 0">Veuillez au préalable, ajouter une trace gpx dans le dossier
           Téléchargement !</v-card-subtitle>
         <v-card-subtitle v-else-if="items.length === 1">Veuillez séléctionner l'unique fichier à
-          importer.</v-card-subtitle>
-        <v-card-subtitle v-else="items.length > 1 ">Séléctionnez un des fichiers à importer.</v-card-subtitle>
+          importer et le créateur de la trace.</v-card-subtitle>
+        <v-card-subtitle v-else="items.length > 1 ">Séléctionnez un des fichiers à importer et le créateur de la trace.</v-card-subtitle>
 
         <v-col cols="12">
           <v-list v-if="items.length > 0" :items max-height="220" bg-color="indigo" density="compact">
@@ -20,15 +20,14 @@
         </v-col>
 
         <v-col cols="8">
-          <h5>Personne ou association qui a fait la trace :</h5><br>
+          <h5>Personne ou association qui a créé la trace :</h5><br>
           <v-combobox :items=itemsTraceurs @change="selectTraceur(select)" v-model="select" density="compact"
-            color="indigo-lighten-1" label="Sélectionnez l'éditeur de la trace ou créez en un !"></v-combobox>
+            color="indigo-lighten-1" label="Sélectionnez l'éditeur de la trace !"></v-combobox>
         </v-col>
-
 
         <v-card-actions v-if="items.length > 0">
           <v-btn color="warning" text="Cancel" variant="elevated" prepend-icon="mdi-cancel"
-            @click="emit('closeAddGpxDialog')"></v-btn>
+            @click="cancel()"></v-btn>
 
           <v-btn :disabled=isDisabled @click="importGpx()" color="primary" text="Importer" variant="elevated"
             prepend-icon="mdi-file-import-outline"></v-btn>
@@ -74,10 +73,14 @@ function choix(fichier) {
 
 function selectTraceur(items) {
   traceur.value = items
-  // console.log(`AddGpxDialog.vue, selectTraceur : Le traceur ${items} a été sélectionné.`)
+  console.log(`AddGpxDialog.vue, selectTraceur : Le traceur ${items} a été sélectionné.`)
 }
 
-
+function cancel(){
+  isDisabled.value=true
+  selection.value = ""
+  emit('closeAddGpxDialog')
+}
 function importGpx() {
   //console.log(`AddGpxDialog.vue, importGpx : On va importer ${selection.value}`)
   emit('closeAddGpxDialog')
