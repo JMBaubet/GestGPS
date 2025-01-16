@@ -8,6 +8,8 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     AddGpxDialog: typeof import('./src/components/AddGpxDialog.vue')['default']
+    DelGpxDialog: typeof import('./src/components/DelGpxDialog.vue')['default']
+    Dialog: typeof import('./src/components/Dialog.vue')['default']
     Fitre: typeof import('./src/components/Fitre.vue')['default']
     MenuToolbar: typeof import('./src/components/MenuToolbar.vue')['default']
     MsgAlert: typeof import('./src/components/MsgAlert.vue')['default']

@@ -32,9 +32,9 @@ export const getIdVille = (villecherchee) => {
       objet = JSON.parse(fs.readFileSync(fichier))
       //console.log(`dans ${objet.villes}`)
       for (let id = 0; id < objet.villes.length; id++) {
-        console.log(objet.villes[id])
+        // console.log(objet.villes[id])
         if (objet.villes[id] === villecherchee) {
-          console.log(`on retourne ${id}`)
+          // console.log(`on retourne ${id}`)
           resolve({ id: id })
           break
         }

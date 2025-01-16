@@ -61,8 +61,8 @@ export const archiveDataCircuit = (id, lineString) => {
  */
 export const delDataCircuit = (id) => {
   return new Promise((resolve, reject) => {
-    const directory = `${dataDirectory}` + zpad(id, 6)
-    console.log(directory)
+    const directory = `${dataDirectory}` + zpad(id, 6) + `\\`
+    // console.warn(directory)
     fs.access(directory, fs.constants.R_OK | fs.constants.W_OK)
       .then(() => {
         fs.rm(directory, { recursive: true })
@@ -75,7 +75,7 @@ export const delDataCircuit = (id) => {
           })
       })
       .catch((err) => {
-        console.error(`delDataCircuit : le dossier n'a pas ete trouvé : ${err}`)
+        console.error(`delDataCircuit : le dossier n'a pas été trouvé : ${err}`)
         reject({ id: 2078, error: `Le dossier n'a pas été trouvé !` })
       })
   })

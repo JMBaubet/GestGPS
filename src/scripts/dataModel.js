@@ -113,7 +113,7 @@ export const delCircuit2DataModel = (id) => {
     let indexCircuits = 0
     let villeDepartId = ""
     let traceurId = ""
-    console.warn(`delCircuit2DataModel : ${id}`)
+    // console.warn(`delCircuit2DataModel : ${id}`)
     fs.readFile(fichier)
       .then((buffer) => {
         try {
@@ -123,7 +123,7 @@ export const delCircuit2DataModel = (id) => {
           reject({ id: 2065, error: `Erreur dans le fichier dataModel.json !` })
         }
         indexCircuits = objet.indexCircuits
-        //console.log(indexCircuits)
+        // console.warn(indexCircuits)
         for (let key = 0; key < objet.circuits.length; key++) {
           //console.log(objet.circuits[key].circuitId)
           if (objet.circuits[key].circuitId === zpad(id, 6)) {
@@ -133,13 +133,12 @@ export const delCircuit2DataModel = (id) => {
             objet.circuits.splice(key, 1)
           }
         }
-
+        // console.warn(objet)
         // Si on efface le dernier circuit on met à jour indexCircuits
-        if (objet.indexCircuits === id) {
+        if (objet.indexCircuits === parseInt(id)) {
           for (let key = 0; key < objet.circuits.length; key++) {
             if (parseInt(objet.circuits[key].circuitId) > maxCircuitId) {
               maxCircuitId = parseInt(objet.circuits[key].circuitId)
-              //console.log(maxCircuitId)
             }
           }
           objet.indexCircuits = maxCircuitId
@@ -156,7 +155,7 @@ export const delCircuit2DataModel = (id) => {
           for (let key = 0; key < objet.villes.length; key++) {
             //console.log(objet.circuits[key].circuitId)
             if (objet.villes[key].id === villeDepartId) {
-              console.log(`On supprime la ville ${villeDepartId}`)
+              // console.log(`On supprime la ville ${villeDepartId}`)
               objet.villes.splice(key, 1)
             }
           }
@@ -165,7 +164,7 @@ export const delCircuit2DataModel = (id) => {
           for (let key = 0; key < objet.traceurs.length; key++) {
             //console.log(objet.circuits[key].circuitId)
             if (objet.traceurs[key].id === traceurId) {
-              console.log(`On supprime le traceur ${traceurId}`)
+              // console.log(`On supprime le traceur ${traceurId}`)
               objet.traceurs.splice(key, 1)
             }
           }
@@ -210,7 +209,7 @@ export const delCircuit2DataModel = (id) => {
  */
 function getIdCommune(commune) {
   let key = 0
-  console.log(`dataModel.js : getIdCommune : ${commune}`)
+  // console.log(`dataModel.js : getIdCommune : ${commune}`)
   for (key = 0; key < objet.villes.length; key++) {
     if (objet.villes[key].nom === commune) {
       return objet.villes[key].id

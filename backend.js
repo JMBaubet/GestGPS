@@ -10,6 +10,8 @@ import { decodeTraceGpx } from './src/scripts/gpx.js'
 import { getTraceurs } from './src/scripts/traceurs.js'
 import { getVilles } from './src/scripts/villes.js'
 import { getCircuits, getcircuitsMinMax } from './src/scripts/circuits.js'
+import { delDataCircuit } from './src/scripts/dataCircuit.js'
+import { delCircuit2DataModel } from './src/scripts/dataModel.js'
 
 const app = express()
 dotenv.config()
@@ -62,12 +64,12 @@ app.get('/api/GpxFiles/', (req, res) => {
 })
 
 
-// Traitement d'un fichier gpx
+// Ajout d'un fichier gpx
 app.post('/api/GpxFile/:fileName/:traceur', (req, res) => {
   //console.log(`backend.js : Traceur sélectionné : ${req.params.traceur}`)
   decodeTraceGpx(`${directory}\\${req.params.fileName}`, `${req.params.traceur}`)
     .then(retour => {
-      console.log(`backend.js : Retour de la promise : ${retour.circuitId}, ${retour.peutEtrePresent}`)
+      // console.log(`backend.js : Retour de la promise : ${retour.circuitId}, ${retour.peutEtrePresent}`)
 
       res.setHeader('Content-Type', 'application/json')
       res.status(200)
@@ -86,6 +88,34 @@ app.post('/api/GpxFile/:fileName/:traceur', (req, res) => {
       res.status(500).send(err)
     })
 })
+
+// suppession d'un fichier gpx
+app.delete('/api/GpxFile/:id', (req, res) => {
+  //console.log(`backend.js : id circuit : ${req.params.id}`)
+  delDataCircuit(req.params.id)
+    .then((ret) => {
+      delCircuit2DataModel(req.params.id)
+        .then((ret) => {
+          // console.log(`backend.js : Retour de la promise : OK`)
+
+          res.setHeader('Content-Type', 'application/json')
+          res.status(200)
+          res.send({ del: "OK" })
+        })
+        .catch((err) => {
+          console.error(`backend.js : ${err.id}`)
+          res.setHeader('Content-Type', 'application/json');
+          res.status(500).send(err)
+        })
+    })
+    .catch((err) => {
+      console.error(`backend.js : ${err.id}`)
+      res.setHeader('Content-Type', 'application/json');
+      res.status(500).send(err)
+    })
+})
+
+
 
 // récupération des circuits à afficher
 app.get('/api/circuits/:page/:nombre/:ville?', (req, res) => {
