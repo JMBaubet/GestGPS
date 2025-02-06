@@ -28,6 +28,17 @@ export const getCircuits = (page, nombre) => {
 }
 
 
+export const getLineString = (id) => {
+  return new Promise((resolve, reject) => {
+    try {
+      const buffer = JSON.parse(fs.readFileSync(dataDirectory + id + "\\lineString.json"))
+      resolve(buffer)
+    } catch (err) {
+      console.error(`getLineString Erreur : ${err}`)
+      reject(err)
+    }
+  })
+}
 
 
 export const getcircuitsMinMax = () => {

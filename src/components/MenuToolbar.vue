@@ -21,7 +21,7 @@
         Filtrer les traces
       </v-tooltip>
     </div>
-
+<!-- 
     <div>
       <v-btn icon @click="emit('affMap')">
         <v-icon color="success">mdi-file-video</v-icon>
@@ -29,7 +29,7 @@
       <v-tooltip activator="parent" location="bottom">
         Visualiser les traces
       </v-tooltip>
-    </div>
+    </div> -->
 
     <div>
       <v-btn icon disabled>
@@ -106,7 +106,7 @@ const props = defineProps({
   noFitFileReady: Boolean,
 })
 
-const emit = defineEmits(['addGpxFile', 'affMap'])
+const emit = defineEmits(['addGpxFile'])
 
 //const router = useRouter()
 

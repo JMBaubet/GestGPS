@@ -17,8 +17,11 @@
                 <v-list-item value="aff">
                   <v-list-item-title>Afficher les informations</v-list-item-title>
                 </v-list-item>
+                <v-list-item value="camera">
+                  <v-list-item-title @click="MakeFileCamera">Préparer la 3D</v-list-item-title>
+                </v-list-item>
                 <v-list-item value="3d">
-                  <v-list-item-title>Voir la 3D</v-list-item-title>
+                  <v-list-item-title @click="Affiche3D">Voir la 3D</v-list-item-title>
                 </v-list-item>
                 <v-list-item value="sel">
                   <v-list-item-title>Sélectionner pour comparer</v-list-item-title>
@@ -71,9 +74,19 @@ const props = defineProps({
   topDistance: String,
 })
 
-const emit = defineEmits(['confirmDelGpxFile'])
+const emit = defineEmits(['confirmDelGpxFile', 'addCameraFile', 'affiche3D'])
 
 function delCircuit() {
   emit('confirmDelGpxFile')
 }
+
+function MakeFileCamera() {
+  emit('addCameraFile')
+}
+
+function Affiche3D() {
+  emit('affiche3D')
+}
+
+//router.push({ path: `/map/${id}` })
 </script>

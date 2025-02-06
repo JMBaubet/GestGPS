@@ -12,6 +12,10 @@ import { getVilles } from './src/scripts/villes.js'
 import { getCircuits, getcircuitsMinMax } from './src/scripts/circuits.js'
 import { delDataCircuit } from './src/scripts/dataCircuit.js'
 import { delCircuit2DataModel } from './src/scripts/dataModel.js'
+import { getLineString } from './src/scripts/circuits.js'  // A supprimer ??
+import { genere3DFiles } from './src/scripts/3DFiles.js'
+import { getTrace100m } from './src/scripts/3DFiles.js'
+import { getCamera } from './src/scripts/3DFiles.js'
 
 const app = express()
 dotenv.config()
@@ -63,6 +67,20 @@ app.get('/api/GpxFiles/', (req, res) => {
     })
 })
 
+// Obtention d'un fichier lineString
+app.get('/api/lineString/:id', (req, res) => {
+  getLineString(`${req.params.id}`)
+    .then(retour => {
+      res.setHeader('Content-Type', 'application/json')
+      res.status(200)
+      res.send(retour)
+
+    })
+    .catch((err) => {
+      res.setHeader('Content-Type', 'application/json');
+      res.status(500).send({ id: 1001, error: `Le Fichier ${req.params.id}/lineString n'a pas été trouvé !` })
+    })
+})
 
 // Ajout d'un fichier gpx
 app.post('/api/GpxFile/:fileName/:traceur', (req, res) => {
@@ -173,6 +191,54 @@ app.get('/api/villes/', (req, res) => {
       console.error(`Erreur : ${err}`)
       res.setHeader('Content-Type', 'application/json');
       res.status(500).send({ id: 1040, error: `La liste des villes de départ ne peut être récupérée !` })
+    })
+})
+
+
+
+// Génération des fichiers camera et lineString100m)
+app.post('/api/3DFiles/:id/', (req, res) => {
+  console.log(`backend.js : Id circuit : ${req.params.id}`)
+  genere3DFiles(`${req.params.id}`)
+    .then(retour => {
+      res.setHeader('Content-Type', 'application/json')
+      res.status(200)
+      res.send({ status: "OK" })
+
+    })
+    .catch((err) => {
+      console.error(`backend.js : ${err.id}`)
+      res.setHeader('Content-Type', 'application/json');
+      res.status(500).send(err)
+
+    })
+})
+
+// Récupération du fichier trace 100m
+app.get('/api/trace100m/:id', (req, res) => {
+  getTrace100m(`${req.params.id}`)
+    .then((trace) => {
+      res.setHeader('Content-Type', 'application/json')
+      res.status(200).send(trace)
+    })
+    .catch(err => {
+      console.error(`Erreur : ${err.id}`)
+      res.setHeader('Content-Type', 'application/json');
+      res.status(500).send(err)
+    })
+})
+
+// Récupération du fichier camera
+app.get('/api/camera/:id', (req, res) => {
+  getCamera(`${req.params.id}`)
+    .then((camera) => {
+      res.setHeader('Content-Type', 'application/json')
+      res.status(200).send(camera)
+    })
+    .catch(err => {
+      console.error(`Erreur : ${err}`)
+      res.setHeader('Content-Type', 'application/json');
+      res.status(500).send({ id: 9999, error: `Le fichier caméra ne peut être récupérée !` })
     })
 })
 

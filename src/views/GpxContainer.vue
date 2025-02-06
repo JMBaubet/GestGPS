@@ -5,8 +5,9 @@
 
   <MsgAlert :alarmes @close-alarme="delAlarme"></MsgAlert>
 
-  <MenuToolbar :no-gpx-file-ready :no-fit-file-ready @addGpxFile="getGpxFiles" @affMap="myMap">
-  </MenuToolbar>
+  <!-- <MenuToolbar :no-gpx-file-ready :no-fit-file-ready @addGpxFile="getGpxFiles" @affMap="myMap"> -->
+  <MenuToolbar :no-gpx-file-ready :no-fit-file-ready @addGpxFile="getGpxFiles">
+    </MenuToolbar>
   <Fitre :items-villes :items-traceurs :dist-min :dist-max :deniv-min :deniv-max @filtrerVille="filtrerVille"
     @filtrerTraceur="filtrerTraceur">
   </Fitre>
@@ -16,7 +17,10 @@
         <ParcoursCard :name="circuit.nom" :distance="circuit.distance" :denivele="circuit.denivele"
           :top="circuit.sommet.altitude" :top-distance="circuit.sommet.km"
           :vignette="'src/assets/data/' + circuit.circuitId + '/vignette.png'"
-          @confirm-del-gpx-file="askDelGpxFile(circuit.circuitId, circuit.nom)"></ParcoursCard>
+          @confirm-del-gpx-file="askDelGpxFile(circuit.circuitId, circuit.nom)"
+          @addCameraFile="addCameraFile(circuit.circuitId)"
+          @affiche3D="map3D(circuit.circuitId)">
+        </ParcoursCard>
       </v-col>
     </v-row>
   </v-container>
@@ -26,7 +30,10 @@
         <ParcoursCard :name="circuit.nom" :distance="circuit.distance" :denivele="circuit.denivele"
           :top="circuit.sommet.altitude" :top-distance="circuit.sommet.km"
           :vignette="'src/assets/data/' + circuit.circuitId + '/vignette.png'"
-          @confirm-del-gpx-file="askDelGpxFile(circuit.circuitId, circuit.nom)"></ParcoursCard>
+          @confirm-del-gpx-file="askDelGpxFile(circuit.circuitId, circuit.nom)"
+          @addCameraFile="addCameraFile(circuit.circuitId)"
+          @affiche3D="map3D(circuit.circuitId)">
+        </ParcoursCard>
       </v-col>
     </v-row>
   </v-container>
@@ -36,7 +43,10 @@
         <ParcoursCard :name="circuit.nom" :distance="circuit.distance" :denivele="circuit.denivele"
           :top="circuit.sommet.altitude" :top-distance="circuit.sommet.km"
           :vignette="'src/assets/data/' + circuit.circuitId + '/vignette.png'"
-          @confirm-del-gpx-file="askDelGpxFile(circuit.circuitId, circuit.nom)"></ParcoursCard>
+          @confirm-del-gpx-file="askDelGpxFile(circuit.circuitId, circuit.nom)"
+          @addCameraFile="addCameraFile(circuit.circuitId)"
+          @affiche3D="map3D(circuit.circuitId)">
+        </ParcoursCard>
       </v-col>
     </v-row>
   </v-container>
@@ -46,7 +56,10 @@
         <ParcoursCard :name="circuit.nom" :distance="circuit.distance" :denivele="circuit.denivele"
           :top="circuit.sommet.altitude" :top-distance="circuit.sommet.km"
           :vignette="'src/assets/data/' + circuit.circuitId + '/vignette.png'"
-          @confirmDelGpxFile="askDelGpxFile(circuit.circuitId, circuit.nom)"></ParcoursCard>
+          @confirmDelGpxFile="askDelGpxFile(circuit.circuitId, circuit.nom)"
+          @addCameraFile="addCameraFile(circuit.circuitId)"
+          @affiche3D="map3D(circuit.circuitId)">
+        </ParcoursCard>
       </v-col>
     </v-row>
   </v-container>
@@ -131,8 +144,7 @@ onUnmounted(() => {
 })
 
 
-function myMap() {
-  const id = 2
+function map3D(id) {
   router.push({ path: `/map/${id}` })
 }
 
@@ -432,8 +444,33 @@ function rmGpxFile() {
     .catch((err) => {
       traiteCatch(err, alarmes)
     })
+}
 
-
+function addCameraFile(id) {
+  console.log(`on va generer le circuit  ${id}`)
+  const url = `http://localhost:4000/api/3DFiles/${id}`
+  fetch(url, { method: 'POST', signal: AbortSignal.timeout(8000) })
+    .then((rep, err) => {
+      return rep.json()
+    })
+    .then((json, err) => {
+    if (typeof (json.error) === "undefined") { // On recoit la réponse attendu
+        // console.log(`reponse : ${json.del}`)
+        // Mettre une alarme si rep.gpx vaut Present  ou Semblable
+        alarmes.value.push({
+          id: 12,
+          type: 'success',
+          text: "Les données pour la visu 3D sont prêtes.",
+          closable: true,
+          icon: "mdi-video-3d-variant"
+        })
+      } else { // On reçoit une réponse de type error
+        traiteErreur(json, alarmes)
+      }
+    })
+    .catch((err) => {
+      traiteCatch(err, alarmes)
+    })
 
 }
 

@@ -24,7 +24,7 @@ export const archiveDataCircuit = (id, lineString) => {
         fs.mkdir(newDirectory)
           .then(() => {
             // Creation du fichier
-            fs.writeFile(`${newDirectory}\\lineString.json`, JSON.stringify(lineString))
+            fs.writeFile(`${newDirectory}\\lineString.json`, lineString)
               .then(() => {
                 fs.rename(tmpDirectory + 'vignette.png', newDirectory + `vignette.png`)
                   .then(() => {
