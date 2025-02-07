@@ -11,11 +11,26 @@
     " 
   >
     <div id="mapContainer" class="map-container" style="flex: 1;"></div>
+    <MapHomeWidget
+      :disabled="disabledBtnHome"
+      @home="home"
+    >
+    </MapHomeWidget>
+    <MapDataWidget
+      :distanceTotale="distanceTotale"
+      :distance="distance"
+      :altitude="altitude"
+    >
+    </MapDataWidget>
   </v-container>
 </template>
   
 
 <script setup>
+  import MapHomeWidget from '@/components/MapHomeWidget.vue';
+  import MapDataWidget from '@/components/MapDataWidget.vue';
+  import { useRouter } from 'vue-router';
+
   import '../../node_modules/mapbox-gl/dist/mapbox-gl.css';
   import { zpad } from "../scripts/utils.js" 
   import mapboxgl from 'mapbox-gl';
@@ -26,6 +41,8 @@
   const props = defineProps({
     id: String,
   })
+
+  const router = useRouter()
 
 
   // Lecture des variables d'environnement
@@ -42,6 +59,11 @@
   let longueurTrace = 0
   let dureeAnimation
 
+  const disabledBtnHome = ref(true)
+  const distanceTotale = ref("0.0")
+  const distance = ref("0.0)")
+  const altitude = ref()
+
   // Récupération des données du circuit
   let urlTrace = `http://localhost:4000/api/trace100m/` + zpad(props.id, 6)
   let trace = []
@@ -57,6 +79,7 @@
     }
 
     longueurTrace = turf.length(json.geometry)
+    distanceTotale.value= longueurTrace.toFixed(1)
     dureeAnimation = coeffAnnimation * longueurTrace
 
     console.log(`Longueur de la trace : ${longueurTrace}, Nombre de points : ${json.geometry.coordinates.length}`) 
@@ -81,6 +104,7 @@
       camera.push({
         cap: jsonCamera[key].cap,
         point: [jsonCamera[key].point[0], jsonCamera[key].point[1]],
+        altitude: jsonCamera[key].point[2],
         start: false})
     }
     // console.log(`Nombre de segment camera : ${camera.length}`)     
@@ -111,6 +135,7 @@
 
     } catch (error) {console.log(error)}
   
+    
     // On charge les données graphiques pour le rendu
     mapLoadLayers(map, trace)
 
@@ -118,6 +143,7 @@
     mapAdd3D(map)
 
     // Lancement de l'annimation qui part de Paris et pointe vers le départ
+    console.log("On lance l'annimation du départ")
     map.on('load', async () => {
       map.flyTo({  center: camera[0].point,
         bearing: camera[0].cap, 
@@ -125,7 +151,7 @@
       })
     });
 
-
+    console.log("On lance la suite")
     map.on('moveend', async () => {
       position = map.getSource('point')
       window.requestAnimationFrame(frame);
@@ -175,7 +201,6 @@
   let animation
   let startPause
   debut = new Date()
-  console.log(`Durée annimation : ${dureeAnimation}`)
   
   function frame(time) {
 
@@ -185,16 +210,18 @@
   let t=0
 
   if (!start) {
+    disabledBtnHome.value=false
     start = time;
-    console.log(`start : ${start}, time : ${time}, phase = ${phase}`)
+    // console.log(`start : ${start}, time : ${time}, phase = ${phase}`)
   }
 
   // phase determines how far through the animation we are
   if (pause !== true) {
     phase = (time - start) / dureeAnimation;
+    distance.value = (dureeAnimation*phase/coeffAnnimation).toFixed(1)
     // console.log(`Phase : ${phase}, distance : ${((dureeAnimation*phase/coeffAnnimation)/10).toFixed(2)}`)
     // console.log(`Avancement : ${phase * flyto.length / 10}`)
-    console.log(`start : ${start}, time : ${time}, phase = ${phase}`)
+    // console.log(`start : ${start}, time : ${time}, phase = ${phase}`)
   }
   else return
   // phase is normalized between 0 and 1
@@ -206,13 +233,15 @@
   // On peut changer la couleur en fonction du temps donc de la distance.
   // On peut donc mettre une couleur en fonction de la pente
   // Déplacement de la camera
-  let avancement  = parseInt(phase * camera.length / 2) * 2
+  let avancement  = parseInt(phase * camera.length ) 
+  // console.log(`Avancement : ${avancement}`)
   if (!camera[avancement].start) {
-    console.log(`Avancement : ${avancement}`)
+    // console.log(`Avancement : ${avancement}`)
     fin = new Date()
-    console.log(fin.getTime() - debut.getTime())
+    // console.log(fin.getTime() - debut.getTime())
     // if(fin.getTime() - debut.getTime() > 333) tempo = true
     debut = new Date()
+    altitude.value = camera[avancement].altitude
     // console.log(`on vas vers ${flyto[avancement].point}`)
     // console.log(`Avancement : ${avancement}, On va vers ${flyto[avancement].point}, cap : ${flyto[avancement].cap}`)
     camera[avancement].start=true
@@ -221,7 +250,7 @@
       bearing: camera[avancement].cap, 
       // zoom: 16.5,
       essential: true, 
-      duration: 2000
+      duration: 1000
     })
   }
 
@@ -306,6 +335,9 @@ function playPause() {
   console.log(`Play Pause`)
   if (phase > 1) {
     start = 0
+    for(let i=0; i<camera.length;i++)
+        camera[i].start=false 
+
     window.requestAnimationFrame(frame)
   } else {
     if (pause) {
@@ -322,6 +354,12 @@ function playPause() {
     }
     pause = !pause
   }
+}
+
+
+
+function home() {
+  router.push({ path: `/` })
 }
 
 </script>

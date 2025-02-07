@@ -3,6 +3,11 @@
  * @param {*} map 
  * @param {*} trace 
  */
+
+const initCenterLon = import.meta.env.VITE_MAPBOX_INIT_CENTER_LON
+const initCenterLat = import.meta.env.VITE_MAPBOX_INIT_CENTER_LAT
+
+
 export const mapLoadLayers = (map, trace) => {
   // Chargement des données la trace
   map.on('style.load', () => {
@@ -52,7 +57,7 @@ export const mapLoadLayers = (map, trace) => {
     // Création du point indiquant la position
     map.addSource('point', {
       'type': 'geojson',
-      'data': { type: 'Point', coordinates: trace[0].point }
+      'data': { type: 'Point', coordinates: [initCenterLon, initCenterLat] }
 
     });
 
