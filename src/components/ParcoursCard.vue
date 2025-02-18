@@ -17,20 +17,20 @@
                 <v-list-item value="aff">
                   <v-list-item-title>Afficher les informations</v-list-item-title>
                 </v-list-item>
+                <v-list-item value="3D">
+                  <v-list-item-title @click="MakeFileCamera">Initialiser la 3D</v-list-item-title>
+                </v-list-item>
                 <v-list-item value="camera">
-                  <v-list-item-title @click="MakeFileCamera">Préparer la 3D</v-list-item-title>
+                  <v-list-item-title @click="paramCamera">Configurer la 3D</v-list-item-title>
                 </v-list-item>
                 <v-list-item value="3d">
-                  <v-list-item-title @click="Affiche3D">Voir la 3D</v-list-item-title>
+                  <v-list-item-title @click="Affiche3D">Visualiser la 3D</v-list-item-title>
                 </v-list-item>
                 <v-list-item value="sel">
                   <v-list-item-title>Sélectionner pour comparer</v-list-item-title>
                 </v-list-item>
                 <v-list-item disabled value="com">
                   <v-list-item-title>Comparer</v-list-item-title>
-                </v-list-item>
-                <v-list-item value="mod">
-                  <v-list-item-title>Modifier la fiche</v-list-item-title>
                 </v-list-item>
                 <v-list-item value="sup">
                   <v-list-item-title @click="delCircuit">Supprimer</v-list-item-title>
@@ -74,7 +74,7 @@ const props = defineProps({
   topDistance: String,
 })
 
-const emit = defineEmits(['confirmDelGpxFile', 'addCameraFile', 'affiche3D'])
+const emit = defineEmits(['confirmDelGpxFile', 'addCameraFile', 'modCameraFile', 'affiche3D'])
 
 function delCircuit() {
   emit('confirmDelGpxFile')
@@ -82,6 +82,10 @@ function delCircuit() {
 
 function MakeFileCamera() {
   emit('addCameraFile')
+}
+
+function paramCamera() {
+  emit('modCameraFile')
 }
 
 function Affiche3D() {

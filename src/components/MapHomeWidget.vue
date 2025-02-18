@@ -24,7 +24,7 @@
     background-color: rgb(35 55 75 / 50%);
   }
   #home {
-    padding: 6px;
+    padding: 16px;
     z-index: 1;
     position: absolute;
     top:  0;

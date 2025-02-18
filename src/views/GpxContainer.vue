@@ -19,6 +19,7 @@
           :vignette="'src/assets/data/' + circuit.circuitId + '/vignette.png'"
           @confirm-del-gpx-file="askDelGpxFile(circuit.circuitId, circuit.nom)"
           @addCameraFile="addCameraFile(circuit.circuitId)"
+          @modCameraFile="modCameraFile(circuit.circuitId)"
           @affiche3D="map3D(circuit.circuitId)">
         </ParcoursCard>
       </v-col>
@@ -32,6 +33,7 @@
           :vignette="'src/assets/data/' + circuit.circuitId + '/vignette.png'"
           @confirm-del-gpx-file="askDelGpxFile(circuit.circuitId, circuit.nom)"
           @addCameraFile="addCameraFile(circuit.circuitId)"
+          @modCameraFile="modCameraFile(circuit.circuitId)"
           @affiche3D="map3D(circuit.circuitId)">
         </ParcoursCard>
       </v-col>
@@ -45,6 +47,7 @@
           :vignette="'src/assets/data/' + circuit.circuitId + '/vignette.png'"
           @confirm-del-gpx-file="askDelGpxFile(circuit.circuitId, circuit.nom)"
           @addCameraFile="addCameraFile(circuit.circuitId)"
+          @modCameraFile="modCameraFile(circuit.circuitId)"
           @affiche3D="map3D(circuit.circuitId)">
         </ParcoursCard>
       </v-col>
@@ -58,6 +61,7 @@
           :vignette="'src/assets/data/' + circuit.circuitId + '/vignette.png'"
           @confirmDelGpxFile="askDelGpxFile(circuit.circuitId, circuit.nom)"
           @addCameraFile="addCameraFile(circuit.circuitId)"
+          @modCameraFile="modCameraFile(circuit.circuitId)"
           @affiche3D="map3D(circuit.circuitId)">
         </ParcoursCard>
       </v-col>
@@ -146,6 +150,10 @@ onUnmounted(() => {
 
 function map3D(id) {
   router.push({ path: `/map/${id}` })
+}
+
+function modCameraFile(id) {
+  router.push({ path: `/camera/${id}` })
 }
 
 
@@ -471,7 +479,6 @@ function addCameraFile(id) {
     .catch((err) => {
       traiteCatch(err, alarmes)
     })
-
 }
 
 /**

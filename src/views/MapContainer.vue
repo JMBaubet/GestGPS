@@ -61,7 +61,7 @@
 
   const disabledBtnHome = ref(true)
   const distanceTotale = ref("0.0")
-  const distance = ref("0.0)")
+  const distance = ref("0.0")
   const altitude = ref()
 
   // Récupération des données du circuit
@@ -175,16 +175,14 @@
    */
   function keyboard(e) {
     // console.log(`Keyboard : ${e.key}`)
-    //console.log(e)
+    console.log(e.key)
     if (e.key === "p") { playPause() }
     if (e.key === "r") {
+
       start = 0
-      //  window.requestAnimationFrame(frame)
-    }
-    if (e.key === "m") { 
-      start = start + 2750
       for(let i=0; i<camera.length;i++)
         camera[i].start=false 
+//  window.requestAnimationFrame(frame)
     }
   }
 
@@ -193,13 +191,13 @@
    * @param time 
    */
   let start
-  let fin
   let debut
   let phase = 0
   let pause = false
+  let timePause
+  let startPause = true
   let position 
   let animation
-  let startPause
   debut = new Date()
   
   function frame(time) {
@@ -216,14 +214,55 @@
   }
 
   // phase determines how far through the animation we are
-  if (pause !== true) {
+  if (pause !== true)  {
     phase = (time - start) / dureeAnimation;
     distance.value = (dureeAnimation*phase/coeffAnnimation).toFixed(1)
     // console.log(`Phase : ${phase}, distance : ${((dureeAnimation*phase/coeffAnnimation)/10).toFixed(2)}`)
     // console.log(`Avancement : ${phase * flyto.length / 10}`)
     // console.log(`start : ${start}, time : ${time}, phase = ${phase}`)
   }
-  else return
+  else { 
+    console.log(`Nous sommes en pause`)
+    if (startPause) {
+      console.log(`Nous passons en pause`)
+      phase = (time - start) / dureeAnimation;
+      distance.value = (dureeAnimation*phase/coeffAnnimation).toFixed(1)
+      console.log(`on fait le flyto... vers : ${parseInt(phase * camera.length )}`)
+      map.flyTo({ 
+        center: camera[parseInt(phase * camera.length )].point,  
+        bearing: camera[parseInt(phase * camera.length )].cap, 
+        // zoom: 16.5,
+        essential: true, 
+        duration: 1000
+      })
+
+      map.setPaintProperty(
+        "animationTrace",
+        "line-gradient",
+        [
+          "step",
+          ["line-progress"],
+          "white",
+          phase,
+          "rgba(0, 0, 0, 0)",
+        ]
+      )
+
+      const alongRoute = turf.along(
+        turf.lineString(trace),
+        routeDistance * phase
+      ).geometry.coordinates;
+
+
+      position.setData({type: 'Point', coordinates : [alongRoute[0], alongRoute[1]]})
+
+
+      startPause = false
+      return
+    } else {
+      return
+    }
+  }
   // phase is normalized between 0 and 1
   // when the animation is finished, reset start to loop the animation
   if (phase > 1) return;
@@ -235,11 +274,9 @@
   // Déplacement de la camera
   let avancement  = parseInt(phase * camera.length ) 
   // console.log(`Avancement : ${avancement}`)
+
   if (!camera[avancement].start) {
     // console.log(`Avancement : ${avancement}`)
-    fin = new Date()
-    // console.log(fin.getTime() - debut.getTime())
-    // if(fin.getTime() - debut.getTime() > 333) tempo = true
     debut = new Date()
     altitude.value = camera[avancement].altitude
     // console.log(`on vas vers ${flyto[avancement].point}`)
@@ -330,9 +367,9 @@
   animation = window.requestAnimationFrame(frame);
 }
 
-
 function playPause() {
   console.log(`Play Pause`)
+
   if (phase > 1) {
     start = 0
     for(let i=0; i<camera.length;i++)
@@ -341,19 +378,22 @@ function playPause() {
     window.requestAnimationFrame(frame)
   } else {
     if (pause) {
-      start = start + performance.now() - startPause
+      // On relance l'annimation
+      start = start + performance.now() - timePause
       window.requestAnimationFrame(frame)
-      startPause = 0
+      timePause = 0
+      startPause = true
     } else {
-      // console.log(` : Time: ${animation}`)
-      if (!startPause) {
-        startPause = performance.now();
+      // On stop l'annimation
+      if (!timePause) {
+        timePause = performance.now();
         console.table(map.getZoom())
-        // console.log(`startPause : ${startPause}`)
+        // console.log(`timePause : ${timePause}`)s
       }
     }
     pause = !pause
   }
+  
 }
 
 

@@ -10,7 +10,33 @@ const dataDirectory = process.env.DATA_DIRECTORY
 const fileTrace = process.env.FILE_TRACE
 const fileTrace100m = process.env.FILE_TRACE_PLUS_100_M
 const fileCamera = process.env.FILE_CAMERA
+const fileAltitude = process.env.FILE_ALTITUDE
 
+export const genere100mFile = (id) => {
+  return new Promise((resolve, reject) => {
+    const longueurSegment = 0.1 // Distance en km
+    let json = {}
+    let coords = []
+    try {
+      json = JSON.parse(fs.readFileSync(dataDirectory + id + "\\" + fileTrace))
+      // newJson.push(json.geometry.coordinates[0])
+      // console.table(newJson)
+    } catch (e) {
+      console.error(`genere100File Erreur : ${e}`)
+      reject({ id: 2111, error: `Erreur lecture du fichier lineString !` })
+    }
+    console.log(`Nombre de points : ${json.geometry.coordinates.length}`)
+
+    for (let key = 0; key < json.geometry.coordinates.length; key++) {
+      coords[key] = [json.geometry.coordinates[key][0], json.geometry.coordinates[key][1]]
+    }
+    const chunk = turf.lineChunk(turf.lineString(coords), 0.1).features
+    console.log(chunk.length)
+    for (let key = 0; key < chunk.length; key++) {
+      console.table(chunk[key].geometry.coordinates)
+    }
+  })
+}
 
 /**
  * @desc Promesse qui a partir du fichier FILE_TRACE crée les fichiers :
@@ -25,8 +51,11 @@ export const genere3DFiles = (id) => {
     let json = {}
     let newJson = []
     let cameraPoints = []
+    let altitudes = []
     let indexJson = 0
+
     let nbSegment = 0
+    let denivele = 0
 
     try {
       json = JSON.parse(fs.readFileSync(dataDirectory + id + "\\" + fileTrace))
@@ -37,10 +66,23 @@ export const genere3DFiles = (id) => {
       reject({ id: 2111, error: `Erreur lecture du fichier lineString !` })
     }
     console.log(`Nombre de points : ${json.geometry.coordinates.length}`)
+
+    // On initialise le tableau altitude avec le premier objet
+    altitudes.push({
+      altitude: json.geometry.coordinates[0][2],
+      altitudeSmooth: json.geometry.coordinates[0][3],
+      pente: 0,
+      denivele: denivele
+    })
+
+    // On intègre le premier du km 0 pour la caméra
+    cameraPoints[0] = { start: false, point: [json.geometry.coordinates[0][0], json.geometry.coordinates[0][1]], cap: 0 }
+
     while (indexJson < json.geometry.coordinates.length) {
       // console.log(`Boucle pricipale ${indexJson}, ${json.geometry.coordinates.length}`)
       let distanceAtteinte = false
       let segment = []
+      let pente = 0
 
       segment.push(newJson[newJson.length - 1])
       // console.table(segment)
@@ -54,6 +96,14 @@ export const genere3DFiles = (id) => {
           segment.push(json.geometry.coordinates[indexJson])
           newJson.push(json.geometry.coordinates[indexJson])
           distanceSegment = parseFloat(turf.length(turf.lineString(segment)).toFixed(4))
+          // Calcul du dénivelé 
+          // console.log(`${json.geometry.coordinates[indexJson - 1][3]}, ${json.geometry.coordinates[indexJson][3]}`)
+          if (json.geometry.coordinates[indexJson][3] > json.geometry.coordinates[indexJson - 1][3]) {
+            // console.log(`${denivele}`)
+            denivele = denivele + json.geometry.coordinates[indexJson][3] - json.geometry.coordinates[indexJson - 1][3]
+
+          }
+
           // console.log(`longueur segment : ${distanceSegment}, Nb points : ${segment.length}`)
         } catch (e) {
           if (indexJson !== json.geometry.coordinates.length) {
@@ -64,18 +114,24 @@ export const genere3DFiles = (id) => {
         }
         // console.log(distanceSegment)
         if (distanceSegment === longueurSegment) { // On a déja un point à la distance voulue
-          console.warn(`Point à 100m`)
+          // console.warn(`Point à 100m`)
           distanceAtteinte = true
-          cameraPoints[nbSegment] = { start: false, point: segment[segment.length - 1], cap: 0 }
+          cameraPoints[nbSegment + 1] = { start: false, point: segment[segment.length - 1], cap: 0 }
+
+          pente = json.geometry.coordinates[indexJson][3] - altitudes[nbSegment].altitudeSmooth
+          altitudes.push({
+            altitude: json.geometry.coordinates[indexJson][2],
+            altitudeSmooth: json.geometry.coordinates[indexJson][3],
+            pente: pente,
+            denivele: denivele
+          })
+
           newJson.push(segment[segment.length - 1])
           indexJson--
 
         } else if (distanceSegment > longueurSegment) { // On a dépassé la distance voulue
-          if (distanceSegment > 0.2) {
-            // console.table(segment)
-            // console.error(`${distanceSegment}, ${segment.length}`)
-          }
           // console.log(`Occurence  ${nbSegment}`)
+
           // On supprime le point qui est au delà de la longueur max du segment 
           distanceAtteinte = true
           newJson.pop()
@@ -89,15 +145,28 @@ export const genere3DFiles = (id) => {
           // console.log(`Cap calculé : ${cap}`)
           let newPoint
 
-          altitudeAbs = Math.round(segment[segment.length - 2][2] +
+          altitudeAbs = segment[segment.length - 2][2] +
             ((segment[segment.length - 1][2] - segment[segment.length - 2][2]) *
               turf.distance(segment[segment.length - 1], segment[segment.length - 2]) /
-              longueurSegment))
+              longueurSegment)
 
-          altitudeSmooth = Math.round(segment[segment.length - 2][3] +
+          altitudeSmooth = segment[segment.length - 2][3] +
             ((segment[segment.length - 1][3] - segment[segment.length - 2][3]) *
               turf.distance(segment[segment.length - 1], segment[segment.length - 2]) /
-              longueurSegment))
+              longueurSegment)
+
+          // Calcul de la pente
+          // console.table(altitudes)
+          // console.log(altitudeSmooth)
+          pente = (altitudeAbs - altitudes[nbSegment].altitude)
+          // console.log(pente)
+
+          altitudes.push({
+            altitude: json.geometry.coordinates[indexJson][2],
+            altitudeSmooth: json.geometry.coordinates[indexJson][3],
+            pente: pente,
+            denivele: denivele
+          })
 
 
           if (segment.length === 2) {
@@ -115,10 +184,10 @@ export const genere3DFiles = (id) => {
           }
           // console.table(newPoint.geometry.coordinates)
 
-          newPoint.geometry.coordinates.push(altitudeAbs)
-          newPoint.geometry.coordinates.push(altitudeSmooth)
+          // newPoint.geometry.coordinates.push(altitudeAbs)
+          // newPoint.geometry.coordinates.push(altitudeSmooth)
           // console.table(newPoint.geometry.coordinates)
-          cameraPoints[nbSegment] = { start: false, point: newPoint.geometry.coordinates, cap: 0 }
+          cameraPoints[nbSegment + 1] = { start: false, point: newPoint.geometry.coordinates, cap: 0 }
           newJson.push(newPoint.geometry.coordinates)
           indexJson--
 
@@ -128,7 +197,11 @@ export const genere3DFiles = (id) => {
     }
     // console.table(newJson)
     // console.log("sortie")
-    console.log(`Nombre de segment : ${nbSegment}`)
+    console.log(`Nombre de segment : ${nbSegment + 1}`)
+
+    // On insère le point d'arrivée
+    cameraPoints.push({ start: false, point: [json.geometry.coordinates[json.geometry.coordinates.length - 1][0], json.geometry.coordinates[json.geometry.coordinates.length - 1][1]], cap: 0 })
+    console.log(`Nombre de points camera : ${cameraPoints.length}`)
 
     // On calcul l'angle de vision pour la caméra tous les 100m
     // pour avoir une vue dans la direction de la trace
@@ -167,25 +240,33 @@ export const genere3DFiles = (id) => {
           .then(() => {
             fs.promises.writeFile(dataDirectory + id + "\\" + fileTrace100m, lineString100m)
               .then(() => {
-                resolve({ status: "OK" })
+                fs.promises.writeFile(dataDirectory + id + "\\" + fileAltitude, JSON.stringify(altitudes))
+                  .then(() => {
+                    resolve({ status: "OK" })
+                  })
+                  .catch((err) => {
+                    console.error(`Erreur archivage du fichier altitude : ${err}`)
+                    reject({ id: "21??", error: `Erreur écriture du fichier altitude !` })
+                  })
+
+                  .catch((err) => {
+                    console.error(`Erreur archivage du fichier camera : ${err}`)
+                    reject({ id: 2112, error: `Erreur écriture du fichier lineString100m !` })
+                  })
               })
               .catch((err) => {
                 console.error(`Erreur archivage du fichier camera : ${err}`)
-                reject({ id: 2112, error: `Erreur écriture du fichier lineString100m !` })
+                reject({ id: 2113, error: `Erreur écriture du fichier camera !` })
               })
           })
           .catch((err) => {
-            console.error(`Erreur archivage du fichier camera : ${err}`)
-            reject({ id: 2113, error: `Erreur écriture du fichier camera !` })
+            console.error(`Erreur accès dossier: ${err}`)
+            reject({ id: 2114, error: `Erreur d'accès au dossier data !` })
           })
-      })
-      .catch((err) => {
-        console.error(`Erreur accès dossier: ${err}`)
-        reject({ id: 2114, error: `Erreur d'accès au dossier data !` })
+
       })
 
   })
-
 }
 
 /**

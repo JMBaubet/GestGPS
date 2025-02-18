@@ -16,6 +16,7 @@ import { getLineString } from './src/scripts/circuits.js'  // A supprimer ??
 import { genere3DFiles } from './src/scripts/3DFiles.js'
 import { getTrace100m } from './src/scripts/3DFiles.js'
 import { getCamera } from './src/scripts/3DFiles.js'
+import { savePositionsCamera } from './src/scripts/cameraBack.js'
 
 const app = express()
 dotenv.config()
@@ -29,6 +30,7 @@ const options = cors.CorsOptions = {
 };
 app.use(cors(options))
 app.use(morgan('tiny'))
+app.use(express.json())
 
 const directory = os.homedir() + "\\downloads"
 
@@ -213,6 +215,22 @@ app.post('/api/3DFiles/:id/', (req, res) => {
 
     })
 })
+
+//Sauvegarde du fichier positionsCamera.json
+app.post('/api/camera/:id/', (req, res) => {
+  // console.table(req.body.positionsCamera)
+  savePositionsCamera(req.params.id, req.body.positionsCamera)
+    .then((retour) => {
+      res.setHeader('Content-Type', 'application/json')
+      res.status(200)
+      res.send({ status: "OK" })
+
+    })
+    .catch((err) => {
+      console.error(`backend.js : ${err.id}`)
+    })
+})
+
 
 // Récupération du fichier trace 100m
 app.get('/api/trace100m/:id', (req, res) => {
