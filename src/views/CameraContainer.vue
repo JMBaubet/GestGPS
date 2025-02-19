@@ -1,4 +1,7 @@
 <template>
+<!-- 
+  <MsgAlert :alarmes @close-alarme="delAlarme"></MsgAlert> -->
+
   <v-container 
     fixed-right
     style="
@@ -303,7 +306,7 @@ function savePositions() {
     headers: { 
       'Content-Type': 'application/json; charset=UTF-8' 
     }, 
-    body: JSON.stringify({positionsCamera: positionsCamera}), 
+    body: JSON.stringify(positionsCamera), 
     signal: AbortSignal.timeout(4000) 
   })
   .then((rep) => {
@@ -398,6 +401,7 @@ function positionCamera() {
       "cap": bearing,
       "zoom": zoom,
       "pitch": elevation,
+      "altitude": altitude,
       "lookAtPoint": camera[avancement].point,
       "set": true
     }

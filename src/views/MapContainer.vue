@@ -88,6 +88,35 @@
     console.error(`Erreur JsonTrace : ${err}`)
   })
 
+
+  // // Récupération des données camera
+  // let urlCamera = `http://localhost:4000/api/camera3d/` + zpad(props.id, 6)
+  // // let camera = [{point: [0,0], cap: 0,  start: false}]
+  // let camera = []
+  
+  // fetch(urlCamera, { method: 'GET', signal: AbortSignal.timeout(4000) })
+  // .then((rep) => {
+  //   return rep.json()
+  // })
+  // .then((camera) => {
+  //   // On lit le 
+  //   // camera[0] = {point: [0,0], cap: 0,  start: false}
+  //   // for (let key = 0; key < jsonCamera.length; key++) {
+  //   //   camera.push({
+  //   //     cap: jsonCamera[key].cap,
+  //   //     point: [jsonCamera[key].point[0], jsonCamera[key].point[1]],
+  //   //     altitude: jsonCamera[key].point[2],
+  //   //     start: false})
+  //   // }
+  //   // console.log(`Nombre de segment camera : ${camera.length}`)     
+  //   console.table(camera)
+
+  // })
+  // .catch((err) => {
+  //   console.error(`Erreur JsonCamera: ${err}`)
+  // })
+
+
   // Récupération des données camera
   let urlCamera = `http://localhost:4000/api/camera/` + zpad(props.id, 6)
   // let camera = [{point: [0,0], cap: 0,  start: false}]

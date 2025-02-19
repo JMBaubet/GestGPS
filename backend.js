@@ -17,6 +17,7 @@ import { genere3DFiles } from './src/scripts/3DFiles.js'
 import { getTrace100m } from './src/scripts/3DFiles.js'
 import { getCamera } from './src/scripts/3DFiles.js'
 import { savePositionsCamera } from './src/scripts/cameraBack.js'
+import { getPositionsCamera } from './src/scripts/cameraBack.js'
 
 const app = express()
 dotenv.config()
@@ -228,6 +229,20 @@ app.post('/api/camera/:id/', (req, res) => {
     })
     .catch((err) => {
       console.error(`backend.js : ${err.id}`)
+    })
+})
+
+// Récupération du fichier positionsCamera.json
+app.get('/api/camera3d/:id', (req, res) => {
+  getPositionsCamera(`${req.params.id}`)
+    .then((camera) => {
+      res.setHeader('Content-Type', 'application/json')
+      res.status(200).send(camera)
+    })
+    .catch(err => {
+      console.error(`Erreur : ${err.id}`)
+      res.setHeader('Content-Type', 'application/json');
+      res.status(500).send(err)
     })
 })
 
