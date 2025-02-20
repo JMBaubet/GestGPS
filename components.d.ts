@@ -9,7 +9,6 @@ declare module 'vue' {
   export interface GlobalComponents {
     AddGpxDialog: typeof import('./src/components/AddGpxDialog.vue')['default']
     CameraCmdWidget: typeof import('./src/components/CameraCmdWidget.vue')['default']
-    copy: typeof import('./src/components/MapDataWidget copy.vue')['default']
     DelGpxDialog: typeof import('./src/components/DelGpxDialog.vue')['default']
     Fitre: typeof import('./src/components/Fitre.vue')['default']
     MapDataWidget: typeof import('./src/components/MapDataWidget.vue')['default']
