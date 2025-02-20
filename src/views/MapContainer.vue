@@ -16,12 +16,12 @@
       @home="home"
     >
     </MapHomeWidget>
-    <MapDataWidget
+    <!-- <MapDataWidget
       :distanceTotale="distanceTotale"
       :distance="distance"
       :altitude="altitude"
     >
-    </MapDataWidget>
+    </MapDataWidget> -->
   </v-container>
 </template>
   
@@ -37,6 +37,7 @@
   import {ref, onMounted, onUnmounted} from 'vue' 
   import * as turf from '@turf/turf'
   import {mapLoadLayers, mapMaskSymbols, mapAdd3D} from "../scripts/mapLayers" 
+import { ca } from 'vuetify/locale';
 
   const props = defineProps({
     id: String,
@@ -64,7 +65,7 @@
   const distance = ref("0.0")
   const altitude = ref()
 
-  // Récupération des données du circuit
+  // Récupération des données du circuit 
   let urlTrace = `http://localhost:4000/api/trace100m/` + zpad(props.id, 6)
   let trace = []
   fetch(urlTrace, { method: 'GET', signal: AbortSignal.timeout(4000) })
@@ -89,36 +90,8 @@
   })
 
 
-  // // Récupération des données camera
-  // let urlCamera = `http://localhost:4000/api/camera3d/` + zpad(props.id, 6)
-  // // let camera = [{point: [0,0], cap: 0,  start: false}]
-  // let camera = []
-  
-  // fetch(urlCamera, { method: 'GET', signal: AbortSignal.timeout(4000) })
-  // .then((rep) => {
-  //   return rep.json()
-  // })
-  // .then((camera) => {
-  //   // On lit le 
-  //   // camera[0] = {point: [0,0], cap: 0,  start: false}
-  //   // for (let key = 0; key < jsonCamera.length; key++) {
-  //   //   camera.push({
-  //   //     cap: jsonCamera[key].cap,
-  //   //     point: [jsonCamera[key].point[0], jsonCamera[key].point[1]],
-  //   //     altitude: jsonCamera[key].point[2],
-  //   //     start: false})
-  //   // }
-  //   // console.log(`Nombre de segment camera : ${camera.length}`)     
-  //   console.table(camera)
-
-  // })
-  // .catch((err) => {
-  //   console.error(`Erreur JsonCamera: ${err}`)
-  // })
-
-
-  // Récupération des données camera
-  let urlCamera = `http://localhost:4000/api/camera/` + zpad(props.id, 6)
+  // // Récupération des données camera (Nouveau format)
+  let urlCamera = `http://localhost:4000/api/camera3d/` + zpad(props.id, 6)
   // let camera = [{point: [0,0], cap: 0,  start: false}]
   let camera = []
   
@@ -129,15 +102,16 @@
   .then((jsonCamera) => {
     // On lit le 
     // camera[0] = {point: [0,0], cap: 0,  start: false}
-    for (let key = 0; key < jsonCamera.length; key++) {
-      camera.push({
-        cap: jsonCamera[key].cap,
-        point: [jsonCamera[key].point[0], jsonCamera[key].point[1]],
-        altitude: jsonCamera[key].point[2],
-        start: false})
-    }
-    // console.log(`Nombre de segment camera : ${camera.length}`)     
-    console.log(camera[0].start)
+    // for (let key = 0; key < jsonCamera.length; key++) {
+    //   camera.push({
+    //     cap: jsonCamera[key].cap,
+    //     point: [jsonCamera[key].point[0], jsonCamera[key].point[1]],
+    //     altitude: jsonCamera[key].point[2],
+    //     start: false})
+    // }
+    // console.log(`Nombre de segment camera : ${camera.length}`)
+    camera = jsonCamera.camera     
+    console.table(camera)
 
   })
   .catch((err) => {
@@ -145,8 +119,36 @@
   })
 
 
+  // Récupération des données camera (ancien format)
+  // let urlCamera = `http://localhost:4000/api/camera/` + zpad(props.id, 6)
+  // // let camera = [{point: [0,0], cap: 0,  start: false}]
+  // let camera = []
+  
+  // fetch(urlCamera, { method: 'GET', signal: AbortSignal.timeout(4000) })
+  // .then((rep) => {
+  //   return rep.json()
+  // })
+  // .then((jsonCamera) => {
+  //   // On lit le 
+  //   // camera[0] = {point: [0,0], cap: 0,  start: false}
+  //   for (let key = 0; key < jsonCamera.length; key++) {
+  //     camera.push({
+  //       cap: jsonCamera[key].cap,
+  //       point: [jsonCamera[key].point[0], jsonCamera[key].point[1]],
+  //       altitude: jsonCamera[key].point[2],
+  //       start: false})
+  //   }
+  //   // console.log(`Nombre de segment camera : ${camera.length}`)     
+  //   console.log(camera[0].start)
+
+  // })
+  // .catch((err) => {
+  //   console.error(`Erreur JsonCamera: ${err}`)
+  // })
+
+
   onMounted(() => {
-    // On prend intercepte le clavier
+    // On intercepte le clavier
     window.addEventListener('keypress', keyboard)
 
     // console.log(`On charge mmap props.id : ${props.id}`)
@@ -171,20 +173,29 @@
     // On charge le relief, le ciel et le brouillard
     mapAdd3D(map)
 
-    // Lancement de l'annimation qui part de Paris et pointe vers le départ
-    console.log("On lance l'annimation du départ")
-    map.on('load', async () => {
-      map.flyTo({  center: camera[0].point,
-        bearing: camera[0].cap, 
-        zoom: 16, pitch:60, duration: 7500
-      })
-    });
+    const timer = setTimeout(loadMap, 500)
 
-    console.log("On lance la suite")
-    map.on('moveend', async () => {
+    function loadMap() {
+    // Lancement de l'annimation qui part de Paris et pointe vers le départ
+
+    console.log("On lance l'annimation du départ")
+    
+    map.flyTo({  center: camera[0].lookAtDebut,
+        // bearing: camera[0].cap, 
+        bearing: camera[0].capDebut, 
+        zoom: camera[0].zoomDebut, 
+        pitch:camera[0].pitchDebut, 
+        duration: 7500
+      })
+
+    map.once('moveend', async () => {
+      console.log("On lance la suite")
+
       position = map.getSource('point')
       window.requestAnimationFrame(frame);
     });
+
+    }
 
   })
 
@@ -209,8 +220,6 @@
     if (e.key === "r") {
 
       start = 0
-      for(let i=0; i<camera.length;i++)
-        camera[i].start=false 
 //  window.requestAnimationFrame(frame)
     }
   }
@@ -222,11 +231,17 @@
   let start
   let debut
   let phase = 0
-  let pause = false
+  let pause = true
   let timePause
   let startPause = true
   let position 
-  let animation
+  let avancement
+  let dureeSegment
+  let startSegment
+  let phaseSegment
+  let altitudeDebut
+  let altitudeFin
+
   debut = new Date()
   
   function frame(time) {
@@ -245,7 +260,9 @@
   // phase determines how far through the animation we are
   if (pause !== true)  {
     phase = (time - start) / dureeAnimation;
-    distance.value = (dureeAnimation*phase/coeffAnnimation).toFixed(1)
+    // console.log(`start : ${start}, time : ${time}, phase = ${phase}`)
+    // distance.value = (dureeAnimation*phase/coeffAnnimation).toFixed(1)
+    avancement = parseInt((dureeAnimation*phase/coeffAnnimation) * 10)
     // console.log(`Phase : ${phase}, distance : ${((dureeAnimation*phase/coeffAnnimation)/10).toFixed(2)}`)
     // console.log(`Avancement : ${phase * flyto.length / 10}`)
     // console.log(`start : ${start}, time : ${time}, phase = ${phase}`)
@@ -256,35 +273,6 @@
       console.log(`Nous passons en pause`)
       phase = (time - start) / dureeAnimation;
       distance.value = (dureeAnimation*phase/coeffAnnimation).toFixed(1)
-      console.log(`on fait le flyto... vers : ${parseInt(phase * camera.length )}`)
-      map.flyTo({ 
-        center: camera[parseInt(phase * camera.length )].point,  
-        bearing: camera[parseInt(phase * camera.length )].cap, 
-        // zoom: 16.5,
-        essential: true, 
-        duration: 1000
-      })
-
-      map.setPaintProperty(
-        "animationTrace",
-        "line-gradient",
-        [
-          "step",
-          ["line-progress"],
-          "white",
-          phase,
-          "rgba(0, 0, 0, 0)",
-        ]
-      )
-
-      const alongRoute = turf.along(
-        turf.lineString(trace),
-        routeDistance * phase
-      ).geometry.coordinates;
-
-
-      position.setData({type: 'Point', coordinates : [alongRoute[0], alongRoute[1]]})
-
 
       startPause = false
       return
@@ -292,108 +280,85 @@
       return
     }
   }
+
   // phase is normalized between 0 and 1
   // when the animation is finished, reset start to loop the animation
   if (phase > 1) return;
 
 
-  // Animation de la trace.
-  // On peut changer la couleur en fonction du temps donc de la distance.
-  // On peut donc mettre une couleur en fonction de la pente
-  // Déplacement de la camera
-  let avancement  = parseInt(phase * camera.length ) 
-  // console.log(`Avancement : ${avancement}`)
-
-  if (!camera[avancement].start) {
-    // console.log(`Avancement : ${avancement}`)
-    debut = new Date()
-    altitude.value = camera[avancement].altitude
-    // console.log(`on vas vers ${flyto[avancement].point}`)
-    // console.log(`Avancement : ${avancement}, On va vers ${flyto[avancement].point}, cap : ${flyto[avancement].cap}`)
-    camera[avancement].start=true
-    map.flyTo({ 
-      center: camera[avancement].point,  
-      bearing: camera[avancement].cap, 
-      // zoom: 16.5,
-      essential: true, 
-      duration: 1000
-    })
-  }
 
 
-  // if (phase < 0.5)
-  //   map.setPaintProperty(
-  //     "line",
-  //     "line-gradient",
-  //     [
-  //       "step",
-  //       ["line-progress"],
-  //       "rgba(23, 23, 0, 1)",
-  //       phase,
-  //       "rgba(0, 0, 0, 0)",
-  //     ]
-  //   )
-  // else
-    map.setPaintProperty(
-      "animationTrace",
-      "line-gradient",
-      [
-        "step",
-        ["line-progress"],
-        "white",
-        phase,
-        "rgba(0, 0, 0, 0)",
-      ]
-    )
 
+  // Gestion de la camera
+  console.log(`Avancement : ${avancement}`)
+  // console.log(`Longueur segment : ${camera[avancement].lg}`)
+  dureeSegment = camera[avancement].lg * coeffAnnimation/10
+  // startSegment = start + (camera[avancement].start * coeffAnnimation/10)
+  startSegment = start + (camera[avancement].start * coeffAnnimation/10)
+  phaseSegment = (time - startSegment) / dureeSegment
+  const altitudeCamera = parseInt(camera[avancement].altitudeDebut + ((camera[avancement].altitudeFin - camera[avancement].altitudeDebut) * phaseSegment))
+
+  // console.log(`Durée segment : ${dureeSegment}`)
+  // console.log(`Start segment : ${startSegment}`)
+  // console.log(`Phase segment : ${phaseSegment}`)
+  // console.log(camera[avancement].positionCameraDebut, camera[avancement].positionCameraFin)
+  // console.log(`altitude  caméra: ${altitudeCamera}`)
+  
+  const alongPositionCamera = turf.along(
+    turf.lineString( [camera[avancement].positionCameraDebut, camera[avancement].positionCameraFin]),
+    camera[avancement].positionCameraLongueur * phaseSegment
+  ).geometry.coordinates;
+
+  const alongLookAtCamera = turf.along(
+    turf.lineString( [camera[avancement].lookAtDebut, camera[avancement].lookAtFin]),
+    camera[avancement].lookAtLongueur * phaseSegment
+  ).geometry.coordinates;
+
+  // console.log(`Position : ${alongPositionCamera[0]}, ${alongPositionCamera[1]}, lookAt : ${alongLookAtCamera[0]}, ${alongLookAtCamera[1]}`)
+
+  const alongRoute = turf.along(
+  turf.lineString(trace),
+    routeDistance * phase
+  ).geometry.coordinates;
+
+  const pov = map.getFreeCameraOptions();
+
+  pov.position = mapboxgl.MercatorCoordinate.fromLngLat(
+    {
+      lng: alongPositionCamera[0],
+      lat: alongPositionCamera[1]
+    }, 
+    altitudeCamera
+  )
+
+  // console.log(`Position caméra : ${alongPositionCamera[0]}, ${alongPositionCamera[1]} `)
+  pov.lookAtPoint({
+    lng: alongLookAtCamera[0],
+    lat: alongLookAtCamera[1]
+  });
+
+  map.setFreeCameraOptions(pov);
 
   // use the phase to get a point that is the appropriate distance along the route
   // this approach syncs the camera and route positions ensuring they move
   // at roughly equal rates even if they don't contain the same number of points
 
-  const alongRoute = turf.along(
-    turf.lineString(trace),
-    routeDistance * phase
-  ).geometry.coordinates;
-
-
-
-  // const alongCamera = turf.along(
-  //   turf.lineString(cameraRoute),
-  //   cameraRouteDistance * phase
-  // ).geometry.coordinates;
-
-  // const camera = map.getFreeCameraOptions();
-  // // set the position and altitude of the camera
-  // let elevation = Math.floor(map.queryTerrainElevation(
-  //   {
-  //     lng: alongCamera[0],
-  //     lat: alongCamera[1]
-  //   },
-  //   { exaggerated: false }
-  // ))
-
-  // // console.log(elevation)
-
-  // camera.position = mapboxgl.MercatorCoordinate.fromLngLat(
-  //   {
-  //     lng: alongCamera[0],
-  //     lat: alongCamera[1]
-  //   },
-  //   // cameraAltitude
-  //   cameraAltitude + elevation
-  // );
-
-  // // tell the camera to look at a point along the route
-  // camera.lookAtPoint({
-  //   lng: alongRoute[0],
-  //   lat: alongRoute[1]
-  // });
-
   position.setData({type: 'Point', coordinates : [alongRoute[0], alongRoute[1]]})
+
+  map.setPaintProperty(
+    "animationTrace",
+    "line-gradient",
+    [
+      "step",
+      ["line-progress"],
+      "rgba(155, 155, 155, 0.75)",
+      phase,
+      "rgba(0, 0, 0, 0)",
+    ]
+  )
+
   
-  // map.setFreeCameraOptions(camera);
-  animation = window.requestAnimationFrame(frame);
+  window.requestAnimationFrame(frame);
 }
 
 function playPause() {
@@ -416,7 +381,7 @@ function playPause() {
       // On stop l'annimation
       if (!timePause) {
         timePause = performance.now();
-        console.table(map.getZoom())
+        // console.table(map.getZoom())
         // console.log(`timePause : ${timePause}`)s
       }
     }

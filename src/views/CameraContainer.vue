@@ -306,7 +306,7 @@ function savePositions() {
     headers: { 
       'Content-Type': 'application/json; charset=UTF-8' 
     }, 
-    body: JSON.stringify(positionsCamera), 
+    body: JSON.stringify({positionsCamera : positionsCamera}), 
     signal: AbortSignal.timeout(4000) 
   })
   .then((rep) => {
@@ -397,7 +397,7 @@ function positionCamera() {
     positionsCamera[avancement] = {
       "start": avancement, 
       "longueur": 0, 
-      "positionCamera": [lngLat.lng, lngLat.lat], 
+      "positionCamera": [lngLat.lng.toFixed(5), lngLat.lat.toFixed(5)], 
       "cap": bearing,
       "zoom": zoom,
       "pitch": elevation,

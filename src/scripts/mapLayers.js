@@ -24,21 +24,6 @@ export const mapLoadLayers = (map, trace) => {
       }
     });
 
-    // Création du Layer pour l'avancement de la visualisation de la trace
-    map.addLayer({
-      type: 'line',
-      source: 'trace',
-      id: 'animationTrace',
-      paint: {
-        'line-color': "rgba(23, 23, 0, 0)", // La couleur es donnée dans l'annimation
-        'line-width': 12,
-      },
-      layout: {
-        'line-cap': 'round',
-        'line-join': 'round'
-      }
-    })
-
     // Creation du Layer de la trace 
     map.addLayer({
       type: 'line',
@@ -53,6 +38,22 @@ export const mapLoadLayers = (map, trace) => {
         'line-join': 'round'
       }
     })
+
+    // Création du Layer pour l'avancement de la visualisation de la trace
+    map.addLayer({
+      type: 'line',
+      source: 'trace',
+      id: 'animationTrace',
+      paint: {
+        'line-color': "rgba(23, 23, 0, 0)", // La couleur est donnée dans l'annimation
+        'line-width': 12,
+      },
+      layout: {
+        'line-cap': 'round',
+        'line-join': 'round'
+      }
+    })
+
 
     // Création du point indiquant la position
     map.addSource('point', {

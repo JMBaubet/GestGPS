@@ -49,6 +49,12 @@ export const getPositionsCamera = (id) => {
     let lookAtLongueur
     let altitudeDebut
     let altitudeFin
+    let capDebut
+    let pitchDebut
+    let zoomDebut
+    let capFin
+    let pitchFin
+    let zoomFin
 
     // console.log(json.length)
     // console.table(json)
@@ -62,10 +68,16 @@ export const getPositionsCamera = (id) => {
       lookAtFin = json[debutSegment + longueurSegment].lookAtPoint
       altitudeDebut = json[debutSegment].altitude
       altitudeFin = json[debutSegment + longueurSegment].altitude
+      capDebut = json[debutSegment].cap
+      capFin = json[debutSegment + longueurSegment].cap
+      pitchDebut = json[debutSegment].pitch
+      pitchFin = json[debutSegment + longueurSegment].pitch
+      zoomDebut = json[debutSegment].zoom
+      zoomFin = json[debutSegment + longueurSegment].zoom
       positionCameraLongueur = turf.distance(positionCameraDebut, positionCameraFin)
       lookAtLongueur = turf.distance(lookAtDebut, lookAtFin)
       for (let i = index; i < longueurSegment + debutSegment; i++) {
-        console.log(`i : ${i}`)
+        // console.log(`i : ${i}`)
         camera[i] = {
           start: debutSegment,
           lg: longueurSegment,
@@ -76,7 +88,13 @@ export const getPositionsCamera = (id) => {
           lookAtFin: lookAtFin,
           lookAtLongueur: lookAtLongueur,
           altitudeDebut: altitudeDebut,
-          altitudeFin: altitudeFin
+          altitudeFin: altitudeFin,
+          capDebut: capDebut,
+          capFin: capFin,
+          pitchDebut: pitchDebut,
+          pitchFin: pitchFin,
+          zoomDebut: zoomDebut,
+          zoomFin: zoomFin
         }
         index++
       }
