@@ -6,6 +6,7 @@ import { getDistanceDPlus } from "./distanceDenivele.js"
 import { getEditeurUrl } from "./data.js"
 import { addCircuit2dataModel, delCircuit2DataModel } from "./dataModel.js"
 import { archiveDataCircuit } from "./dataCircuit.js"
+import { createVisuFile } from "./createVisuFile.js"
 
 dotenv.config()
 const dataDirectory = process.env.DATA_DIRECTORY
@@ -112,7 +113,11 @@ export const decodeTraceGpx = (fichier, traceur) => {
               getDistanceDPlus(lineString),
               getEditeurUrl(fichier, objetGpx),
               getCommune(departLat, departLong, accessToken),
-              createVignette(trkpt.length, lineString, departLat, departLong, arriveeLat, arriveeLong, accessToken)
+              createVignette(trkpt.length, lineString, departLat, departLong, arriveeLat, arriveeLong, accessToken),
+              // Il faut insérer la génération du fichier camera.json
+              // Comme pour la vignette, on le crée dans assts/tmp
+              // Il sera mis dans le dossier définitif dans la fonction archiveDataCircuit
+              createVisuFile(lineString)
             ])
 
               .then((retPromesses) => {
@@ -138,7 +143,7 @@ export const decodeTraceGpx = (fichier, traceur) => {
                   isoDateTime: horodatage.toISOString()
                 }
 
-                //console.log(donneesGpx)
+                // console.log(donneesGpx)
 
                 addCircuit2dataModel(donneesGpx)
                   .then((result) => {
@@ -163,6 +168,7 @@ export const decodeTraceGpx = (fichier, traceur) => {
 
               })
               .catch((err) => {
+                console.error(`Erreur Promise.all`)
                 reject(err)
               })
 

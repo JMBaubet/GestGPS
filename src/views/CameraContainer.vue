@@ -21,12 +21,13 @@
     </MapHomeWidget>
 
     <CameraCmdWidget
-      :disabledSave= "disabledBtnSave"
-      :disabledVerifier="disabledBtnVerifier"
       :disabledPitchPPlus = "disabledBtnPitchPPlus"
       :disabledPitchPlus = "disabledBtnPitchPlus"
       :disabledPitchMoins = "disabledBtnPitchMoins"
       :disabledPitchMMoins = "disabledBtnPitchMMoins"
+      :zoom = "zoom"
+      :cap = "cap"
+      :pitch = "elevation"
       @zoomIn="setZoom(0.5)"
       @zoomOut="setZoom(-0.5)"
       @capPlusPlus="setCap(10)"
@@ -37,13 +38,15 @@
       @pitchPlus="setElevation(1)"
       @pitchMoins="setElevation(-1)"
       @pitchMoinsMoins="setElevation(-5)"
-      @positionCamera="positionCamera"
-      @check="reloadPosition"
-      @save="savePositions"
     >
     </CameraCmdWidget>
 
     <TraceCmdwidget
+      :disabledPreviousRef="disabledBtnPreviousRef"
+      :disabledNextRef="disabledBtnNextRef"
+      :disabledLastRef="disabledBtnLastRef"
+      :disabledReloadRef="disabledBtnReloadRef"
+      :disabledSaveRef="disabledBtnSaveRef"
       :disabledDepart="disabledBtnDepart"
       :disabledP1k="disabledBtnP1k"
       :disabledP100="disabledBtnP100m"
@@ -51,6 +54,14 @@
       :disabledM1k="disabledBtnM1k"
       :disabledArrivee="disabledBtnArrivee"
       :distance="distance"
+      :reference="reference"
+      @previousRef="previousRef"
+      @nextRef="nextRef"
+      @lastRef="fonctionLastRef"
+      @reloadRef="reloadRef"
+      @addRef="addRef"
+      @delRef="delRef"
+      @saveRef="saveRef"
       @depart="km0"
       @moinsMille="deltaTrace(-10)"
       @moinsCent="deltaTrace(-1)"
@@ -58,7 +69,6 @@
       @plusMille="deltaTrace(10)"
       @arrivee="kmFin"
     >
-
     </TraceCmdwidget>
     
     
@@ -86,6 +96,7 @@
   import * as turf from '@turf/turf'
   import {mapLoadLayers, mapMaskSymbols, mapAdd3D} from "../scripts/mapLayers" 
   import {setPositions} from "../scripts/camera"
+// import { set } from '@vueuse/core';
 
   const props = defineProps({
     id: String,
@@ -106,34 +117,42 @@
   let map = null
   let longueurTrace = 0
   
-
+  const disabledBtnPreviousRef = ref(true)
+  const disabledBtnNextRef = ref(true)
+  const disabledBtnLastRef = ref(true)
+  const disabledBtnReloadRef = ref(false)
+  const disabledBtnSaveRef = ref(true)
   const disabledBtnHome = ref(true)
-  const disabledBtnDepart = ref(false)
-  const disabledBtnP1k = ref(false)
-  const disabledBtnP100m = ref(false)
+  const disabledBtnDepart = ref(true)
+  const disabledBtnP1k = ref(true)
+  const disabledBtnP100m = ref(true)
   const disabledBtnM100m = ref(true)
   const disabledBtnM1k = ref(true)
-  const disabledBtnArrivee = ref(false)
+  const disabledBtnArrivee = ref(true)
   const distanceTotale = ref(0)
+  const reference = ref(false)
   const distance = ref(0)
 
-  const disabledBtnSave = ref(true)
-  const disabledBtnVerifier = ref(false)
+
+  const zoom = ref(16.0)
+  const cap = ref(0)
+  const elevation = ref(60)
+
   const disabledBtnPitchPPlus = ref(false)
   const disabledBtnPitchPlus = ref(false)
   const disabledBtnPitchMoins = ref(false)
   const disabledBtnPitchMMoins = ref(false)
 
-  let zoom = 16
-  let cap = 0
-  let elevation = 60
-  // let initPositionsCamera = false
-
+  let visu = []
+  let listRef = [0]
+  let init = true 
+  let position = 0
+  let avancement = 0
 
   let positionsCamera = []    
 
-  // Récupération des données du circuit
-  let urlTrace = `http://localhost:4000/api/trace100m/` + zpad(props.id, 6)
+  // Récupération de la trace du circuit
+  let urlTrace = `http://localhost:4000/api/lineString/` + zpad(props.id, 6)
   let trace = []
   fetch(urlTrace, { method: 'GET', signal: AbortSignal.timeout(4000) })
   .then((rep) => {
@@ -155,30 +174,37 @@
     console.error(`Erreur JsonTrace : ${err}`)
   })
 
-  // Récupération des données camera
-  let urlCamera = `http://localhost:4000/api/camera/` + zpad(props.id, 6)
-  // let camera = [{point: [0,0], cap: 0,  start: false}]
-  let camera = []
+  // Récupération des données camera pour : 
+  // - Initialier le tableau visu pour faire les mises a jour.
+  // - Enregistrer  la dernière distance référencée.
+  let lastRef = 0
   
-  fetch(urlCamera, { method: 'GET', signal: AbortSignal.timeout(4000) })
+  let urlVisu = `http://localhost:4000/api/visu/` + zpad(props.id, 6)
+  // let camera = [{point: [0,0], cap: 0,  start: false}]
+  
+  
+  fetch(urlVisu, { method: 'GET', signal: AbortSignal.timeout(4000) })
   .then((rep) => {
     return rep.json()
   })
-  .then((jsonCamera) => {
-    // On lit le 
-    // camera[0] = {point: [0,0], cap: 0,  start: false}
-    for (let key = 0; key < jsonCamera.length; key++) {
-      camera.push({
-        cap: jsonCamera[key].cap,
-        point: [jsonCamera[key].point[0], jsonCamera[key].point[1]],
-        altitude: jsonCamera[key].point[2],
-        start: false})
+  .then((jsonVisu) => {
+    // console.table(jsonVisu)
+    // Mise à jour du dernier point référencé
+    for (let key = 0; key < jsonVisu.length; key++) {
+      visu.push(jsonVisu[key])
+      if (visu.ref && (key > lastRef)) lastRef = key
     }
-    console.log(`Nombre de segment camera : ${camera.length}`)     
+    console.log(`Nombre de segment camera : ${visu.length}`)     
+    if (visu[0].ref === true) {
+      init = false
+      majListRef()
+      majBtnDistance()
+      majBtnPov()
+    }
 
   })
   .catch((err) => {
-    console.error(`Erreur JsonCamera: ${err}`)
+    console.error(`Erreur JsonVisu: ${err}`)
   })
 
 
@@ -186,7 +212,7 @@
     // On prend intercepte le clavier
     window.addEventListener('keypress', keyboard)
 
-    // console.log(`On charge mmap props.id : ${props.id}`)
+    
     // On initialise la carte au montage du composant
     try {
       map = new mapboxgl.Map({
@@ -211,9 +237,11 @@
     // Lancement de l'annimation qui part de Paris et pointe vers le départ
     // console.log("On lance l'annimation du départ")
     map.on('load', async () => {
-      map.flyTo({  center: camera[0].point,
-        bearing: camera[0].cap, 
-        zoom: 16, pitch:60, duration: 2500
+      map.flyTo({  center: visu[0].lookAt,
+        bearing: visu[0].cap, 
+        zoom: visu[0].zoom, 
+        pitch: visu[0].pitch, 
+        duration: 2500
       })
     });
 
@@ -224,9 +252,9 @@
       // disabledBtnArrivee.value=false
       // disabledBtnP1k.value=false
       // disabledBtnP100m.value=false
-      cap = camera[0].cap
-      setCamera(0)
-      positionCamera() 
+      cap.value = visu[0].cap
+      setCamera()
+      // positionCamera() 
 
       // window.requestAnimationFrame(frame);
     });
@@ -254,18 +282,273 @@
   }
 
 
+function addRef (){
+  // On met a jour le point référencé
+  
+  const position = map.getFreeCameraOptions().position;
+  const lngLat = position.toLngLat();
+
+  visu[avancement].ref = true
+  visu[avancement].start = avancement
+  visu[avancement].cap = cap.value
+  visu[avancement].zoom = zoom.value
+  visu[avancement].pitch = elevation.value
+  visu[avancement].positionCamera = [lngLat.lng.toFixed(5), lngLat.lat.toFixed(5)]
+  visu[avancement].altitudeCamera = parseInt(position.toAltitude())
+
+  // console.table(visu[avancement])
+  if (init) {
+    disabledBtnSaveRef.value = false
+    majBtnDistance()
+    init = false 
+  } else { 
+    majListRef()
+    majVisu() 
+    majBtnPov() // Pour mettre à jour les boutons precedent suivant et dernier
+  }
+}
+
+function delRef() {
+  console.log(`function delRef`)
+  console.log(`avancement : ${avancement}`)
+  visu[avancement].ref = false
+  visu[avancement].start = 0
+  visu[avancement].longueur = 0
+  majListRef()
+  majVisu()
+  majBtnPov() // Pour mettre à jour les boutons precedent suivant et dernier
+}
+
+function previousRef() {
+  console.log(`function previousRef`)
+  let i=0
+  let find = false
+
+  for(i = 0; i < listRef[listRef.length - 1]; i++) {
+    if  (listRef[i] >= avancement) {
+      find = true
+      break
+    }
+  }
+
+  if (find) {
+    // console.log(`Avancement : ${listRef[i]}`)
+    avancement = listRef[i-1]
+  } else {
+    // console.log(`Avancement : ${listRef[listRef.length - 1]}`)
+    avancement = listRef[listRef.length - 1]
+  }
+  
+  distance.value = avancement / 10
+  setCamera()
+  majBtnDistance()
+  majBtnPov()
+}
+
+function nextRef() {
+  console.log(`function nextRef`)
+  let i=0
+  let find = false
+  while (avancement >= listRef[i]) {
+    console.log(`Avancement : ${avancement}, ref : ${listRef[i]}`)
+    i++
+  }
+  console.log(listRef[i])
+  avancement = listRef[i]
+  distance.value = avancement / 10
+  setCamera()
+  majBtnDistance()
+  majBtnPov()
+}
+
+
+function fonctionLastRef() {
+  console.log(`function fonctionLastRef`)
+  avancement = listRef[listRef.length - 1]
+  distance.value = avancement / 10
+  setCamera()
+  majBtnDistance()
+  majBtnPov()
+}
+
+
+function reloadRef() {
+  console.log(`function reloadRef`)
+  setCamera(true)
+}
+
+function majVisu() {
+  // console.log(`function majVisu`)
+  for(let i=0; i < listRef[listRef.length -1]; i++) {
+    if (visu[i].ref === true) {
+      const origine = i
+      const capOrigine=visu[i].cap
+      const zommOrigine=visu[i].zomm
+      const pitchOrigine=visu[i].pitch
+      let destination = i + 1
+      while (destination <= listRef[listRef.length -1] ) {
+        if (visu[destination].ref === true) {
+          visu[origine].longueur = destination - i
+          break
+        }
+        destination ++
+      }
+      // On met a jour les distances intermédiaires
+      for(let j=origine + 1; j < destination; j++) {
+        
+        // Attention au changement de signe sur le cap. entre visu[index - lgSegment] et visu[ref]
+        if (((visu[destination].cap > 0) && (visu[origine].cap > 0)) ||
+          ((visu[destination].cap < 0) && (visu[origine].cap < 0))) {
+
+          visu[j].cap =
+            visu[origine].cap +
+            (((visu[destination].cap - visu[origine].cap) / visu[origine].longueur) * (j - origine))
+        } else {
+          // console.warn(`Changement de signe sur le cap`)
+          let capCible = visu[destination].cap
+          let capOrigine = visu[origine].cap
+          let delta
+
+          if ((capCible > 0) && (capCible < 90)) {
+            delta = capCible - capOrigine
+            visu[j].cap =
+              capOrigine +
+              (((delta) / visu[origine].longueur) * (j - origine))
+          } else if (capCible > 90) {
+            delta = capOrigine - capCible + 360
+            visu[j].cap =
+              capOrigine -
+              (((delta) / visu[origine].longueur) * (j - origine))
+          } else if (capCible < -90) {
+            delta = capCible - capOrigine + 360
+            visu[j].cap =
+              capOrigine +
+              (((delta) / visu[origine].longueur) * (j - origine))
+          } else {
+            delta = capOrigine - capCible
+            visu[j].cap =
+              capOrigine -
+              (((delta) / visu[origine].longueur) * (j - origine))
+          }
+        }
+
+        visu[j].zoom =
+          visu[origine].zoom +
+          (((visu[destination].zoom - visu[origine].zoom) / visu[origine].longueur) * (j - origine))
+
+        visu[j].pitch =
+          visu[origine].pitch +
+          (((visu[destination].pitch - visu[origine].pitch) / visu[origine].longueur) * (j - origine))
+
+      }
+      // console.log(`destination : ${destination}`)
+      i = destination - 1
+    }
+  }
+  // console.table(visu)
+}
+
+
+function majListRef () {
+  console.log(`function majListRef`)
+  listRef.splice(0)
+  for (let i=0; i< visu.length; i++) {
+    if (visu[i].ref === true) listRef.push(i)
+  }
+  lastRef = listRef[listRef.length - 1]
+  console.table(listRef)
+}
+
+
+function majBtnPov() {
+  console.log(`function majBtnPov`)
+  reference.value = visu[avancement].ref
+  if (avancement === 0 ) reference.value = false
+  disabledBtnSaveRef.value = false
+
+  if (avancement === 0) disabledBtnPreviousRef.value = true 
+  else disabledBtnPreviousRef.value = false
+
+  if (avancement >= listRef[listRef.length - 1]) disabledBtnLastRef.value = true
+  else disabledBtnLastRef.value = false
+
+  disabledBtnNextRef.value = true
+  for (let i=0; i< listRef.length; i++) {  
+    if (listRef[i] > avancement) disabledBtnNextRef.value = false
+  }
+}
+
+
+function majBtnDistance() {
+  if (avancement === 0) {
+    disabledBtnDepart.value=true
+    disabledBtnM1k.value=true
+    disabledBtnM100m.value=true
+    disabledBtnP1k.value=false
+    disabledBtnP100m.value=false
+    disabledBtnArrivee.value=false
+
+  } else if (avancement < 10 ){
+    disabledBtnDepart.value=false
+    disabledBtnM1k.value=true
+    disabledBtnM100m.value=false
+    disabledBtnP1k.value=false
+    disabledBtnP100m.value=false
+    disabledBtnArrivee.value=false
+
+  } else if ((avancement >= 10) && (avancement <= visu.length - 10 )) {
+    disabledBtnArrivee.value=false
+    disabledBtnP1k.value=false
+    disabledBtnP100m.value=false
+    disabledBtnDepart.value=false
+    disabledBtnM100m.value=false
+    disabledBtnM1k.value=false
+
+  } else if ((avancement > visu.length - 10 ) && (avancement < visu.length -1)) {
+    disabledBtnArrivee.value=false
+    disabledBtnP1k.value=true
+    disabledBtnP100m.value=false
+    disabledBtnDepart.value=false
+    disabledBtnM100m.value=false
+    disabledBtnM1k.value=false
+
+  } else {
+    avancement = visu.length - 1
+    disabledBtnArrivee.value=true
+    disabledBtnP1k.value=true
+    disabledBtnP100m.value=true
+    disabledBtnDepart.value=false
+    disabledBtnM100m.value=false
+    disabledBtnM1k.value=false
+  } 
+}
 
 
 
-function setCamera (avancement) {
-  map.flyTo({ 
-    center: camera[avancement].point,  
-    //bearing: camera[avancement].cap, 
-    // zoom: 16.5,
+function setCamera (reload=false) {
+  console.log(`setCamera : ${avancement}`)
+  // reference.value=visu[avancement].ref
+  
+  if ((reload) || (avancement <= lastRef)) {
+    map.flyTo({ 
+    center: visu[avancement].lookAt,  
+    bearing: visu[avancement].cap, 
+    zoom: visu[avancement].zoom,
+    pitch: visu[avancement].pitch,
     essential: true, 
     duration: 1000
   })
-  position.setData({type: 'Point', coordinates :camera[avancement].point})
+
+  } else {
+    map.flyTo({ 
+    center: visu[avancement].lookAt,  
+    essential: true, 
+    duration: 1000
+  })
+
+  }
+
+  position.setData({type: 'Point', coordinates :visu[avancement].lookAt})
   map.setPaintProperty(
     "animationTrace",
     "line-gradient",
@@ -289,13 +572,11 @@ function modCamera (zoom, cap, elevation) {
   })
 }
 
-  let position 
-  let avancement = 0
 
   
 function reloadPosition() {
   console.table(positionsCamera)
-  modCamera(positionsCamera[avancement].zoom, positionsCamera[avancement].cap, positionsCamera[avancement].pitch)
+  modCamera(positionsCamera[avancement].zoom.value, positionsCamera[avancement].cap.value, positionsCamera[avancement].pitch)
 }
 
 function savePositions() {
@@ -324,32 +605,34 @@ function savePositions() {
 
 function setZoom(facteur) {
   // console.log(`Fonction zoomOut`)
-  zoom = zoom + facteur
-  modCamera(zoom, cap, elevation)
+  zoom.value = zoom.value + facteur
+  if (zoom.value < 2) zoom.value = 2
+  if (zoom.value > 22) zoom.value = 22
+  modCamera(zoom.value, cap.value, elevation.value)
 }
 
 function setCap(angle) {
-  cap = cap + angle
-  if (cap > 180) cap = cap - 360
-  if (cap < -180) cap = cap + 360
-  // console.log(`Fonction setPitch - cap : ${cap}`)
-  modCamera(zoom, cap, elevation)
+  cap.value = cap.value + angle
+  if (cap.value > 180) cap.value = cap.value - 360
+  if (cap.value <= -180) cap.value = cap.value + 360
+  // console.log(`Fonction setPitch - cap : ${cap.value}`)
+  modCamera(zoom.value, cap.value, elevation.value)
 }
 
 function setElevation(angle) {
-  elevation = elevation + angle
-  if (elevation >= 85) {
-    elevation = 85
+  elevation.value = elevation.value + angle
+  if (elevation.value >= 85) {
+    elevation.value = 85
     disabledBtnPitchPPlus.value = true
     disabledBtnPitchPlus.value = true
-  } else if (elevation > 80) {
+  } else if (elevation.value > 80) {
     disabledBtnPitchPPlus.value = true
     disabledBtnPitchPlus.value = false
-  } else if (elevation <= 0) {
-    elevation = 0
+  } else if (elevation.value <= 0) {
+    elevation.value = 0
     disabledBtnPitchMoins.value = true
     disabledBtnPitchMMoins.value = true
-  } else if (elevation < 5 ){
+  } else if (elevation.value < 5 ){
     disabledBtnPitchMoins.value = false
     disabledBtnPitchMMoins.value = true
   } else {
@@ -359,140 +642,92 @@ function setElevation(angle) {
     disabledBtnPitchMMoins.value = false
 
   }
-  // console.log(`Fonction setPitch - elevation : ${elevation}`)
-  modCamera(zoom, cap, elevation)
+  // console.log(`Fonction setPitch - elevation : ${elevation.value}`)
+  modCamera(zoom.value, cap.value, elevation.value)
 }
 
-function positionCamera() {
-  // console.log(`Fonction positionCamera`)
+// function positionCamera() {
+//   console.log(`Fonction positionCamera`)
   
-  const bearing = map.getBearing()
-  const position = map.getFreeCameraOptions().position;
-  const lngLat = position.toLngLat();
-  const altitude = position.toAltitude();
+//   const bearing = map.getBearing()
+//   const position = map.getFreeCameraOptions().position;
+//   const lngLat = position.toLngLat();
+//   const altitude = position.toAltitude();
 
-  // console.log(`Position Caméra : Latitude: ${lngLat.lat}, Longitude: ${lngLat.lng}, Altitude: ${altitude}, Angle : ${bearing}, Zoom: ${zoom}`)
-  // console.table(`cible : ${camera[avancement].point}`)
-  // On force l'intialisation de la caméra sur le point de départ
-  // if (!initPositionsCamera) {
-  //   positionsCamera[0] = {
-  //     "start": 0, 
-  //     "longueur": 0, 
-  //     "positionCamera": [lngLat.lng, lngLat.lat], 
-  //     "cap": bearing,
-  //     "zoom": zoom,
-  //     "pitch": elevation,
-  //     "lookAtPoint": camera[avancement].point,
-  //     "set": true
-  //   }
-  //   disabledBtnArrivee.value=false
-  //   disabledBtnP1k.value=false
-  //   disabledBtnP100m.value=false
-  //   initPositionsCamera = true
+//   reference.value=true
+//   visu[avancement].ref=true
 
-  // } else {
-    for(let index = positionsCamera.length; index<avancement; index++ ) {
-      positionsCamera[index] = {"start": index, "set": false}
-    }
-    positionsCamera[avancement] = {
-      "start": avancement, 
-      "longueur": 0, 
-      "positionCamera": [lngLat.lng.toFixed(5), lngLat.lat.toFixed(5)], 
-      "cap": bearing,
-      "zoom": zoom,
-      "pitch": elevation,
-      "altitude": altitude,
-      "lookAtPoint": camera[avancement].point,
-      "set": true
-    }
-    setPositions(positionsCamera, avancement) 
-    disabledBtnVerifier.value = false
-  // }
-  // console.table(positionsCamera)
-}
+//   for(let index = positionsCamera.length; index<avancement; index++ ) {
+//     positionsCamera[index] = {"start": index, "set": false}
+//   }
+//   positionsCamera[avancement] = {
+//     "start": avancement, 
+//     "longueur": 0, 
+//     "positionCamera": [lngLat.lng.toFixed(5), lngLat.lat.toFixed(5)], 
+//     "cap": bearing,
+//     "zoom": zoom.value,
+//     "pitch": elevation.value,
+//     "altitude": altitude,
+//     "lookAt": visu[avancement].lookAt,
+//     "ref": true
+//   }
+//   setPositions(positionsCamera, avancement) 
+ 
+
+//   // console.table(positionsCamera)
+// }
 
 function km0 () {
   // console.log(`Fonction km0`) 
   avancement = 0 
-  disabledBtnArrivee.value=false
-  disabledBtnP1k.value=false
-  disabledBtnP100m.value=false
-  disabledBtnDepart.value=true
-  disabledBtnM100m.value=true
-  disabledBtnM1k.value=true
   distance.value = 0
-  setCamera(avancement)
+  setCamera()
+  majBtnDistance()
+  majBtnPov()
 }
 
 function kmFin() {
   // console.log(`Fonction kmFin`)
-  avancement = camera.length - 1
-  disabledBtnArrivee.value=true
-  disabledBtnP1k.value=true
-  disabledBtnP100m.value=true
-  disabledBtnDepart.value=false
-  disabledBtnM100m.value=false
-  disabledBtnM1k.value=false
-  setCamera(avancement)
+  avancement = visu.length - 1
+  distance.value = avancement / 10
+  setCamera()
+  majBtnDistance()
+  majBtnPov()
 }
 
 function deltaTrace(delta) {
   // console.log(`Fonction deltaTrace : ${delta}`)
   avancement = avancement + delta
-  console.log(`Avancement : ${avancement}, sur : ${camera.length}, delta : ${delta}`)
-  if(avancement <= 0 ){
-    avancement = 0 
-    disabledBtnDepart.value=true
-    disabledBtnM1k.value=true
-    disabledBtnM100m.value=true
-    disabledBtnP1k.value=false
-    disabledBtnP100m.value=false
-    disabledBtnArrivee.value=false
+  distance.value = avancement / 10
+  setCamera()
+  majBtnDistance()
+  majBtnPov()
+}
 
-  } else if (avancement < 10 ){
-    disabledBtnDepart.value=false
-    disabledBtnM1k.value=true
-    disabledBtnM100m.value=false
-    disabledBtnP1k.value=false
-    disabledBtnP100m.value=false
-    disabledBtnArrivee.value=false
 
-  } else if ((avancement >= 10) && (avancement <= camera.length - 10 )) {
-    disabledBtnArrivee.value=false
-    disabledBtnP1k.value=false
-    disabledBtnP100m.value=false
-    disabledBtnDepart.value=false
-    disabledBtnM100m.value=false
-    disabledBtnM1k.value=false
+function saveRef() {
+  // console.log(`Fonction saveRef`)
+  let url = `http://localhost:4000/api/visu/` + zpad(props.id, 6)
 
-  } else if ((avancement > camera.length - 10 ) && (avancement < camera.length -1)) {
-    disabledBtnArrivee.value=false
-    disabledBtnP1k.value=true
-    disabledBtnP100m.value=false
-    disabledBtnDepart.value=false
-    disabledBtnM100m.value=false
-    disabledBtnM1k.value=false
+fetch(url, { 
+  method: 'POST', 
+  headers: { 
+    'Content-Type': 'application/json; charset=UTF-8' 
+  }, 
+  body: JSON.stringify({visu : visu}), 
+  signal: AbortSignal.timeout(4000) 
+})
+.then((rep) => {
+  return rep.json()
+})
+.then((json) => {
+  // On lit le 
+})
+.catch((err) => {
+  console.error(`Erreur JsonTrace : ${err}`)
+})
 
-  } else {
-    avancement = camera.length - 1
-    disabledBtnArrivee.value=true
-    disabledBtnP1k.value=true
-    disabledBtnP100m.value=true
-    disabledBtnDepart.value=false
-    disabledBtnM100m.value=false
-    disabledBtnM1k.value=false
 
-  } 
-  distance.value = avancement/10
-  setCamera(avancement)
-  if (avancement === camera.length - 1) {
-      disabledBtnSave.value = false
-    }
-  if (avancement >= positionsCamera.length) {
-    disabledBtnVerifier.value = true
-  } else {
-    disabledBtnVerifier.value = false
-  }
 }
 
 /**

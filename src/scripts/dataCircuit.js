@@ -5,6 +5,8 @@ import { zpad } from "./utils.js"
 dotenv.config()
 const dataDirectory = process.env.DATA_DIRECTORY
 const tmpDirectory = process.env.TMP_DIRECTORY
+const fileVignette = process.env.FILE_VIGNETTE
+const fileVisu = process.env.FILE_VISU
 
 
 /**
@@ -28,7 +30,14 @@ export const archiveDataCircuit = (id, lineString) => {
               .then(() => {
                 fs.rename(tmpDirectory + 'vignette.png', newDirectory + `vignette.png`)
                   .then(() => {
-                    resolve()
+                    fs.rename(tmpDirectory + fileVisu, newDirectory + fileVisu)
+                      .then(() => {
+                        resolve()
+                      })
+                      .catch((err) => {
+                        console.error(`archiveDataCircuit : ${err}`)
+                        reject({ id: 9999, error: "Archive du fichier visu" })
+                      })
                   })
                   .catch((err) => {
                     console.error(`archiveDataCircuit : ${err}`)

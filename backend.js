@@ -16,7 +16,9 @@ import { getLineString } from './src/scripts/circuits.js'  // A supprimer ??
 import { genere3DFiles } from './src/scripts/3DFiles.js'
 import { getTrace100m } from './src/scripts/3DFiles.js'
 import { getCamera } from './src/scripts/3DFiles.js'
+import { getVisu } from './src/scripts/3DFiles.js'
 import { savePositionsCamera } from './src/scripts/cameraBack.js'
+import { saveVisu } from './src/scripts/visu.js'
 import { getPositionsCamera } from './src/scripts/cameraBack.js'
 
 const app = express()
@@ -31,7 +33,7 @@ const options = cors.CorsOptions = {
 };
 app.use(cors(options))
 app.use(morgan('tiny'))
-app.use(express.json())
+app.use(express.json({ limit: '5mb' }))
 
 const directory = os.homedir() + "\\downloads"
 
@@ -87,10 +89,10 @@ app.get('/api/lineString/:id', (req, res) => {
 
 // Ajout d'un fichier gpx
 app.post('/api/GpxFile/:fileName/:traceur', (req, res) => {
-  //console.log(`backend.js : Traceur sélectionné : ${req.params.traceur}`)
+  console.log(`backend.js : Traceur sélectionné : ${req.params.traceur}?, fichier : ${req.params.fileName}`)
   decodeTraceGpx(`${directory}\\${req.params.fileName}`, `${req.params.traceur}`)
     .then(retour => {
-      // console.log(`backend.js : Retour de la promise : ${retour.circuitId}, ${retour.peutEtrePresent}`)
+      console.log(`backend.js : Retour de la promise : ${retour.circuitId}, ${retour.peutEtrePresent}`)
 
       res.setHeader('Content-Type', 'application/json')
       res.status(200)
@@ -247,7 +249,11 @@ app.get('/api/camera3d/:id', (req, res) => {
 })
 
 
+
+
+
 // Récupération du fichier trace 100m
+// A Supprimer
 app.get('/api/trace100m/:id', (req, res) => {
   getTrace100m(`${req.params.id}`)
     .then((trace) => {
@@ -262,6 +268,7 @@ app.get('/api/trace100m/:id', (req, res) => {
 })
 
 // Récupération du fichier camera
+// A Supprimer
 app.get('/api/camera/:id', (req, res) => {
   getCamera(`${req.params.id}`)
     .then((camera) => {
@@ -274,6 +281,38 @@ app.get('/api/camera/:id', (req, res) => {
       res.status(500).send({ id: 9999, error: `Le fichier caméra ne peut être récupérée !` })
     })
 })
+
+app.get('/api/visu/:id', (req, res) => {
+  getVisu(`${req.params.id}`)
+    .then((camera) => {
+      res.setHeader('Content-Type', 'application/json')
+      res.status(200).send(camera)
+    })
+    .catch(err => {
+      console.error(`Erreur : ${err}`)
+      res.setHeader('Content-Type', 'application/json');
+      res.status(500).send({ id: 9999, error: `Le fichier visu ne peut être récupérée !` })
+    })
+})
+
+
+//Sauvegarde du fichier positionsCamera.json
+app.post('/api/visu/:id/', (req, res) => {
+  // console.table(req.body.visu)
+  // savePositionsCamera(req.params.id, req.body.visu)
+  saveVisu(req.params.id, req.body.visu)
+    .then((retour) => {
+      res.setHeader('Content-Type', 'application/json')
+      res.status(200)
+      res.send({ status: "OK" })
+
+    })
+    .catch((err) => {
+      console.error(`backend.js : ${err.id}`)
+    })
+})
+
+
 
 //Définition de 2 points de terminaison pour test
 //réponse OK

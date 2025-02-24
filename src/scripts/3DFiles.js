@@ -11,6 +11,7 @@ const fileTrace = process.env.FILE_TRACE
 const fileTrace100m = process.env.FILE_TRACE_PLUS_100_M
 const fileCamera = process.env.FILE_CAMERA
 const fileAltitude = process.env.FILE_ALTITUDE
+const fileVisu = process.env.FILE_VISU
 
 export const genere100mFile = (id) => {
   return new Promise((resolve, reject) => {
@@ -304,3 +305,21 @@ export const getCamera = (id) => {
   })
 }
 
+
+
+/**
+ * @desc Promesse qui retourne sous forme d'un objet JSON le fichier FILE_VISU
+ * @param {*} id 
+ * @returns {promises}
+ */
+export const getVisu = (id) => {
+  return new Promise((resolve, reject) => {
+    try {
+      const bufferVisu = JSON.parse(fs.readFileSync(dataDirectory + id + "\\" + fileVisu))
+      resolve(bufferVisu)
+    } catch (err) {
+      console.error(`getVIsu Erreur : ${err}`)
+      reject({ id: 9999, error: `Erreur lecture du fichier FILE_VISU !` })
+    }
+  })
+}
