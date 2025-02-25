@@ -8,8 +8,8 @@ const fileVisu = process.env.FILE_VISU
 
 export const saveVisu = (id, visu) => {
   return new Promise((resolve, reject) => {
-    console.log(`Enregistrement du fichier visu : ${id}`)
-    console.table(visu)
+    // console.log(`Enregistrement du fichier visu : ${id}`)
+    // console.table(visu)
 
     fs.promises.writeFile(dataDirectory + id + "\\" + fileVisu, JSON.stringify(visu))
       .then(() => {

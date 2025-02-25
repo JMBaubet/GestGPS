@@ -29,7 +29,7 @@
           <v-btn color="warning" text="Cancel" variant="elevated" prepend-icon="mdi-cancel"
             @click="cancel()"></v-btn>
 
-          <v-btn :disabled=isDisabled @click="importGpx()" color="primary" text="Importer" variant="elevated"
+          <v-btn class="ma-2" :disabled=isDisabled @click="importGpx()" color="primary" text="Importer" variant="elevated"
             prepend-icon="mdi-file-import-outline"></v-btn>
         </v-card-actions>
 

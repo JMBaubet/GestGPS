@@ -16,12 +16,12 @@
       @home="home"
     >
     </MapHomeWidget>
-    <!-- <MapDataWidget
+    <MapDataWidget
       :distanceTotale="distanceTotale"
       :distance="distance"
       :altitude="altitude"
     >
-    </MapDataWidget> -->
+    </MapDataWidget>
   </v-container>
 </template>
   
@@ -57,6 +57,8 @@ import { ca } from 'vuetify/locale';
   const coeffAnnimation= import.meta.env.VITE_COEFFICIENT_DUREE_ANIMATION
 
   let map = null
+  let visu = []
+
   let longueurTrace = 0
   let dureeAnimation
 
@@ -66,7 +68,7 @@ import { ca } from 'vuetify/locale';
   const altitude = ref()
 
   // Récupération des données du circuit 
-  let urlTrace = `http://localhost:4000/api/trace100m/` + zpad(props.id, 6)
+  let urlTrace = `http://localhost:4000/api/lineString/` + zpad(props.id, 6)
   let trace = []
   fetch(urlTrace, { method: 'GET', signal: AbortSignal.timeout(4000) })
   .then((rep) => {
@@ -83,7 +85,7 @@ import { ca } from 'vuetify/locale';
     distanceTotale.value= longueurTrace.toFixed(1)
     dureeAnimation = coeffAnnimation * longueurTrace
 
-    console.log(`Longueur de la trace : ${longueurTrace}, Nombre de points : ${json.geometry.coordinates.length}`) 
+    // console.log(`Longueur de la trace : ${longueurTrace}, Nombre de points : ${json.geometry.coordinates.length}`) 
   })
   .catch((err) => {
     console.error(`Erreur JsonTrace : ${err}`)
@@ -91,60 +93,32 @@ import { ca } from 'vuetify/locale';
 
 
   // // Récupération des données camera (Nouveau format)
-  let urlCamera = `http://localhost:4000/api/camera3d/` + zpad(props.id, 6)
-  // let camera = [{point: [0,0], cap: 0,  start: false}]
-  let camera = []
+  let urlVisu = `http://localhost:4000/api/visu/` + zpad(props.id, 6)
   
-  fetch(urlCamera, { method: 'GET', signal: AbortSignal.timeout(4000) })
+  fetch(urlVisu, { method: 'GET', signal: AbortSignal.timeout(4000) })
   .then((rep) => {
     return rep.json()
   })
-  .then((jsonCamera) => {
-    // On lit le 
-    // camera[0] = {point: [0,0], cap: 0,  start: false}
-    // for (let key = 0; key < jsonCamera.length; key++) {
-    //   camera.push({
-    //     cap: jsonCamera[key].cap,
-    //     point: [jsonCamera[key].point[0], jsonCamera[key].point[1]],
-    //     altitude: jsonCamera[key].point[2],
-    //     start: false})
-    // }
-    // console.log(`Nombre de segment camera : ${camera.length}`)
-    camera = jsonCamera.camera     
-    console.table(camera)
+  .then((visuJson) => {
+    visu = visuJson.slice()
+    let start
+    let longueur
+    for (let i=0; i < visu.length; i++) {
+      if (visu[i].ref === true) {
+        start = visu[i].start
+        longueur = visu[i].longueur
+      } else {
+        visu[i].start = start
+        visu[i].longueur = longueur
+      }
 
+    }     
+    // console.table(visu)
   })
   .catch((err) => {
     console.error(`Erreur JsonCamera: ${err}`)
   })
 
-
-  // Récupération des données camera (ancien format)
-  // let urlCamera = `http://localhost:4000/api/camera/` + zpad(props.id, 6)
-  // // let camera = [{point: [0,0], cap: 0,  start: false}]
-  // let camera = []
-  
-  // fetch(urlCamera, { method: 'GET', signal: AbortSignal.timeout(4000) })
-  // .then((rep) => {
-  //   return rep.json()
-  // })
-  // .then((jsonCamera) => {
-  //   // On lit le 
-  //   // camera[0] = {point: [0,0], cap: 0,  start: false}
-  //   for (let key = 0; key < jsonCamera.length; key++) {
-  //     camera.push({
-  //       cap: jsonCamera[key].cap,
-  //       point: [jsonCamera[key].point[0], jsonCamera[key].point[1]],
-  //       altitude: jsonCamera[key].point[2],
-  //       start: false})
-  //   }
-  //   // console.log(`Nombre de segment camera : ${camera.length}`)     
-  //   console.log(camera[0].start)
-
-  // })
-  // .catch((err) => {
-  //   console.error(`Erreur JsonCamera: ${err}`)
-  // })
 
 
   onMounted(() => {
@@ -176,37 +150,35 @@ import { ca } from 'vuetify/locale';
     const timer = setTimeout(loadMap, 500)
 
     function loadMap() {
-    // Lancement de l'annimation qui part de Paris et pointe vers le départ
+      // console.log(`fonction loadMap`)
+      // Lancement de l'annimation qui part de Paris et pointe vers le départ
+      // console.table(visu)
+      // console.log(`On lance l'annimation du départ vers : ${visu[0].lookAt}`)
+      
+      map.flyTo({  center: visu[0].lookAt,
+          // bearing: camera[0].cap, 
+          bearing: visu[0].cap, 
+          zoom: visu[0].zoom, 
+          pitch:visu[0].pitch, 
+          duration: 7500
+        })
 
-    console.log("On lance l'annimation du départ")
-    
-    map.flyTo({  center: camera[0].lookAtDebut,
-        // bearing: camera[0].cap, 
-        bearing: camera[0].capDebut, 
-        zoom: camera[0].zoomDebut, 
-        pitch:camera[0].pitchDebut, 
-        duration: 7500
-      })
-
-    map.once('moveend', async () => {
-      console.log("On lance la suite")
-
-      position = map.getSource('point')
-      window.requestAnimationFrame(frame);
+      map.once('moveend', async () => {
+        // console.log("On lance la suite")
+        position = map.getSource('point')
+        window.requestAnimationFrame(frame);
     });
-
     }
-
   })
 
 
 
   onUnmounted(() => {
-    console.log("On detruit la carte")
+    // console.log("On detruit la carte")
     mapboxgl.clearStorage();
     const t = (phase * dureeAnimation) + start
     start = t -  dureeAnimation
-    console.log(start)
+    // console.log(start)
   })
   
   /**
@@ -215,7 +187,7 @@ import { ca } from 'vuetify/locale';
    */
   function keyboard(e) {
     // console.log(`Keyboard : ${e.key}`)
-    console.log(e.key)
+    // console.log(e.key)
     if (e.key === "p") { playPause() }
     if (e.key === "r") {
 
@@ -229,9 +201,8 @@ import { ca } from 'vuetify/locale';
    * @param time 
    */
   let start
-  let debut
   let phase = 0
-  let pause = true
+  let pause = false
   let timePause
   let startPause = true
   let position 
@@ -242,7 +213,6 @@ import { ca } from 'vuetify/locale';
   let altitudeDebut
   let altitudeFin
 
-  debut = new Date()
   
   function frame(time) {
 
@@ -260,17 +230,14 @@ import { ca } from 'vuetify/locale';
   // phase determines how far through the animation we are
   if (pause !== true)  {
     phase = (time - start) / dureeAnimation;
-    // console.log(`start : ${start}, time : ${time}, phase = ${phase}`)
-    // distance.value = (dureeAnimation*phase/coeffAnnimation).toFixed(1)
     avancement = parseInt((dureeAnimation*phase/coeffAnnimation) * 10)
-    // console.log(`Phase : ${phase}, distance : ${((dureeAnimation*phase/coeffAnnimation)/10).toFixed(2)}`)
-    // console.log(`Avancement : ${phase * flyto.length / 10}`)
-    // console.log(`start : ${start}, time : ${time}, phase = ${phase}`)
+    distance.value = (dureeAnimation*phase/coeffAnnimation).toFixed(1)
+
   }
   else { 
-    console.log(`Nous sommes en pause`)
+    // console.log(`Nous sommes en pause`)
     if (startPause) {
-      console.log(`Nous passons en pause`)
+      // console.log(`Nous passons en pause`)
       phase = (time - start) / dureeAnimation;
       distance.value = (dureeAnimation*phase/coeffAnnimation).toFixed(1)
 
@@ -285,36 +252,32 @@ import { ca } from 'vuetify/locale';
   // when the animation is finished, reset start to loop the animation
   if (phase > 1) return;
 
-
-
-
-
   // Gestion de la camera
-  console.log(`Avancement : ${avancement}`)
-  // console.log(`Longueur segment : ${camera[avancement].lg}`)
-  dureeSegment = camera[avancement].lg * coeffAnnimation/10
-  // startSegment = start + (camera[avancement].start * coeffAnnimation/10)
-  startSegment = start + (camera[avancement].start * coeffAnnimation/10)
+  dureeSegment = visu[avancement].longueur * coeffAnnimation/10
+  startSegment = start + (visu[avancement].start * coeffAnnimation/10)
   phaseSegment = (time - startSegment) / dureeSegment
-  const altitudeCamera = parseInt(camera[avancement].altitudeDebut + ((camera[avancement].altitudeFin - camera[avancement].altitudeDebut) * phaseSegment))
+ 
+  const altDebut = visu[visu[avancement].start].altitudeCamera 
+  const altFin = visu[visu[avancement].start + visu[avancement].longueur].altitudeCamera
+  const altitudeCamera = parseInt(altDebut + ((altFin - altDebut) * phaseSegment))
+  const positionCameraDebut = visu[visu[avancement].start].positionCamera
+  const positionCameraFin = visu[visu[avancement].start + visu[avancement].longueur].positionCamera
+  const positionCameraLongueur = turf.distance(positionCameraDebut, positionCameraFin)
 
-  // console.log(`Durée segment : ${dureeSegment}`)
-  // console.log(`Start segment : ${startSegment}`)
-  // console.log(`Phase segment : ${phaseSegment}`)
-  // console.log(camera[avancement].positionCameraDebut, camera[avancement].positionCameraFin)
-  // console.log(`altitude  caméra: ${altitudeCamera}`)
-  
   const alongPositionCamera = turf.along(
-    turf.lineString( [camera[avancement].positionCameraDebut, camera[avancement].positionCameraFin]),
-    camera[avancement].positionCameraLongueur * phaseSegment
+    turf.lineString( [positionCameraDebut, positionCameraFin]),
+    positionCameraLongueur * phaseSegment
   ).geometry.coordinates;
+
+
+  const lookAtDebut = visu[visu[avancement].start].lookAt
+  const lookAtFin = visu[visu[avancement].start + visu[avancement].longueur].lookAt
+  const lookAtLongueur = turf.distance(lookAtDebut, lookAtFin)
 
   const alongLookAtCamera = turf.along(
-    turf.lineString( [camera[avancement].lookAtDebut, camera[avancement].lookAtFin]),
-    camera[avancement].lookAtLongueur * phaseSegment
+    turf.lineString( [lookAtDebut, lookAtFin]),
+    lookAtLongueur * phaseSegment
   ).geometry.coordinates;
-
-  // console.log(`Position : ${alongPositionCamera[0]}, ${alongPositionCamera[1]}, lookAt : ${alongLookAtCamera[0]}, ${alongLookAtCamera[1]}`)
 
   const alongRoute = turf.along(
   turf.lineString(trace),
@@ -331,7 +294,6 @@ import { ca } from 'vuetify/locale';
     altitudeCamera
   )
 
-  // console.log(`Position caméra : ${alongPositionCamera[0]}, ${alongPositionCamera[1]} `)
   pov.lookAtPoint({
     lng: alongLookAtCamera[0],
     lat: alongLookAtCamera[1]
@@ -362,12 +324,12 @@ import { ca } from 'vuetify/locale';
 }
 
 function playPause() {
-  console.log(`Play Pause`)
+  // console.log(`Play Pause`)
 
   if (phase > 1) {
     start = 0
-    for(let i=0; i<camera.length;i++)
-        camera[i].start=false 
+    for(let i=0; i<visu.length;i++)
+        visu[i].start=false 
 
     window.requestAnimationFrame(frame)
   } else {

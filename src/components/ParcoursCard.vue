@@ -15,16 +15,13 @@
               </template>
               <v-list>
                 <v-list-item value="aff">
-                  <v-list-item-title>Afficher les informations</v-list-item-title>
-                </v-list-item>
-                <v-list-item value="3D">
-                  <v-list-item-title @click="MakeFileCamera">Initialiser la 3D</v-list-item-title>
+                  <v-list-item-title>Informations</v-list-item-title>
                 </v-list-item>
                 <v-list-item value="camera">
-                  <v-list-item-title @click="paramCamera">Configurer la 3D</v-list-item-title>
+                  <v-list-item-title @click="paramCamera">Configurer</v-list-item-title>
                 </v-list-item>
                 <v-list-item value="3d">
-                  <v-list-item-title @click="Affiche3D">Visualiser la 3D</v-list-item-title>
+                  <v-list-item-title @click="Affiche3D">Visualiser</v-list-item-title>
                 </v-list-item>
                 <v-list-item value="sel">
                   <v-list-item-title>Sélectionner pour comparer</v-list-item-title>
