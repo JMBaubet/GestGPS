@@ -12,14 +12,9 @@ import { getVilles } from './src/scripts/villes.js'
 import { getCircuits, getcircuitsMinMax } from './src/scripts/circuits.js'
 import { delDataCircuit } from './src/scripts/dataCircuit.js'
 import { delCircuit2DataModel } from './src/scripts/dataModel.js'
-import { getLineString } from './src/scripts/circuits.js'  // A supprimer ??
-import { genere3DFiles } from './src/scripts/3DFiles.js'
-import { getTrace100m } from './src/scripts/3DFiles.js'
-import { getCamera } from './src/scripts/3DFiles.js'
+import { getLineString } from './src/scripts/circuits.js'
 import { getVisu } from './src/scripts/3DFiles.js'
-import { savePositionsCamera } from './src/scripts/cameraBack.js'
 import { saveVisu } from './src/scripts/visu.js'
-import { getPositionsCamera } from './src/scripts/cameraBack.js'
 
 const app = express()
 dotenv.config()
@@ -201,86 +196,9 @@ app.get('/api/villes/', (req, res) => {
 
 
 
-// Génération des fichiers camera et lineString100m)
-app.post('/api/3DFiles/:id/', (req, res) => {
-  console.log(`backend.js : Id circuit : ${req.params.id}`)
-  genere3DFiles(`${req.params.id}`)
-    .then(retour => {
-      res.setHeader('Content-Type', 'application/json')
-      res.status(200)
-      res.send({ status: "OK" })
-
-    })
-    .catch((err) => {
-      console.error(`backend.js : ${err.id}`)
-      res.setHeader('Content-Type', 'application/json');
-      res.status(500).send(err)
-
-    })
-})
-
-//Sauvegarde du fichier positionsCamera.json
-app.post('/api/camera/:id/', (req, res) => {
-  // console.table(req.body.positionsCamera)
-  savePositionsCamera(req.params.id, req.body.positionsCamera)
-    .then((retour) => {
-      res.setHeader('Content-Type', 'application/json')
-      res.status(200)
-      res.send({ status: "OK" })
-
-    })
-    .catch((err) => {
-      console.error(`backend.js : ${err.id}`)
-    })
-})
-
-// Récupération du fichier positionsCamera.json
-app.get('/api/camera3d/:id', (req, res) => {
-  getPositionsCamera(`${req.params.id}`)
-    .then((camera) => {
-      res.setHeader('Content-Type', 'application/json')
-      res.status(200).send(camera)
-    })
-    .catch(err => {
-      console.error(`Erreur : ${err.id}`)
-      res.setHeader('Content-Type', 'application/json');
-      res.status(500).send(err)
-    })
-})
 
 
 
-
-
-// Récupération du fichier trace 100m
-// A Supprimer
-app.get('/api/trace100m/:id', (req, res) => {
-  getTrace100m(`${req.params.id}`)
-    .then((trace) => {
-      res.setHeader('Content-Type', 'application/json')
-      res.status(200).send(trace)
-    })
-    .catch(err => {
-      console.error(`Erreur : ${err.id}`)
-      res.setHeader('Content-Type', 'application/json');
-      res.status(500).send(err)
-    })
-})
-
-// Récupération du fichier camera
-// A Supprimer
-app.get('/api/camera/:id', (req, res) => {
-  getCamera(`${req.params.id}`)
-    .then((camera) => {
-      res.setHeader('Content-Type', 'application/json')
-      res.status(200).send(camera)
-    })
-    .catch(err => {
-      console.error(`Erreur : ${err}`)
-      res.setHeader('Content-Type', 'application/json');
-      res.status(500).send({ id: 9999, error: `Le fichier caméra ne peut être récupérée !` })
-    })
-})
 
 app.get('/api/visu/:id', (req, res) => {
   getVisu(`${req.params.id}`)
@@ -296,10 +214,8 @@ app.get('/api/visu/:id', (req, res) => {
 })
 
 
-//Sauvegarde du fichier positionsCamera.json
+//Sauvegarde du fichiervisu.json
 app.post('/api/visu/:id/', (req, res) => {
-  // console.table(req.body.visu)
-  // savePositionsCamera(req.params.id, req.body.visu)
   saveVisu(req.params.id, req.body.visu)
     .then((retour) => {
       res.setHeader('Content-Type', 'application/json')

@@ -313,7 +313,7 @@ import { ca } from 'vuetify/locale';
     [
       "step",
       ["line-progress"],
-      "rgba(155, 155, 155, 0.75)",
+      "rgba(155, 155, 255, 0.75)",
       phase,
       "rgba(0, 0, 0, 0)",
     ]

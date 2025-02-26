@@ -31,7 +31,7 @@
       </v-tooltip>
     </div> -->
 
-    <div>
+    <!-- <div>
       <v-btn icon disabled>
         <v-icon color="error">mdi-file-remove-outline</v-icon>
       </v-btn>
@@ -39,7 +39,7 @@
         Supprimer des traces
       </v-tooltip>
     </div>
-
+ -->
     <!-- Menu fichiers FIT-->
     <template v-if="$vuetify.display.smAndUp">
       <v-divider class="mx-1 align-self-center" length="24" thickness="2" vertical></v-divider>
@@ -47,7 +47,8 @@
       &nbsp;&nbsp;&nbsp;FIT
 
       <div>
-        <v-btn icon :disabled="noFitFileReady">
+        <!-- <v-btn icon :disabled="noFitFileReady"> -->
+        <v-btn icon disabled>
           <v-icon>mdi-file-document-plus-outline</v-icon>
         </v-btn>
         <v-tooltip activator="parent" location="bottom">

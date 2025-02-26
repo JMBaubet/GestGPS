@@ -13,7 +13,7 @@
             size="0"
         >
           <v-alert
-            :type="alarme.type"
+            :color="alarme.type"
             :text="alarme.text"
             :closable="alarme.closable"
             :icon="alarme.icon"

@@ -24,21 +24,6 @@ export const mapLoadLayers = (map, trace) => {
       }
     });
 
-    // Creation du Layer de la trace 
-    map.addLayer({
-      type: 'line',
-      source: 'trace',
-      id: 'trace',
-      paint: {
-        'line-color': "rgba(255, 0, 0, 1)",
-        'line-width': 6,
-      },
-      layout: {
-        'line-cap': 'round',
-        'line-join': 'round'
-      }
-    })
-
     // Création du Layer pour l'avancement de la visualisation de la trace
     map.addLayer({
       type: 'line',
@@ -47,6 +32,22 @@ export const mapLoadLayers = (map, trace) => {
       paint: {
         'line-color': "rgba(23, 23, 0, 0)", // La couleur est donnée dans l'annimation
         'line-width': 12,
+      },
+      layout: {
+        'line-cap': 'round',
+        'line-join': 'round'
+      }
+    })
+
+
+    // Creation du Layer de la trace 
+    map.addLayer({
+      type: 'line',
+      source: 'trace',
+      id: 'trace',
+      paint: {
+        'line-color': "rgba(255, 0, 0, 1)",
+        'line-width': 6,
       },
       layout: {
         'line-cap': 'round',

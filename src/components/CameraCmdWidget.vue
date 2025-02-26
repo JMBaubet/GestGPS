@@ -13,7 +13,8 @@
           </span> 
 
           <v-btn class="ml-2"
-            @click="emit('zoomIn')"
+            @click="zoomIn()"
+            :disabled=disabledZoomIn
             color="cyan-lighten-1"
             size="small" 
             icon="mdi-magnify-plus" 
@@ -21,7 +22,8 @@
           </v-btn>
 
           <v-btn class="ml-2"
-            @click="emit('zoomOut')"
+          @click="zoomOut()"
+          :disabled=disabledZoomOut
             size="small" 
             color="cyan-lighten-1"
             icon="mdi-magnify-minus" 
@@ -39,7 +41,7 @@
         </v-col>
         <v-col sm="2" class = "pa-0" align="center">
           <v-btn 
-            @click="emit('pitchPlusPlus')"
+            @click="pitchPlusPlus()"
             :disabled=disabledPitchPPlus
             size="small" 
             color="light-green-lighten-1"
@@ -54,12 +56,12 @@
       <v-row  justify="center">
         <v-col sm="5"  >
           <span id="cap">
-            Cap : {{ cap }}°
+            Cap : {{ cap }}° 
           </span> 
         </v-col>
         <v-col sm="2" class = "pa-0" align="center">
           <v-btn class="mt-1"
-            @click="emit('pitchPlus')"
+            @click="pitchPlus()"
             :disabled=disabledPitchPlus
             size="small" 
             color="light-green-lighten-1"
@@ -106,7 +108,7 @@
 
       <v-row  justify="center">
         <v-btn   class="mb-2"
-          @click="emit('pitchMoins')"
+          @click="pitchMoins()"
           :disabled=disabledPitchMoins
           size="small" 
           color="light-green-lighten-1"
@@ -122,7 +124,7 @@
 
         <v-col sm="4"  class = "pa-0" align="center">
           <v-btn 
-            @click="emit('pitchMoinsMoins')"
+            @click="pitchMoinsMoins()"
             :disabled=disabledPitchMMoins
             size="small" 
             color="light-green-lighten-1"
@@ -148,14 +150,62 @@ import { ref } from 'vue';
 const emit = defineEmits(['zoomIn', 'zoomOut', 'pitchPlusPlus', 'pitchPlus', 'capMoinsMoins', 'capMoins', 'capPlus', 'capPlusPlus', 'pitchMoins', 'pitchMoinsMoins'])
 
 const props = defineProps({
-  disabledPitchPPlus: Boolean,
-  disabledPitchPlus: Boolean,
-  disabledPitchMoins: Boolean,
-  disabledPitchMMoins: Boolean,
   zoom: Number,
   pitch: Number,
   cap: Number
 })
+
+const disabledZoomIn = ref(false)
+const disabledZoomOut = ref(false)
+const disabledPitchPPlus  = ref(false)
+const disabledPitchPlus  = ref(false)
+const disabledPitchMoins = ref(false)
+const disabledPitchMMoins = ref(false)
+
+
+function zoomIn() {
+  if (props.zoom === 19.5) { disabledZoomIn.value = true}
+  disabledZoomOut.value = false
+  emit('zoomIn')
+}
+
+function zoomOut() {
+  if (props.zoom === 2.5) { disabledZoomOut.value = true}
+  disabledZoomIn.value = false
+  emit('zoomOut')
+}
+
+function pitchPlusPlus() {
+  if (props.pitch >= 76) { disabledPitchPPlus.value = true}
+  if (props.pitch >= 84) { disabledPitchPlus.value = true}
+  disabledPitchMoins.value = false
+  disabledPitchMMoins.value = false
+  emit('pitchPlusPlus')  
+}
+
+function pitchPlus() {
+  if (props.pitch >= 80) { disabledPitchPPlus.value = true}
+  if (props.pitch >= 84) { disabledPitchPlus.value = true}
+  disabledPitchMoins.value = false
+  if (props.pitch >= 4) { disabledPitchMMoins.value = false}
+  emit('pitchPlus')
+}
+
+function pitchMoins() {
+  if (props.pitch === 1) {disabledPitchMoins.value=true}
+  if (props.pitch === 5) {disabledPitchMMoins.value=true}
+  if (props.pitch === 81 ) disabledPitchPPlus.value = false
+  disabledPitchPlus.value = false
+  emit('pitchMoins')
+}
+
+function pitchMoinsMoins() {
+  if (props.pitch === 0) {disabledPitchMoins.value=true}
+  if (props.pitch <= 9) {disabledPitchMMoins.value=true}
+  disabledPitchPlus.value = false
+  disabledPitchPPlus.value = false
+  emit('pitchMoinsMoins')
+}
 </script>
 
 <style scooped>

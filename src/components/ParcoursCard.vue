@@ -14,7 +14,7 @@
                 <v-btn icon="mdi-dots-vertical" variant="text" v-bind="props"></v-btn>
               </template>
               <v-list>
-                <v-list-item value="aff">
+                <v-list-item disabled value="aff">
                   <v-list-item-title>Informations</v-list-item-title>
                 </v-list-item>
                 <v-list-item value="camera">
@@ -23,7 +23,7 @@
                 <v-list-item value="3d">
                   <v-list-item-title @click="Affiche3D">Visualiser</v-list-item-title>
                 </v-list-item>
-                <v-list-item value="sel">
+                <v-list-item disabled value="sel">
                   <v-list-item-title>Sélectionner pour comparer</v-list-item-title>
                 </v-list-item>
                 <v-list-item disabled value="com">
@@ -71,14 +71,10 @@ const props = defineProps({
   topDistance: String,
 })
 
-const emit = defineEmits(['confirmDelGpxFile', 'addCameraFile', 'modCameraFile', 'affiche3D'])
+const emit = defineEmits(['confirmDelGpxFile', 'modCameraFile', 'affiche3D'])
 
 function delCircuit() {
   emit('confirmDelGpxFile')
-}
-
-function MakeFileCamera() {
-  emit('addCameraFile')
 }
 
 function paramCamera() {

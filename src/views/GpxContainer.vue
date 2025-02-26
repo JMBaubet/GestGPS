@@ -18,7 +18,6 @@
           :top="circuit.sommet.altitude" :top-distance="circuit.sommet.km"
           :vignette="'src/assets/data/' + circuit.circuitId + '/vignette.png'"
           @confirm-del-gpx-file="askDelGpxFile(circuit.circuitId, circuit.nom)"
-          @addCameraFile="addCameraFile(circuit.circuitId)"
           @modCameraFile="modCameraFile(circuit.circuitId)"
           @affiche3D="map3D(circuit.circuitId)">
         </ParcoursCard>
@@ -32,7 +31,6 @@
           :top="circuit.sommet.altitude" :top-distance="circuit.sommet.km"
           :vignette="'src/assets/data/' + circuit.circuitId + '/vignette.png'"
           @confirm-del-gpx-file="askDelGpxFile(circuit.circuitId, circuit.nom)"
-          @addCameraFile="addCameraFile(circuit.circuitId)"
           @modCameraFile="modCameraFile(circuit.circuitId)"
           @affiche3D="map3D(circuit.circuitId)">
         </ParcoursCard>
@@ -46,7 +44,6 @@
           :top="circuit.sommet.altitude" :top-distance="circuit.sommet.km"
           :vignette="'src/assets/data/' + circuit.circuitId + '/vignette.png'"
           @confirm-del-gpx-file="askDelGpxFile(circuit.circuitId, circuit.nom)"
-          @addCameraFile="addCameraFile(circuit.circuitId)"
           @modCameraFile="modCameraFile(circuit.circuitId)"
           @affiche3D="map3D(circuit.circuitId)">
         </ParcoursCard>
@@ -60,7 +57,6 @@
           :top="circuit.sommet.altitude" :top-distance="circuit.sommet.km"
           :vignette="'src/assets/data/' + circuit.circuitId + '/vignette.png'"
           @confirmDelGpxFile="askDelGpxFile(circuit.circuitId, circuit.nom)"
-          @addCameraFile="addCameraFile(circuit.circuitId)"
           @modCameraFile="modCameraFile(circuit.circuitId)"
           @affiche3D="map3D(circuit.circuitId)">
         </ParcoursCard>
@@ -454,32 +450,6 @@ function rmGpxFile() {
     })
 }
 
-function addCameraFile(id) {
-  console.log(`on va generer le circuit  ${id}`)
-  const url = `http://localhost:4000/api/3DFiles/${id}`
-  fetch(url, { method: 'POST', signal: AbortSignal.timeout(8000) })
-    .then((rep, err) => {
-      return rep.json()
-    })
-    .then((json, err) => {
-    if (typeof (json.error) === "undefined") { // On recoit la réponse attendu
-        // console.log(`reponse : ${json.del}`)
-        // Mettre une alarme si rep.gpx vaut Present  ou Semblable
-        alarmes.value.push({
-          id: 12,
-          type: 'success',
-          text: "Les données pour la visu 3D sont prêtes.",
-          closable: true,
-          icon: "mdi-video-3d-variant"
-        })
-      } else { // On reçoit une réponse de type error
-        traiteErreur(json, alarmes)
-      }
-    })
-    .catch((err) => {
-      traiteCatch(err, alarmes)
-    })
-}
 
 /**
 * @Desc Cette fonction permet de fermer le composant AddGpxDialog.vue. 

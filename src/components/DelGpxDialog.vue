@@ -11,7 +11,7 @@
           <v-btn color="warning" text="Non" variant="elevated" prepend-icon="mdi-cancel"
             @click="emit('closeDelGpxDialog')"></v-btn>
 
-          <v-btn color="success" text="Oui" variant="elevated" prepend-icon="mdi-file-remove-outline"
+          <v-btn class="ma-2" color="success" text="Oui" variant="elevated" prepend-icon="mdi-file-remove-outline"
             @click="delCircuit"></v-btn>
         </v-card-actions>
 
