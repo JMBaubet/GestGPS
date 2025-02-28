@@ -37,7 +37,6 @@
   import {ref, onMounted, onUnmounted} from 'vue' 
   import * as turf from '@turf/turf'
   import {mapLoadLayers, mapMaskSymbols, mapAdd3D} from "../scripts/mapLayers" 
-  import {gestionMarker} from "../scripts/mapMarker"
   import {initEvt, traiteEvt} from '../scripts/mapEvt'
 import { ca } from 'vuetify/locale';
 
@@ -263,7 +262,6 @@ import { ca } from 'vuetify/locale';
       // console.log(`on devrait faire un pause...`)
       // playPause() 
     }
-    // gestionMarker(map, avancement)
     traiteEvt(map, evt, avancement)
 
   }
