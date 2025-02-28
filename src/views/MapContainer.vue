@@ -37,6 +37,8 @@
   import {ref, onMounted, onUnmounted} from 'vue' 
   import * as turf from '@turf/turf'
   import {mapLoadLayers, mapMaskSymbols, mapAdd3D} from "../scripts/mapLayers" 
+  import {gestionMarker} from "../scripts/mapMarker"
+  import {initEvt, traiteEvt} from '../scripts/mapEvt'
 import { ca } from 'vuetify/locale';
 
   const props = defineProps({
@@ -57,7 +59,9 @@ import { ca } from 'vuetify/locale';
   const coeffAnnimation= import.meta.env.VITE_COEFFICIENT_DUREE_ANIMATION
 
   let map = null
+  let trace = []
   let visu = []
+  let evt = []
 
   let longueurTrace = 0
   let dureeAnimation
@@ -69,13 +73,13 @@ import { ca } from 'vuetify/locale';
 
   // Récupération des données du circuit 
   let urlTrace = `http://localhost:4000/api/lineString/` + zpad(props.id, 6)
-  let trace = []
+  
   fetch(urlTrace, { method: 'GET', signal: AbortSignal.timeout(4000) })
   .then((rep) => {
     return rep.json()
   })
   .then((json) => {
-    // On lit le 
+    // On recopie dans le tableau trace uniquement les coordonnées 
     for (let key = 0; key < json.geometry.coordinates.length; key++) {
       // console.log(json.geometry.coordinates[key][0], json.geometry.coordinates[key][1])
       trace.push([json.geometry.coordinates[key][0], json.geometry.coordinates[key][1]])
@@ -100,9 +104,11 @@ import { ca } from 'vuetify/locale';
     return rep.json()
   })
   .then((visuJson) => {
+    // On recopie les données dans le tableau visu
     visu = visuJson.slice()
     let start
     let longueur
+    // On met à jour les données intermédiaires start et longueur pour les points non référencés.
     for (let i=0; i < visu.length; i++) {
       if (visu[i].ref === true) {
         start = visu[i].start
@@ -117,6 +123,23 @@ import { ca } from 'vuetify/locale';
   })
   .catch((err) => {
     console.error(`Erreur JsonCamera: ${err}`)
+  })
+
+  // Récupération des données évènement
+  let urlEvt = `http://localhost:4000/api/evt/` + zpad(props.id, 6)
+  
+  fetch(urlEvt, { method: 'GET', signal: AbortSignal.timeout(500) })
+  .then((rep) => {
+    return rep.json()
+  })
+  .then((json) => {
+    evt = json.slice()
+    // on initialise les données évènements
+    console.table(evt)
+    initEvt(evt)
+  })
+  .catch((err) => {
+    console.error(`Erreur Evt : ${err}`)
   })
 
 
@@ -233,6 +256,16 @@ import { ca } from 'vuetify/locale';
     avancement = parseInt((dureeAnimation*phase/coeffAnnimation) * 10)
     distance.value = (dureeAnimation*phase/coeffAnnimation).toFixed(1)
 
+    // On teste pour faire une pause
+    //Il faudra voir comment on peut reprendre....
+    // console.log(typeof(distance.value))
+    if(parseFloat(distance.value) === 2.1) {
+      // console.log(`on devrait faire un pause...`)
+      // playPause() 
+    }
+    // gestionMarker(map, avancement)
+    traiteEvt(map, evt, avancement)
+
   }
   else { 
     // console.log(`Nous sommes en pause`)
@@ -256,12 +289,15 @@ import { ca } from 'vuetify/locale';
   dureeSegment = visu[avancement].longueur * coeffAnnimation/10
   startSegment = start + (visu[avancement].start * coeffAnnimation/10)
   phaseSegment = (time - startSegment) / dureeSegment
- 
-  const altDebut = visu[visu[avancement].start].altitudeCamera 
-  const altFin = visu[visu[avancement].start + visu[avancement].longueur].altitudeCamera
+  const avancementStart = visu[avancement].start
+  const avancementFin = visu[avancement].start + visu[avancement].longueur
+
+  const altDebut = visu[avancementStart].altitudeCamera 
+  const altFin = visu[avancementFin].altitudeCamera
+
   const altitudeCamera = parseInt(altDebut + ((altFin - altDebut) * phaseSegment))
-  const positionCameraDebut = visu[visu[avancement].start].positionCamera
-  const positionCameraFin = visu[visu[avancement].start + visu[avancement].longueur].positionCamera
+  const positionCameraDebut = visu[avancementStart].positionCamera
+  const positionCameraFin = visu[avancementFin].positionCamera
   const positionCameraLongueur = turf.distance(positionCameraDebut, positionCameraFin)
 
   const alongPositionCamera = turf.along(
@@ -319,7 +355,6 @@ import { ca } from 'vuetify/locale';
     ]
   )
 
-  
   window.requestAnimationFrame(frame);
 }
 

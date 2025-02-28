@@ -6,7 +6,7 @@
 
 const initCenterLon = import.meta.env.VITE_MAPBOX_INIT_CENTER_LON
 const initCenterLat = import.meta.env.VITE_MAPBOX_INIT_CENTER_LAT
-
+import mapboxgl from 'mapbox-gl';
 
 export const mapLoadLayers = (map, trace) => {
   // Chargement des données la trace
@@ -152,3 +152,8 @@ export const mapAdd3D = (map) => {
     map.setTerrain({ source: "mapbox-dem", exaggeration: 1 });
   })
 }
+
+
+
+
+

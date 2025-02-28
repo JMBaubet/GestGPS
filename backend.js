@@ -15,6 +15,7 @@ import { delCircuit2DataModel } from './src/scripts/dataModel.js'
 import { getLineString } from './src/scripts/circuits.js'
 import { getVisu } from './src/scripts/3DFiles.js'
 import { saveVisu } from './src/scripts/visu.js'
+import { getEvt } from './src/scripts/evt.js'
 
 const app = express()
 dotenv.config()
@@ -166,7 +167,7 @@ app.get('/api/circuitsMinMax/', (req, res) => {
 })
 
 
-// Obtension de la liste des traceurs connus dans dataModel.json
+// Récupération de la liste des traceurs connus dans dataModel.json
 app.get('/api/traceurs/', (req, res) => {
   getTraceurs()
     .then(listeTraceurs => {
@@ -180,7 +181,7 @@ app.get('/api/traceurs/', (req, res) => {
     })
 })
 
-// Obtension de la liste des villes de départ connus dans dataModel.json
+// Récupération de la liste des villes de départ connus dans dataModel.json
 app.get('/api/villes/', (req, res) => {
   getVilles()
     .then(listeVilles => {
@@ -195,11 +196,7 @@ app.get('/api/villes/', (req, res) => {
 })
 
 
-
-
-
-
-
+// Récupération des données caméra
 app.get('/api/visu/:id', (req, res) => {
   getVisu(`${req.params.id}`)
     .then((camera) => {
@@ -209,7 +206,7 @@ app.get('/api/visu/:id', (req, res) => {
     .catch(err => {
       console.error(`Erreur : ${err}`)
       res.setHeader('Content-Type', 'application/json');
-      res.status(500).send({ id: 9999, error: `Le fichier visu ne peut être récupérée !` })
+      res.status(500).send({ id: 9999, error: `Le fichier visu ne peut être récupéré !` })
     })
 })
 
@@ -225,6 +222,21 @@ app.post('/api/visu/:id/', (req, res) => {
     })
     .catch((err) => {
       console.error(`backend.js : ${err.id}`)
+    })
+})
+
+
+// Récupération des données evènement
+app.get('/api/evt/:id', (req, res) => {
+  getEvt(`${req.params.id}`)
+    .then((evt) => {
+      res.setHeader('Content-Type', 'application/json')
+      res.status(200).send(evt)
+    })
+    .catch(err => {
+      console.error(`Erreur : ${err}`)
+      res.setHeader('Content-Type', 'application/json');
+      res.status(500).send({ id: 9999, error: `Le fichier evt ne peut être récupéré !` })
     })
 })
 

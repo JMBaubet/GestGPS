@@ -11,14 +11,14 @@
           <v-col class="pa-0 text-right" cols="12" sm="2">
             <v-menu>
               <template v-slot:activator="{ props }">
-                <v-btn icon="mdi-dots-vertical" variant="text" v-bind="props"></v-btn>
+                <v-btn icon="mdi-dots-vertical"  variant="text" v-bind="props"></v-btn>
               </template>
               <v-list>
                 <v-list-item disabled value="aff">
                   <v-list-item-title>Informations</v-list-item-title>
                 </v-list-item>
                 <v-list-item value="camera">
-                  <v-list-item-title @click="paramCamera">Configurer</v-list-item-title>
+                  <v-list-item-title @click="paramCamera">Editer</v-list-item-title>
                 </v-list-item>
                 <v-list-item value="3d">
                   <v-list-item-title @click="Affiche3D">Visualiser</v-list-item-title>
@@ -29,7 +29,7 @@
                 <v-list-item disabled value="com">
                   <v-list-item-title>Comparer</v-list-item-title>
                 </v-list-item>
-                <v-list-item value="sup">
+                <v-list-item value="sup"base-color="red">
                   <v-list-item-title @click="delCircuit">Supprimer</v-list-item-title>
                 </v-list-item>
               </v-list>
