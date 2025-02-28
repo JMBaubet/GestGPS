@@ -37,7 +37,7 @@
   import {ref, onMounted, onUnmounted} from 'vue' 
   import * as turf from '@turf/turf'
   import {mapLoadLayers, mapMaskSymbols, mapAdd3D} from "../scripts/mapLayers" 
-  import {initEvt, traiteEvt} from '../scripts/mapEvt'
+  import {initEvt, traiteEvt, flyToEvt} from '../scripts/mapEvt'
 import { ca } from 'vuetify/locale';
 
   const props = defineProps({
@@ -255,14 +255,13 @@ import { ca } from 'vuetify/locale';
     avancement = parseInt((dureeAnimation*phase/coeffAnnimation) * 10)
     distance.value = (dureeAnimation*phase/coeffAnnimation).toFixed(1)
 
-    // On teste pour faire une pause
-    //Il faudra voir comment on peut reprendre....
-    // console.log(typeof(distance.value))
-    if(parseFloat(distance.value) === 2.1) {
-      // console.log(`on devrait faire un pause...`)
-      // playPause() 
+    // Traitement des évèneùents
+    let retour = traiteEvt(map, evt, avancement)
+    if (retour.pause === true) playPause()
+    if (retour.flyTo !== 0) {     
+      flyToEvt(map, retour.flyTo)
     }
-    traiteEvt(map, evt, avancement)
+
 
   }
   else { 
