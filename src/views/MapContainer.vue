@@ -37,7 +37,7 @@
   import {ref, onMounted, onUnmounted} from 'vue' 
   import * as turf from '@turf/turf'
   import {mapLoadLayers, mapMaskSymbols, mapAdd3D} from "../scripts/mapLayers" 
-  import {initEvt, traiteEvt, flyToEvt} from '../scripts/mapEvt'
+  import {initEvt, traiteEvt, flyToEvt, endFlyToEvt} from '../scripts/mapEvt'
 import { ca } from 'vuetify/locale';
 
   const props = defineProps({
@@ -61,6 +61,7 @@ import { ca } from 'vuetify/locale';
   let trace = []
   let visu = []
   let evt = []
+  let flyToState = false
 
   let longueurTrace = 0
   let dureeAnimation
@@ -134,7 +135,7 @@ import { ca } from 'vuetify/locale';
   .then((json) => {
     evt = json.slice()
     // on initialise les données évènements
-    console.table(evt)
+    // console.table(evt)
     initEvt(evt)
   })
   .catch((err) => {
@@ -210,7 +211,11 @@ import { ca } from 'vuetify/locale';
   function keyboard(e) {
     // console.log(`Keyboard : ${e.key}`)
     // console.log(e.key)
-    if (e.key === "p") { playPause() }
+    if (e.key === "p") { 
+      if (flyToState !== true) {        
+        playPause()
+    } 
+    }
     if (e.key === "r") {
 
       start = 0
@@ -255,11 +260,23 @@ import { ca } from 'vuetify/locale';
     avancement = parseInt((dureeAnimation*phase/coeffAnnimation) * 10)
     distance.value = (dureeAnimation*phase/coeffAnnimation).toFixed(1)
 
-    // Traitement des évèneùents
+    // Traitement des évènements
     let retour = traiteEvt(map, evt, avancement)
-    if (retour.pause === true) playPause()
-    if (retour.flyTo !== 0) {     
+    if (retour.pause === true) playPause()  // On a une pause de progrmmée.
+    if (retour.flyTo !== 0) {               // On a un flyTo de programmé. La pause a été faite
+      flyToState = true                     // On interdit la prise en compte d'une pause
       flyToEvt(map, retour.flyTo)
+      map.once('moveend', function() {      // On attend la fin du flyTo pour lancer l'attente sur le retour
+        console.log(`On attend le click souris`)
+        endFlyToEvt(map, avancement)        // On attend un click souris pour lancer le retour au point de départ
+        map.once('moveend', function() {      // Le click souris a été fait 
+          console.log(`On met un message`)
+          map.once('moveend', function() {
+            flyToState = false
+            playPause()
+          })
+        })
+      })
     }
 
 
