@@ -192,13 +192,8 @@ export const flyToEvt = (map, evt) => {
 
 export const endFlyToEvt = (map, evt) => {
   // console.log(`fonction endFlyToEvt`)
-
-  // Voir si on peut faire un mouseenter à la place du click
-  // Cela permetrai de ne pas prendre en compte un click pendant l'approche
-  // https://docs.mapbox.com/mapbox-gl-js/api/map/#map.event:mouseenter
-  // map.once('mouseenter', 'out', () => {
-  // dans la gestion de l'evènement out correspond  au id d'un map.addLayer 
-  map.once('click', async () => {
+  //On attend un clic sur le bouton reprise pour retourner la ou nous en étions avant le flyTo
+  document.getElementById('reprise').addEventListener('click', () => {
     // console.log(`On lance le flyTo pour une durée de ${flyTos[evt].flyTo.duree / 2} sec.`)
     // console.log(`center: ${savedCameraState.position}`)
     // console.log(`bearing: ${savedCameraState.bearing}`)

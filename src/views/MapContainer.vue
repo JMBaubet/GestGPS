@@ -22,6 +22,13 @@
       :altitude="altitude"
     >
     </MapDataWidget>
+
+    <MapCmdWidget
+    :pause="pause"
+    :disabledPlayPause=disabledPlayPause
+    :disabledReprise=disabledReprise
+    @playPause="playPause()"
+    ></MapCmdWidget>
   </v-container>
 </template>
   
@@ -29,6 +36,8 @@
 <script setup>
   import MapHomeWidget from '@/components/MapHomeWidget.vue';
   import MapDataWidget from '@/components/MapDataWidget.vue';
+  import MapCmdWidget from '@/components/MapCmdWidget.vue';
+
   import { useRouter } from 'vue-router';
 
   import '../../node_modules/mapbox-gl/dist/mapbox-gl.css';
@@ -56,6 +65,11 @@ import { ca } from 'vuetify/locale';
   const initBear = import.meta.env.VITE_MAPBOX_INIT_BEAR
   const initPitch = import.meta.env.VITE_MAPBOX_INIT_PITCH
   const coeffAnnimation= import.meta.env.VITE_COEFFICIENT_DUREE_ANIMATION
+
+  const disabledPlayPause = ref(true)
+  const disabledReprise = ref(true)
+  const pause = ref(false)
+
 
   let map = null
   let trace = []
@@ -177,7 +191,9 @@ import { ca } from 'vuetify/locale';
       // Lancement de l'annimation qui part de Paris et pointe vers le départ
       // console.table(visu)
       // console.log(`On lance l'annimation du départ vers : ${visu[0].lookAt}`)
-      
+      // let retour = traiteEvt(map, evt, 0)
+      // if (retour.pause === true) playPause()
+
       map.flyTo({  center: visu[0].lookAt,
           // bearing: camera[0].cap, 
           bearing: visu[0].cap, 
@@ -188,6 +204,7 @@ import { ca } from 'vuetify/locale';
 
       map.once('moveend', async () => {
         // console.log("On lance la suite")
+        disabledPlayPause.value = false
         position = map.getSource('point')
         window.requestAnimationFrame(frame);
     });
@@ -229,7 +246,6 @@ import { ca } from 'vuetify/locale';
    */
   let start
   let phase = 0
-  let pause = false
   let timePause
   let startPause = true
   let position 
@@ -255,7 +271,7 @@ import { ca } from 'vuetify/locale';
   }
 
   // phase determines how far through the animation we are
-  if (pause !== true)  {
+  if (pause.value !== true)  {
     phase = (time - start) / dureeAnimation;
     avancement = parseInt((dureeAnimation*phase/coeffAnnimation) * 10)
     distance.value = (dureeAnimation*phase/coeffAnnimation).toFixed(1)
@@ -264,16 +280,20 @@ import { ca } from 'vuetify/locale';
     let retour = traiteEvt(map, evt, avancement)
     if (retour.pause === true) playPause()  // On a une pause de progrmmée.
     if (retour.flyTo !== 0) {               // On a un flyTo de programmé. La pause a été faite
+      disabledPlayPause.value = true
       flyToState = true                     // On interdit la prise en compte d'une pause
       flyToEvt(map, retour.flyTo)
       map.once('moveend', function() {      // On attend la fin du flyTo pour lancer l'attente sur le retour
-        console.log(`On attend le click souris`)
+        // console.log(`On attend le click souris`)
         endFlyToEvt(map, avancement)        // On attend un click souris pour lancer le retour au point de départ
         map.once('moveend', function() {      // Le click souris a été fait 
-          console.log(`On met un message`)
+          // console.log(`On met un message`)
+          disabledReprise.value = false
           map.once('moveend', function() {
             flyToState = false
+            disabledReprise.value = true
             playPause()
+            disabledPlayPause.value = false
           })
         })
       })
@@ -382,7 +402,7 @@ function playPause() {
 
     window.requestAnimationFrame(frame)
   } else {
-    if (pause) {
+    if (pause.value) {
       // On relance l'annimation
       start = start + performance.now() - timePause
       window.requestAnimationFrame(frame)
@@ -396,11 +416,10 @@ function playPause() {
         // console.log(`timePause : ${timePause}`)s
       }
     }
-    pause = !pause
+    pause.value = !pause.value
   }
   
 }
-
 
 
 function home() {
