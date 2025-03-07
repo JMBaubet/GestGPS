@@ -111,7 +111,7 @@ export const traiteEvt = (map, evt, avancement) => {
           div[indexMarker].style.backgroundSize = '100%';
 
           const offset = -evt[indexMarker].marker.taille / 2
-          markers[indexMarker] = new mapboxgl.Marker({ element: div[indexMarker], offset: [0, offset] })
+          markers[indexMarker] = new mapboxgl.Marker({ element: div[indexMarker], offset: [60, -20] })
             .setLngLat(evt[indexMarker].marker.coord)
             .addTo(map);
 

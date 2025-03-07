@@ -2,8 +2,8 @@
   <div id="data">
     <v-card class="mx-auto" max-width="220" min-width="220" color="#23374AC0">
     <v-card-actions>
-      <v-btn color="white" @click="show = !show"></v-btn>
-
+      <v-btn color="white" @click="show = !show">Informations</v-btn>
+      
       <v-spacer></v-spacer>
 
       <v-btn class="ma-0 pa-0"

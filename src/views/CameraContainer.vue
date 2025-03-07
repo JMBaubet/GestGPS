@@ -20,10 +20,24 @@
     >
     </MapHomeWidget>
 
-    <CameraCmdWidget
+    <IhmConfiguration
+      :longueur="visu.length - 1"
+      @new-position="newPosition"
+      :zoom
+      @new-zoom="newZoom"
+      :pitch
+      @new-pitch="newPitch"
+      :cap
+      @new-cap="newCap"
+      :visu
+      :map="map"
+      @save-visu="saveVisu"
+    ></IhmConfiguration>
+
+    <!-- <CameraCmdWidget
       :zoom = "zoom"
       :cap = "cap"
-      :pitch = "elevation"
+      :pitch = "pitch"
       :capRef = "capRef"
       @zoomIn="setZoom(0.5)"
       @zoomOut="setZoom(-0.5)"
@@ -36,9 +50,9 @@
       @pitchMoins="setElevation(-1)"
       @pitchMoinsMoins="setElevation(-5)"
     >
-    </CameraCmdWidget>
+    </CameraCmdWidget> -->
 
-    <TraceCmdwidget
+    <!-- <TraceCmdwidget
       :disabledPreviousRef="disabledBtnPreviousRef"
       :disabledNextRef="disabledBtnNextRef"
       :disabledLastRef="disabledBtnLastRef"
@@ -66,7 +80,31 @@
       @plusMille="deltaTrace(10)"
       @arrivee="kmFin"
     >
-    </TraceCmdwidget>
+    </TraceCmdwidget> -->
+
+    <!-- <EvtsWidget></EvtsWidget> -->
+    <!-- <EvtInfo></EvtInfo> -->
+    <!-- <EvtPositionWidget
+      :titre="titre"
+      :mask= true
+      @zoomIn="setZoom(2)"
+      @zoomOut="setZoom(-2)"
+      @capChangeLL="capChange(-15)"
+      @capChangeL="capChange(-5)"
+      @capChangeR="capChange(+5)"
+      @capChangeRR="capChange(+15)"
+      @avanceP="toFrom(250)"
+      @avance="toFrom(50)"
+      @recule="toFrom(-50)"
+      @reculeP="toFrom(-250)"
+
+    >
+    </EvtPositionWidget>  -->
+    
+    <!-- <CurseurCenter
+    :mask = true
+    >
+    </CurseurCenter> -->
     
   </v-container>
 </template>
@@ -77,6 +115,13 @@
   import MapDataWidget from '@/components/MapDataWidget.vue';
   import CameraCmdWidget from '@/components/CameraCmdWidget.vue';
   import TraceCmdwidget from '@/components/TraceCmdwidget.vue';
+  import EvtPositionWidget from '@/components/EvtPositionWidget.vue';
+  import CurseurCenter from '@/components/CurseurCenter.vue';
+  import EvtsWidget from '@/components/EvtsWidget.vue';
+  import EvtPause from '@/components/EvtPause.vue';
+  import EvtInfo from '@/components/EvtInfo.vue';
+  import IhmConfiguration from '@/components/IhmConfiguration.vue';
+
   import { useRouter } from 'vue-router';
 
   import '../../node_modules/mapbox-gl/dist/mapbox-gl.css';
@@ -128,15 +173,16 @@
 
   const zoom = ref(16.0)
   const cap = ref(0)
-  const elevation = ref(60)
+  const pitch = ref(0)
   const capRef = ref(0)
+  const titre = ref("Positionnement du marker")
 
   const disabledBtnPitchPPlus = ref(false)
   const disabledBtnPitchPlus = ref(false)
   const disabledBtnPitchMoins = ref(false)
   const disabledBtnPitchMMoins = ref(false)
 
-  let visu = []
+  const  visu  = ref([])
   let listRef = [0]
   let init = true 
   let position = 0
@@ -184,16 +230,16 @@
     // console.table(jsonVisu)
     // Mise à jour du dernier point référencé
     for (let key = 0; key < jsonVisu.length; key++) {
-      visu.push(jsonVisu[key])
-      if (visu.ref && (key > lastRef)) lastRef = key
+      visu.value.push(jsonVisu[key])
+      if (visu.value.ref && (key > lastRef)) lastRef = key
     }
-    // console.log(`Nombre de segment camera : ${visu.length}`)   
-    // console.table(visu)  
-    if (visu[0].ref === true) {
+    // console.log(`Nombre de segment camera : ${visu.value.length}`)   
+    // console.table(visu.value)
+    if (visu.value[0].ref === true) {
       init = false
       majListRef()
-      majBtnDistance()
-      majBtnPov()
+      // majBtnDistance()
+      // majBtnPov()
     }
 
   })
@@ -233,19 +279,22 @@
     // console.log("On lance l'annimation du départ")
     map.on('load', async () => {
       map.addControl(new mapboxgl.NavigationControl({showCompass: true, showZoom: false}), 'top-right');
-      map.flyTo({  center: visu[0].lookAt,
-        bearing: visu[0].cap, 
-        zoom: visu[0].zoom, 
-        pitch: visu[0].pitch, 
+      map.flyTo({  center: visu.value[0].lookAt,
+        bearing: visu.value[0].cap, 
+        zoom: visu.value[0].zoom, 
+        pitch: visu.value[0].pitch, 
         duration: 2500
       })
+      zoom.value = visu.value[0].zoom
+      pitch.value = visu.value[0].pitch
+      cap.value = visu.value[0].cap
     });
 
     // console.log("On lance la suite")
     map.once('moveend', async () => {
       position = map.getSource('point')
       disabledBtnHome.value=false
-      cap.value = visu[0].cap
+      cap.value = visu.value[0].cap
       setCamera()
       // positionCamera() 
 
@@ -263,7 +312,7 @@
     });
 
     map.on('pitchend', () => {
-      elevation.value = parseInt(map.getPitch());
+      pitch.value = parseInt(map.getPitch());
     });
   })
 
@@ -294,15 +343,15 @@
     const position = map.getFreeCameraOptions().position;
     const lngLat = position.toLngLat();
 
-    visu[avancement].ref = true
-    visu[avancement].start = avancement
-    visu[avancement].cap = cap.value
-    visu[avancement].zoom = zoom.value
-    visu[avancement].pitch = elevation.value
-    visu[avancement].positionCamera = [lngLat.lng.toFixed(5), lngLat.lat.toFixed(5)]
-    visu[avancement].altitudeCamera = parseInt(position.toAltitude())
+    visu.value[avancement].ref = true
+    visu.value[avancement].start = avancement
+    visu.value[avancement].cap = cap.value
+    visu.value[avancement].zoom = zoom.value
+    visu.value[avancement].pitch = pitch.value
+    visu.value[avancement].positionCamera = [lngLat.lng.toFixed(5), lngLat.lat.toFixed(5)]
+    visu.value[avancement].altitudeCamera = parseInt(position.toAltitude())
 
-    // console.table(visu[avancement])
+    // console.table(visu.value[avancement])
     if (init) {
       disabledBtnSaveRef.value = false
       majBtnDistance()
@@ -318,9 +367,9 @@
   function delRef() {
     // console.log(`function delRef`)
     // console.log(`avancement : ${avancement}`)
-    visu[avancement].ref = false
-    visu[avancement].start = 0
-    visu[avancement].longueur = 0
+    visu.value[avancement].ref = false
+    visu.value[avancement].start = 0
+    visu.value[avancement].longueur = 0
     majListRef()
     majVisu()
     majBtnPov() // Pour mettre à jour les boutons precedent suivant et dernier
@@ -388,15 +437,15 @@
   function majVisu() {
     // console.log(`function majVisu`)
     for(let i=0; i < listRef[listRef.length -1]; i++) {
-      if (visu[i].ref === true) {
+      if (visu.value[i].ref === true) {
         const origine = i
-        const capOrigine=visu[i].cap
-        const zommOrigine=visu[i].zomm
-        const pitchOrigine=visu[i].pitch
+        const capOrigine=visu.value[i].cap
+        const zommOrigine=visu.value[i].zomm
+        const pitchOrigine=visu.value[i].pitch
         let destination = i + 1
         while (destination <= listRef[listRef.length -1] ) {
-          if (visu[destination].ref === true) {
-            visu[origine].longueur = destination - i
+          if (visu.value[destination].ref === true) {
+            visu.value[origine].longueur = destination - i
             break
           }
           destination ++
@@ -404,64 +453,64 @@
         // On met a jour les distances intermédiaires
         for(let j=origine + 1; j < destination; j++) {
           
-          // Attention au changement de signe sur le cap. entre visu[index - lgSegment] et visu[ref]
-          if (((visu[destination].cap > 0) && (visu[origine].cap > 0)) ||
-            ((visu[destination].cap < 0) && (visu[origine].cap < 0))) {
+          // Attention au changement de signe sur le cap. entre visu.value[index - lgSegment] et visu.value[ref]
+          if (((visu.value[destination].cap > 0) && (visu.value[origine].cap > 0)) ||
+            ((visu.value[destination].cap < 0) && (visu.value[origine].cap < 0))) {
 
-            visu[j].cap =
-              visu[origine].cap +
-              (((visu[destination].cap - visu[origine].cap) / visu[origine].longueur) * (j - origine))
+            visu.value[j].cap =
+              visu.value[origine].cap +
+              (((visu.value[destination].cap - visu.value[origine].cap) / visu.value[origine].longueur) * (j - origine))
           } else {
             // console.warn(`Changement de signe sur le cap`)
-            let capCible = visu[destination].cap
-            let capOrigine = visu[origine].cap
+            let capCible = visu.value[destination].cap
+            let capOrigine = visu.value[origine].cap
             let delta
 
             if ((capCible > 0) && (capCible < 90)) {
               delta = capCible - capOrigine
-              visu[j].cap =
+              visu.value[j].cap =
                 capOrigine +
-                (((delta) / visu[origine].longueur) * (j - origine))
+                (((delta) / visu.value[origine].longueur) * (j - origine))
             } else if (capCible > 90) {
               delta = capOrigine - capCible + 360
-              visu[j].cap =
+              visu.value[j].cap =
                 capOrigine -
-                (((delta) / visu[origine].longueur) * (j - origine))
+                (((delta) / visu.value[origine].longueur) * (j - origine))
             } else if (capCible < -90) {
               delta = capCible - capOrigine + 360
-              visu[j].cap =
+              visu.value[j].cap =
                 capOrigine +
-                (((delta) / visu[origine].longueur) * (j - origine))
+                (((delta) / visu.value[origine].longueur) * (j - origine))
             } else {
               delta = capOrigine - capCible
-              visu[j].cap =
+              visu.value[j].cap =
                 capOrigine -
-                (((delta) / visu[origine].longueur) * (j - origine))
+                (((delta) / visu.value[origine].longueur) * (j - origine))
             }
           }
 
-          visu[j].zoom =
-            visu[origine].zoom +
-            (((visu[destination].zoom - visu[origine].zoom) / visu[origine].longueur) * (j - origine))
+          visu.value[j].zoom =
+            visu.value[origine].zoom +
+            (((visu.value[destination].zoom - visu.value[origine].zoom) / visu.value[origine].longueur) * (j - origine))
 
-          visu[j].pitch =
-            visu[origine].pitch +
-            (((visu[destination].pitch - visu[origine].pitch) / visu[origine].longueur) * (j - origine))
+          visu.value[j].pitch =
+            visu.value[origine].pitch +
+            (((visu.value[destination].pitch - visu.value[origine].pitch) / visu.value[origine].longueur) * (j - origine))
 
         }
         // console.log(`destination : ${destination}`)
         i = destination - 1
       }
     }
-    // console.table(visu)
+    // console.table(visu.value)
   }
 
 
   function majListRef () {
     // console.log(`function majListRef`)
     listRef.splice(0)
-    for (let i=0; i< visu.length; i++) {
-      if (visu[i].ref === true) listRef.push(i)
+    for (let i=0; i< visu.value.length; i++) {
+      if (visu.value[i].ref === true) listRef.push(i)
     }
     lastRef = listRef[listRef.length - 1]
     // console.table(listRef)
@@ -470,7 +519,7 @@
 
   function majBtnPov() {
     // console.log(`function majBtnPov`)
-    reference.value = visu[avancement].ref
+    reference.value = visu.value[avancement].ref
     if (avancement === 0 ) reference.value = false
     disabledBtnSaveRef.value = false
 
@@ -487,74 +536,75 @@
   }
 
 
-  function majBtnDistance() {
-    if (avancement === 0) {
-      disabledBtnDepart.value=true
-      disabledBtnM1k.value=true
-      disabledBtnM100m.value=true
-      disabledBtnP1k.value=false
-      disabledBtnP100m.value=false
-      disabledBtnArrivee.value=false
+  // function majBtnDistance() {
+  //   if (avancement === 0) {
+  //     disabledBtnDepart.value=true
+  //     disabledBtnM1k.value=true
+  //     disabledBtnM100m.value=true
+  //     disabledBtnP1k.value=false
+  //     disabledBtnP100m.value=false
+  //     disabledBtnArrivee.value=false
 
-    } else if (avancement < 10 ){
-      disabledBtnDepart.value=false
-      disabledBtnM1k.value=true
-      disabledBtnM100m.value=false
-      disabledBtnP1k.value=false
-      disabledBtnP100m.value=false
-      disabledBtnArrivee.value=false
+  //   } else if (avancement < 10 ){
+  //     disabledBtnDepart.value=false
+  //     disabledBtnM1k.value=true
+  //     disabledBtnM100m.value=false
+  //     disabledBtnP1k.value=false
+  //     disabledBtnP100m.value=false
+  //     disabledBtnArrivee.value=false
 
-    } else if ((avancement >= 10) && (avancement <= visu.length - 10 )) {
-      disabledBtnArrivee.value=false
-      disabledBtnP1k.value=false
-      disabledBtnP100m.value=false
-      disabledBtnDepart.value=false
-      disabledBtnM100m.value=false
-      disabledBtnM1k.value=false
+  //   } else if ((avancement >= 10) && (avancement <= visu.value.length - 10 )) {
+  //     disabledBtnArrivee.value=false
+  //     disabledBtnP1k.value=false
+  //     disabledBtnP100m.value=false
+  //     disabledBtnDepart.value=false
+  //     disabledBtnM100m.value=false
+  //     disabledBtnM1k.value=false
 
-    } else if ((avancement > visu.length - 10 ) && (avancement < visu.length -1)) {
-      disabledBtnArrivee.value=false
-      disabledBtnP1k.value=true
-      disabledBtnP100m.value=false
-      disabledBtnDepart.value=false
-      disabledBtnM100m.value=false
-      disabledBtnM1k.value=false
+  //   } else if ((avancement > visu.value.length - 10 ) && (avancement < visu.value.length -1)) {
+  //     disabledBtnArrivee.value=false
+  //     disabledBtnP1k.value=true
+  //     disabledBtnP100m.value=false
+  //     disabledBtnDepart.value=false
+  //     disabledBtnM100m.value=false
+  //     disabledBtnM1k.value=false
 
-    } else {
-      avancement = visu.length - 1
-      disabledBtnArrivee.value=true
-      disabledBtnP1k.value=true
-      disabledBtnP100m.value=true
-      disabledBtnDepart.value=false
-      disabledBtnM100m.value=false
-      disabledBtnM1k.value=false
-    } 
-  }
+  //   } else {
+  //     avancement = visu.value.length - 1
+  //     disabledBtnArrivee.value=true
+  //     disabledBtnP1k.value=true
+  //     disabledBtnP100m.value=true
+  //     disabledBtnDepart.value=false
+  //     disabledBtnM100m.value=false
+  //     disabledBtnM1k.value=false
+  //   } 
+  // }
 
 
 
   function setCamera (reload=false) {
-    // console.log(`setCamera : ${avancement}`)
+    // console.log(`setCamera : ${zoom.value}`)
     
     if ((reload) || (avancement <= lastRef)) {
       map.flyTo({ 
-        center: visu[avancement].lookAt,  
-        bearing: visu[avancement].cap, 
-        zoom: visu[avancement].zoom,
-        pitch: visu[avancement].pitch,
+        center: visu.value[avancement].lookAt,  
+        bearing: visu.value[avancement].cap, 
+        zoom: visu.value[avancement].zoom,
+        pitch: visu.value[avancement].pitch,
         essential: true, 
-        duration: 500
+        duration: 250
       })
 
     } else {
       map.flyTo({ 
-        center: visu[avancement].lookAt,  
+        center: visu.value[avancement].lookAt,  
+        zoom: zoom.value,
         essential: true, 
-        duration: 500
+        duration: 250
       })
     }
 
-    position.setData({type: 'Point', coordinates :visu[avancement].lookAt})
+    position.setData({type: 'Point', coordinates :visu.value[avancement].lookAt})
     
     map.setPaintProperty(
       "animationTrace",
@@ -569,11 +619,11 @@
     )
   }
 
-  function modCamera (zoom, cap, elevation) {
+  function modCamera (zoom, cap, pitch) {
     map.flyTo({ 
       bearing: cap, 
       zoom: zoom,
-      pitch : elevation,
+      pitch : pitch,
       essential: true, 
       duration: 1000
     })
@@ -581,68 +631,68 @@
 
 
 
-  function setZoom(facteur) {
-    // console.log(`Fonction zoomOut`)
-    zoom.value = zoom.value + facteur
-    if (zoom.value < 2) zoom.value = 2
-    if (zoom.value > 22) zoom.value = 22
-    modCamera(zoom.value, cap.value, elevation.value)
-  }
+  // function setZoom(facteur) {
+  //   // console.log(`Fonction zoomOut`)
+  //   zoom.value = zoom.value + facteur
+  //   if (zoom.value < 2) zoom.value = 2
+  //   if (zoom.value > 22) zoom.value = 22
+  //   modCamera(zoom.value, cap.value, pitch.value)
+  // }
 
-  function setCap(angle) {
-    cap.value = cap.value + angle
-    if (cap.value > 180) cap.value = cap.value - 360
-    if (cap.value <= -180) cap.value = cap.value + 360
-    // console.log(`Fonction setPitch - cap : ${cap.value}`)
-    modCamera(zoom.value, cap.value, elevation.value)
-  }
+  // function setCap(angle) {
+  //   cap.value = cap.value + angle
+  //   if (cap.value > 180) cap.value = cap.value - 360
+  //   if (cap.value <= -180) cap.value = cap.value + 360
+  //   // console.log(`Fonction setPitch - cap : ${cap.value}`)
+  //   modCamera(zoom.value, cap.value, pitch.value)
+  // }
 
-  function setElevation(angle) {
-    elevation.value = elevation.value + angle
-    // console.log(`Fonction setPitch - elevation : ${elevation.value}`)
-    modCamera(zoom.value, cap.value, elevation.value)
-  }
+  // function setElevation(angle) {
+  //   pitch.value = pitch.value + angle
+  //   // console.log(`Fonction setPitch - pitch : ${pitch.value}`)
+  //   modCamera(zoom.value, cap.value, pitch.value)
+  // }
 
 
-  function km0 () {
-    // console.log(`Fonction km0`) 
-    avancement = 0 
-    distance.value = 0
-    setCamera()
-    majBtnDistance()
-    majBtnPov()
-  }
+  // function km0 () {
+  //   // console.log(`Fonction km0`) 
+  //   avancement = 0 
+  //   distance.value = 0
+  //   setCamera()
+  //   majBtnDistance()
+  //   majBtnPov()
+  // }
 
-  function kmFin() {
-    // console.log(`Fonction kmFin`)
-    avancement = visu.length - 1
-    distance.value = avancement / 10
-    setCamera()
-    majBtnDistance()
-    majBtnPov()
-  }
+  // function kmFin() {
+  //   // console.log(`Fonction kmFin`)
+  //   avancement = visu.value.length - 1
+  //   distance.value = avancement / 10
+  //   setCamera()
+  //   majBtnDistance()
+  //   majBtnPov()
+  // }
 
-  function deltaTrace(delta) {
-    // console.log(`Fonction deltaTrace : ${delta}`)
-    avancement = avancement + delta
-    distance.value = avancement / 10
-    setCamera()
-    majBtnDistance()
-    majBtnPov()
-  }
+  // function deltaTrace(delta) {
+  //   // console.log(`Fonction deltaTrace : ${delta}`)
+  //   avancement = avancement + delta
+  //   distance.value = avancement / 10
+  //   setCamera()
+  //   majBtnDistance()
+  //   majBtnPov()
+  // }
 
 
   function checkCap() {
     // console.log(`Fonction checkCap `)
     // console.log(listRef[0])
     let ref=listRef[0]
-    // console.table(visu[0].cap)
-    let previousCap = visu[ref].cap
+    // console.table(visu.value[0].cap)
+    let previousCap = visu.value[ref].cap
         alarmes.value.splice([alarmes.value.findIndex(alarme => alarme.id > 8000000)])
 
     for (let i=1; i< listRef.length; i++) {
       let  refI=listRef[i]
-      let refCap = visu[refI].cap
+      let refCap = visu.value[refI].cap
       if ((Math.cos(previousCap*Math.PI/180) < 0 ) && (Math.cos(refCap*Math.PI/180) < 0 )) {
         if (previousCap < 0) previousCap+=360
         if (refCap < 0) refCap+=360
@@ -663,8 +713,8 @@
   }
 
 
-  function saveRef() {
-    // console.log(`Fonction saveRef`)
+  function saveVisu(visu) {
+    console.log(`Fonction saveVisu`)
     let url = `http://localhost:4000/api/visu/` + zpad(props.id, 6)
 
     fetch(url, { 
@@ -687,6 +737,82 @@
 
 
   }
+  
+
+
+  function saveRef() {
+    // console.log(`Fonction saveRef`)
+    let url = `http://localhost:4000/api/visu/` + zpad(props.id, 6)
+
+    fetch(url, { 
+      method: 'POST', 
+      headers: { 
+        'Content-Type': 'application/json; charset=UTF-8' 
+      }, 
+      body: JSON.stringify({visu : visu.value}), 
+      signal: AbortSignal.timeout(4000) 
+    })
+    .then((rep) => {
+      return rep.json()
+    })
+    .then((json) => {
+      // On lit le 
+    })
+    .catch((err) => {
+      console.error(`Erreur JsonTrace : ${err}`)
+    })
+
+
+  }
+
+  function easing(t) {
+    return t * (2 - t);
+}
+
+  function capChange(cap) {
+    console.log(`fonction capChange : ${cap}`)
+ 
+      map.easeTo({
+                    bearing: map.getBearing() - cap,
+                    easing: easing
+                });
+    
+  }
+
+  function toFrom(distance) {
+    map.panBy([0, -distance], {
+                    easing: easing
+                });
+  }
+
+
+
+
+
+function newPosition(position, reload=false) {
+  // console.log(`Camera.vue newPosition : ${position}`)
+  avancement = position
+  setCamera(reload)
+}
+
+function newZoom(newZoom) {
+  // console.log(`Camera.vue NewZoom : ${newZoom}`)
+  zoom.value = newZoom
+  modCamera(zoom.value, cap.value, pitch.value)
+}
+
+function newPitch(newPitch) {
+  // console.log(`Camera.vue NewPitch : ${newPitch}`)
+  pitch.value = newPitch
+  modCamera(zoom.value, cap.value, pitch.value)
+}
+
+function newCap(newCap) {
+  // console.log(`Camera.vue NewCap : ${newCap}`)
+  cap.value = newCap
+  modCamera(zoom.value, cap.value, pitch.value)
+}
+
 
   /**
    * 
