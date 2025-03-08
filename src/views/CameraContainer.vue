@@ -23,6 +23,7 @@
     <IhmConfiguration
       :longueur="visu.length - 1"
       @new-position="newPosition"
+      @maj-auto="majAuto"
       :zoom
       @new-zoom="newZoom"
       :pitch
@@ -32,55 +33,9 @@
       :visu
       :map="map"
       @save-visu="saveVisu"
+      :evt
     ></IhmConfiguration>
 
-    <!-- <CameraCmdWidget
-      :zoom = "zoom"
-      :cap = "cap"
-      :pitch = "pitch"
-      :capRef = "capRef"
-      @zoomIn="setZoom(0.5)"
-      @zoomOut="setZoom(-0.5)"
-      @capPlusPlus="setCap(10)"
-      @capPlus="setCap(2)"
-      @capMoins="setCap(-2)"
-      @capMoinsMoins="setCap(-10)"
-      @pitchPlusPlus="setElevation(5)"
-      @pitchPlus="setElevation(1)"
-      @pitchMoins="setElevation(-1)"
-      @pitchMoinsMoins="setElevation(-5)"
-    >
-    </CameraCmdWidget> -->
-
-    <!-- <TraceCmdwidget
-      :disabledPreviousRef="disabledBtnPreviousRef"
-      :disabledNextRef="disabledBtnNextRef"
-      :disabledLastRef="disabledBtnLastRef"
-      :disabledReloadRef="disabledBtnReloadRef"
-      :disabledSaveRef="disabledBtnSaveRef"
-      :disabledDepart="disabledBtnDepart"
-      :disabledP1k="disabledBtnP1k"
-      :disabledP100="disabledBtnP100m"
-      :disabledM100="disabledBtnM100m"
-      :disabledM1k="disabledBtnM1k"
-      :disabledArrivee="disabledBtnArrivee"
-      :distance="distance"
-      :reference="reference"
-      @previousRef="previousRef"
-      @nextRef="nextRef"
-      @lastRef="fonctionLastRef"
-      @reloadRef="reloadRef"
-      @addRef="addRef"
-      @delRef="delRef"
-      @saveRef="saveRef"
-      @depart="km0"
-      @moinsMille="deltaTrace(-10)"
-      @moinsCent="deltaTrace(-1)"
-      @plusCent="deltaTrace(1)"
-      @plusMille="deltaTrace(10)"
-      @arrivee="kmFin"
-    >
-    </TraceCmdwidget> -->
 
     <!-- <EvtsWidget></EvtsWidget> -->
     <!-- <EvtInfo></EvtInfo> -->
@@ -112,9 +67,6 @@
 
 <script setup>
   import MapHomeWidget from '@/components/MapHomeWidget.vue';
-  import MapDataWidget from '@/components/MapDataWidget.vue';
-  import CameraCmdWidget from '@/components/CameraCmdWidget.vue';
-  import TraceCmdwidget from '@/components/TraceCmdwidget.vue';
   import EvtPositionWidget from '@/components/EvtPositionWidget.vue';
   import CurseurCenter from '@/components/CurseurCenter.vue';
   import EvtsWidget from '@/components/EvtsWidget.vue';
@@ -154,21 +106,21 @@
 
   const alarmes = ref([])
   
-  const disabledBtnPreviousRef = ref(true)
-  const disabledBtnNextRef = ref(true)
-  const disabledBtnLastRef = ref(true)
-  const disabledBtnReloadRef = ref(false)
-  const disabledBtnSaveRef = ref(true)
+  // const disabledBtnPreviousRef = ref(true)
+  // const disabledBtnNextRef = ref(true)
+  // const disabledBtnLastRef = ref(true)
+  // const disabledBtnReloadRef = ref(false)
+  // const disabledBtnSaveRef = ref(true)
   const disabledBtnHome = ref(true)
-  const disabledBtnDepart = ref(true)
-  const disabledBtnP1k = ref(true)
-  const disabledBtnP100m = ref(true)
-  const disabledBtnM100m = ref(true)
-  const disabledBtnM1k = ref(true)
-  const disabledBtnArrivee = ref(true)
+  // const disabledBtnDepart = ref(true)
+  // const disabledBtnP1k = ref(true)
+  // const disabledBtnP100m = ref(true)
+  // const disabledBtnM100m = ref(true)
+  // const disabledBtnM1k = ref(true)
+  // const disabledBtnArrivee = ref(true)
   const distanceTotale = ref(0)
-  const reference = ref(false)
-  const distance = ref(0)
+  // const reference = ref(false)
+  // const distance = ref(0)
 
 
   const zoom = ref(16.0)
@@ -177,16 +129,20 @@
   const capRef = ref(0)
   const titre = ref("Positionnement du marker")
 
-  const disabledBtnPitchPPlus = ref(false)
-  const disabledBtnPitchPlus = ref(false)
-  const disabledBtnPitchMoins = ref(false)
-  const disabledBtnPitchMMoins = ref(false)
+  // const disabledBtnPitchPPlus = ref(false)
+  // const disabledBtnPitchPlus = ref(false)
+  // const disabledBtnPitchMoins = ref(false)
+  // const disabledBtnPitchMMoins = ref(false)
 
   const  visu  = ref([])
-  let listRef = [0]
+  const evt = ref([])
+
+
+  // let listRef = [0]
   let init = true 
   let position = 0
   let avancement = 0
+  let relaodAuto = true
 
   let positionsCamera = []    
 
@@ -237,7 +193,7 @@
     // console.table(visu.value)
     if (visu.value[0].ref === true) {
       init = false
-      majListRef()
+      // majListRef()
       // majBtnDistance()
       // majBtnPov()
     }
@@ -246,6 +202,26 @@
   .catch((err) => {
     console.error(`Erreur JsonVisu: ${err}`)
   })
+
+
+  // Récupération des données évènement
+  let urlEvt = `http://localhost:4000/api/evt/` + zpad(props.id, 6)
+  
+  fetch(urlEvt, { method: 'GET', signal: AbortSignal.timeout(500) })
+  .then((rep) => {
+    return rep.json()
+  })
+  .then((json) => {
+    evt.value = json.slice()
+    // on initialise les données évènements
+    // console.table(evt.value)
+    // initEvt(evt)
+  })
+  .catch((err) => {
+    console.error(`Erreur Evt : ${err}`)
+  })
+
+
 
 
   onMounted(() => {
@@ -278,7 +254,7 @@
     // Lancement de l'annimation qui part de Paris et pointe vers le départ
     // console.log("On lance l'annimation du départ")
     map.on('load', async () => {
-      map.addControl(new mapboxgl.NavigationControl({showCompass: true, showZoom: false}), 'top-right');
+      // map.addControl(new mapboxgl.NavigationControl({showCompass: true, showZoom: false}), 'top-right');
       map.flyTo({  center: visu.value[0].lookAt,
         bearing: visu.value[0].cap, 
         zoom: visu.value[0].zoom, 
@@ -337,203 +313,203 @@
   }
 
 
-  function addRef (){
-    // On met a jour le point référencé
+  // function addRef (){
+  //   // On met a jour le point référencé
     
-    const position = map.getFreeCameraOptions().position;
-    const lngLat = position.toLngLat();
+  //   const position = map.getFreeCameraOptions().position;
+  //   const lngLat = position.toLngLat();
 
-    visu.value[avancement].ref = true
-    visu.value[avancement].start = avancement
-    visu.value[avancement].cap = cap.value
-    visu.value[avancement].zoom = zoom.value
-    visu.value[avancement].pitch = pitch.value
-    visu.value[avancement].positionCamera = [lngLat.lng.toFixed(5), lngLat.lat.toFixed(5)]
-    visu.value[avancement].altitudeCamera = parseInt(position.toAltitude())
+  //   visu.value[avancement].ref = true
+  //   visu.value[avancement].start = avancement
+  //   visu.value[avancement].cap = cap.value
+  //   visu.value[avancement].zoom = zoom.value
+  //   visu.value[avancement].pitch = pitch.value
+  //   visu.value[avancement].positionCamera = [lngLat.lng.toFixed(5), lngLat.lat.toFixed(5)]
+  //   visu.value[avancement].altitudeCamera = parseInt(position.toAltitude())
 
-    // console.table(visu.value[avancement])
-    if (init) {
-      disabledBtnSaveRef.value = false
-      majBtnDistance()
-      init = false 
-    } else { 
-      majListRef()
-      majVisu() 
-      majBtnPov() // Pour mettre à jour les boutons precedent suivant et dernier
-      checkCap()
-    }
-  }
+  //   // console.table(visu.value[avancement])
+  //   if (init) {
+  //     disabledBtnSaveRef.value = false
+  //     majBtnDistance()
+  //     init = false 
+  //   } else { 
+  //     majListRef()
+  //     majVisu() 
+  //     majBtnPov() // Pour mettre à jour les boutons precedent suivant et dernier
+  //     checkCap()
+  //   }
+  // }
 
-  function delRef() {
-    // console.log(`function delRef`)
-    // console.log(`avancement : ${avancement}`)
-    visu.value[avancement].ref = false
-    visu.value[avancement].start = 0
-    visu.value[avancement].longueur = 0
-    majListRef()
-    majVisu()
-    majBtnPov() // Pour mettre à jour les boutons precedent suivant et dernier
-    checkCap()
-  }
+  // function delRef() {
+  //   // console.log(`function delRef`)
+  //   // console.log(`avancement : ${avancement}`)
+  //   visu.value[avancement].ref = false
+  //   visu.value[avancement].start = 0
+  //   visu.value[avancement].longueur = 0
+  //   majListRef()
+  //   majVisu()
+  //   majBtnPov() // Pour mettre à jour les boutons precedent suivant et dernier
+  //   checkCap()
+  // }
 
-  function previousRef() {
-    // console.log(`function previousRef`)
-    let i=0
-    let find = false
+  // function previousRef() {
+  //   // console.log(`function previousRef`)
+  //   let i=0
+  //   let find = false
 
-    for(i = 0; i < listRef[listRef.length - 1]; i++) {
-      if  (listRef[i] >= avancement) {
-        find = true
-        break
-      }
-    }
+  //   for(i = 0; i < listRef[listRef.length - 1]; i++) {
+  //     if  (listRef[i] >= avancement) {
+  //       find = true
+  //       break
+  //     }
+  //   }
 
-    if (find) {
-      // console.log(`Avancement : ${listRef[i]}`)
-      avancement = listRef[i-1]
-    } else {
-      // console.log(`Avancement : ${listRef[listRef.length - 1]}`)
-      avancement = listRef[listRef.length - 1]
-    }
+  //   if (find) {
+  //     // console.log(`Avancement : ${listRef[i]}`)
+  //     avancement = listRef[i-1]
+  //   } else {
+  //     // console.log(`Avancement : ${listRef[listRef.length - 1]}`)
+  //     avancement = listRef[listRef.length - 1]
+  //   }
     
-    distance.value = avancement / 10
-    setCamera()
-    majBtnDistance()
-    majBtnPov()
-  }
+  //   distance.value = avancement / 10
+  //   setCamera()
+  //   majBtnDistance()
+  //   majBtnPov()
+  // }
 
-  function nextRef() {
-    // console.log(`function nextRef`)
-    let i=0
-    let find = false
-    while (avancement >= listRef[i]) {
-      // console.log(`Avancement : ${avancement}, ref : ${listRef[i]}`)
-      i++
-    }
-    // console.log(listRef[i])
-    avancement = listRef[i]
-    distance.value = avancement / 10
-    setCamera()
-    majBtnDistance()
-    majBtnPov()
-  }
-
-
-  function fonctionLastRef() {
-    // console.log(`function fonctionLastRef`)
-    avancement = listRef[listRef.length - 1]
-    distance.value = avancement / 10
-    setCamera()
-    majBtnDistance()
-    majBtnPov()
-  }
+  // function nextRef() {
+  //   // console.log(`function nextRef`)
+  //   let i=0
+  //   let find = false
+  //   while (avancement >= listRef[i]) {
+  //     // console.log(`Avancement : ${avancement}, ref : ${listRef[i]}`)
+  //     i++
+  //   }
+  //   // console.log(listRef[i])
+  //   avancement = listRef[i]
+  //   distance.value = avancement / 10
+  //   setCamera()
+  //   majBtnDistance()
+  //   majBtnPov()
+  // }
 
 
-  function reloadRef() {
-    // console.log(`function reloadRef`)
-    setCamera(true)
-  }
+  // function fonctionLastRef() {
+  //   // console.log(`function fonctionLastRef`)
+  //   avancement = listRef[listRef.length - 1]
+  //   distance.value = avancement / 10
+  //   setCamera()
+  //   majBtnDistance()
+  //   majBtnPov()
+  // }
 
-  function majVisu() {
-    // console.log(`function majVisu`)
-    for(let i=0; i < listRef[listRef.length -1]; i++) {
-      if (visu.value[i].ref === true) {
-        const origine = i
-        const capOrigine=visu.value[i].cap
-        const zommOrigine=visu.value[i].zomm
-        const pitchOrigine=visu.value[i].pitch
-        let destination = i + 1
-        while (destination <= listRef[listRef.length -1] ) {
-          if (visu.value[destination].ref === true) {
-            visu.value[origine].longueur = destination - i
-            break
-          }
-          destination ++
-        }
-        // On met a jour les distances intermédiaires
-        for(let j=origine + 1; j < destination; j++) {
+
+  // function reloadRef() {
+  //   // console.log(`function reloadRef`)
+  //   setCamera(true)
+  // }
+
+  // function majVisu() {
+  //   // console.log(`function majVisu`)
+  //   for(let i=0; i < listRef[listRef.length -1]; i++) {
+  //     if (visu.value[i].ref === true) {
+  //       const origine = i
+  //       const capOrigine=visu.value[i].cap
+  //       const zommOrigine=visu.value[i].zomm
+  //       const pitchOrigine=visu.value[i].pitch
+  //       let destination = i + 1
+  //       while (destination <= listRef[listRef.length -1] ) {
+  //         if (visu.value[destination].ref === true) {
+  //           visu.value[origine].longueur = destination - i
+  //           break
+  //         }
+  //         destination ++
+  //       }
+  //       // On met a jour les distances intermédiaires
+  //       for(let j=origine + 1; j < destination; j++) {
           
-          // Attention au changement de signe sur le cap. entre visu.value[index - lgSegment] et visu.value[ref]
-          if (((visu.value[destination].cap > 0) && (visu.value[origine].cap > 0)) ||
-            ((visu.value[destination].cap < 0) && (visu.value[origine].cap < 0))) {
+  //         // Attention au changement de signe sur le cap. entre visu.value[index - lgSegment] et visu.value[ref]
+  //         if (((visu.value[destination].cap > 0) && (visu.value[origine].cap > 0)) ||
+  //           ((visu.value[destination].cap < 0) && (visu.value[origine].cap < 0))) {
 
-            visu.value[j].cap =
-              visu.value[origine].cap +
-              (((visu.value[destination].cap - visu.value[origine].cap) / visu.value[origine].longueur) * (j - origine))
-          } else {
-            // console.warn(`Changement de signe sur le cap`)
-            let capCible = visu.value[destination].cap
-            let capOrigine = visu.value[origine].cap
-            let delta
+  //           visu.value[j].cap =
+  //             visu.value[origine].cap +
+  //             (((visu.value[destination].cap - visu.value[origine].cap) / visu.value[origine].longueur) * (j - origine))
+  //         } else {
+  //           // console.warn(`Changement de signe sur le cap`)
+  //           let capCible = visu.value[destination].cap
+  //           let capOrigine = visu.value[origine].cap
+  //           let delta
 
-            if ((capCible > 0) && (capCible < 90)) {
-              delta = capCible - capOrigine
-              visu.value[j].cap =
-                capOrigine +
-                (((delta) / visu.value[origine].longueur) * (j - origine))
-            } else if (capCible > 90) {
-              delta = capOrigine - capCible + 360
-              visu.value[j].cap =
-                capOrigine -
-                (((delta) / visu.value[origine].longueur) * (j - origine))
-            } else if (capCible < -90) {
-              delta = capCible - capOrigine + 360
-              visu.value[j].cap =
-                capOrigine +
-                (((delta) / visu.value[origine].longueur) * (j - origine))
-            } else {
-              delta = capOrigine - capCible
-              visu.value[j].cap =
-                capOrigine -
-                (((delta) / visu.value[origine].longueur) * (j - origine))
-            }
-          }
+  //           if ((capCible > 0) && (capCible < 90)) {
+  //             delta = capCible - capOrigine
+  //             visu.value[j].cap =
+  //               capOrigine +
+  //               (((delta) / visu.value[origine].longueur) * (j - origine))
+  //           } else if (capCible > 90) {
+  //             delta = capOrigine - capCible + 360
+  //             visu.value[j].cap =
+  //               capOrigine -
+  //               (((delta) / visu.value[origine].longueur) * (j - origine))
+  //           } else if (capCible < -90) {
+  //             delta = capCible - capOrigine + 360
+  //             visu.value[j].cap =
+  //               capOrigine +
+  //               (((delta) / visu.value[origine].longueur) * (j - origine))
+  //           } else {
+  //             delta = capOrigine - capCible
+  //             visu.value[j].cap =
+  //               capOrigine -
+  //               (((delta) / visu.value[origine].longueur) * (j - origine))
+  //           }
+  //         }
 
-          visu.value[j].zoom =
-            visu.value[origine].zoom +
-            (((visu.value[destination].zoom - visu.value[origine].zoom) / visu.value[origine].longueur) * (j - origine))
+  //         visu.value[j].zoom =
+  //           visu.value[origine].zoom +
+  //           (((visu.value[destination].zoom - visu.value[origine].zoom) / visu.value[origine].longueur) * (j - origine))
 
-          visu.value[j].pitch =
-            visu.value[origine].pitch +
-            (((visu.value[destination].pitch - visu.value[origine].pitch) / visu.value[origine].longueur) * (j - origine))
+  //         visu.value[j].pitch =
+  //           visu.value[origine].pitch +
+  //           (((visu.value[destination].pitch - visu.value[origine].pitch) / visu.value[origine].longueur) * (j - origine))
 
-        }
-        // console.log(`destination : ${destination}`)
-        i = destination - 1
-      }
-    }
-    // console.table(visu.value)
-  }
-
-
-  function majListRef () {
-    // console.log(`function majListRef`)
-    listRef.splice(0)
-    for (let i=0; i< visu.value.length; i++) {
-      if (visu.value[i].ref === true) listRef.push(i)
-    }
-    lastRef = listRef[listRef.length - 1]
-    // console.table(listRef)
-  }
+  //       }
+  //       // console.log(`destination : ${destination}`)
+  //       i = destination - 1
+  //     }
+  //   }
+  //   // console.table(visu.value)
+  // }
 
 
-  function majBtnPov() {
-    // console.log(`function majBtnPov`)
-    reference.value = visu.value[avancement].ref
-    if (avancement === 0 ) reference.value = false
-    disabledBtnSaveRef.value = false
+  // function majListRef () {
+  //   // console.log(`function majListRef`)
+  //   listRef.splice(0)
+  //   for (let i=0; i< visu.value.length; i++) {
+  //     if (visu.value[i].ref === true) listRef.push(i)
+  //   }
+  //   lastRef = listRef[listRef.length - 1]
+  //   // console.table(listRef)
+  // }
 
-    if (avancement === 0) disabledBtnPreviousRef.value = true 
-    else disabledBtnPreviousRef.value = false
 
-    if (avancement >= listRef[listRef.length - 1]) disabledBtnLastRef.value = true
-    else disabledBtnLastRef.value = false
+  // function majBtnPov() {
+  //   // console.log(`function majBtnPov`)
+  //   reference.value = visu.value[avancement].ref
+  //   if (avancement === 0 ) reference.value = false
+  //   disabledBtnSaveRef.value = false
 
-    disabledBtnNextRef.value = true
-    for (let i=0; i< listRef.length; i++) {  
-      if (listRef[i] > avancement) disabledBtnNextRef.value = false
-    }
-  }
+  //   if (avancement === 0) disabledBtnPreviousRef.value = true 
+  //   else disabledBtnPreviousRef.value = false
+
+  //   if (avancement >= listRef[listRef.length - 1]) disabledBtnLastRef.value = true
+  //   else disabledBtnLastRef.value = false
+
+  //   disabledBtnNextRef.value = true
+  //   for (let i=0; i< listRef.length; i++) {  
+  //     if (listRef[i] > avancement) disabledBtnNextRef.value = false
+  //   }
+  // }
 
 
   // function majBtnDistance() {
@@ -714,7 +690,7 @@
 
 
   function saveVisu(visu) {
-    console.log(`Fonction saveVisu`)
+    // console.log(`Fonction saveVisu`)
     let url = `http://localhost:4000/api/visu/` + zpad(props.id, 6)
 
     fetch(url, { 
@@ -740,78 +716,82 @@
   
 
 
-  function saveRef() {
-    // console.log(`Fonction saveRef`)
-    let url = `http://localhost:4000/api/visu/` + zpad(props.id, 6)
+  // function saveRef() {
+  //   // console.log(`Fonction saveRef`)
+  //   let url = `http://localhost:4000/api/visu/` + zpad(props.id, 6)
 
-    fetch(url, { 
-      method: 'POST', 
-      headers: { 
-        'Content-Type': 'application/json; charset=UTF-8' 
-      }, 
-      body: JSON.stringify({visu : visu.value}), 
-      signal: AbortSignal.timeout(4000) 
-    })
-    .then((rep) => {
-      return rep.json()
-    })
-    .then((json) => {
-      // On lit le 
-    })
-    .catch((err) => {
-      console.error(`Erreur JsonTrace : ${err}`)
-    })
+  //   fetch(url, { 
+  //     method: 'POST', 
+  //     headers: { 
+  //       'Content-Type': 'application/json; charset=UTF-8' 
+  //     }, 
+  //     body: JSON.stringify({visu : visu.value}), 
+  //     signal: AbortSignal.timeout(4000) 
+  //   })
+  //   .then((rep) => {
+  //     return rep.json()
+  //   })
+  //   .then((json) => {
+  //     // On lit le 
+  //   })
+  //   .catch((err) => {
+  //     console.error(`Erreur JsonTrace : ${err}`)
+  //   })
 
 
-  }
+  // }
 
-  function easing(t) {
-    return t * (2 - t);
-}
+//   function easing(t) {
+//     return t * (2 - t);
+// }
 
-  function capChange(cap) {
-    console.log(`fonction capChange : ${cap}`)
+//   function capChange(cap) {
+//     console.log(`fonction capChange : ${cap}`)
  
-      map.easeTo({
-                    bearing: map.getBearing() - cap,
-                    easing: easing
-                });
+//       map.easeTo({
+//                     bearing: map.getBearing() - cap,
+//                     easing: easing
+//                 });
     
+//   }
+
+//   function toFrom(distance) {
+//     map.panBy([0, -distance], {
+//                     easing: easing
+//                 });
+//   }
+
+
+
+
+
+  function newPosition(position, reload=false) {
+    // console.log(`Camera.vue newPosition : ${position}`)
+    avancement = position
+    setCamera(reload || relaodAuto)
   }
 
-  function toFrom(distance) {
-    map.panBy([0, -distance], {
-                    easing: easing
-                });
+function majAuto(maj) {
+  relaodAuto = maj
+}
+
+  function newZoom(newZoom) {
+    // console.log(`Camera.vue NewZoom : ${newZoom}`)
+    zoom.value = newZoom
+    modCamera(zoom.value, cap.value, pitch.value)
   }
 
+  function newPitch(newPitch) {
+    // console.log(`Camera.vue NewPitch : ${newPitch}`)
+    pitch.value = newPitch
+    modCamera(zoom.value, cap.value, pitch.value)
+  }
 
-
-
-
-function newPosition(position, reload=false) {
-  // console.log(`Camera.vue newPosition : ${position}`)
-  avancement = position
-  setCamera(reload)
-}
-
-function newZoom(newZoom) {
-  // console.log(`Camera.vue NewZoom : ${newZoom}`)
-  zoom.value = newZoom
-  modCamera(zoom.value, cap.value, pitch.value)
-}
-
-function newPitch(newPitch) {
-  // console.log(`Camera.vue NewPitch : ${newPitch}`)
-  pitch.value = newPitch
-  modCamera(zoom.value, cap.value, pitch.value)
-}
-
-function newCap(newCap) {
-  // console.log(`Camera.vue NewCap : ${newCap}`)
-  cap.value = newCap
-  modCamera(zoom.value, cap.value, pitch.value)
-}
+  function newCap(newCap) {
+    // console.log(`Camera.vue NewCap : ${newCap}`)
+    cap.value = newCap
+    modCamera(zoom.value, cap.value, pitch.value)
+  }
 
 
   /**

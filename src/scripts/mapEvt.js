@@ -90,17 +90,18 @@ export const traiteEvt = (map, evt, avancement) => {
   let flyTo = 0
   // console.log(`traiteEvt : ${avancement}`)
   if (avancement === listEvts[indexEvt]) {
-    // console.log(`On traite ${listEvts[indexEvt]}`)
+    console.log(`On traite ${listEvts[indexEvt]}`)
 
     // Traitement des markers
 
     if (typeof (elements[listEvts[indexEvt]]) !== "undefined") {
-      // console.log(`Nombre de marker à traiter pour cette occurence : ${elements[listEvts[indexEvt]].length}`)
+      console.log(`Nombre de marker à traiter pour cette occurence : ${elements[listEvts[indexEvt]].length}`)
       for (let nbr = 0; nbr < elements[listEvts[indexEvt]].length; nbr++) {
         let indexMarker = elements[listEvts[indexEvt]][nbr].id
 
         if (elements[listEvts[indexEvt]][nbr].start === listEvts[indexEvt]) {
-          // console.log(`on traite le lancement du marker ${elements[listEvts[indexEvt]][nbr].id}`)
+          console.log(`on traite le lancement du marker ${elements[listEvts[indexEvt]][nbr].id}`)
+          console.table(evt[indexMarker])
 
           div[indexMarker] = document.createElement('div');
           div[indexMarker].id = evt[indexMarker].marker.id

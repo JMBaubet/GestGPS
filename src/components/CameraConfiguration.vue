@@ -173,7 +173,7 @@ watchEffect(() => {
 
 
 function changeZoom(delta) {
-  console.log(`changeZoom : ${delta}`)
+  // console.log(`changeZoom : ${delta}`)
   switch(delta) {
     case 0.5:
       disabledZoomOut.value = false
@@ -190,13 +190,13 @@ function changeZoom(delta) {
       } 
       break
   }
-  console.log(zoomActif.value)
+  // console.log(zoomActif.value)
   emit('newZoom', zoomActif.value)
 }
 
 
 function changePitch(delta) {
-  console.log(`changePitch : ${delta}`)
+  // console.log(`changePitch : ${delta}`)
   switch(delta) {
     case 5:
     case 1:
@@ -221,12 +221,12 @@ function changePitch(delta) {
       }
       break;
   }
-  console.log(pitchActif.value)
+  // console.log(pitchActif.value)
   emit('newPitch', pitchActif.value)
 }
 
 function changeCap(delta) {
-  console.log(`changeCap : ${delta}`)
+  // console.log(`changeCap : ${delta}`)
   switch(delta) {
     case 10:
     case 2:
@@ -242,7 +242,7 @@ function changeCap(delta) {
       capActif.value=0
       break;
   }
-  console.log(capActif.value)
+  // console.log(capActif.value)
   emit('newCap', capActif.value)
 
 }

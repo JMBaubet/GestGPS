@@ -86,7 +86,7 @@ import { ref, watch, watchEffect } from 'vue';
 const props = defineProps({
   visu: Object,
   position: Number,
-  map: Number,
+  map: Object,
 })
 
 const emit = defineEmits(['newPosition', 'save'])
@@ -131,7 +131,7 @@ function updateRefs() {
     if (props.visu[i].ref === true) refs.push(i)
   }
   lastRef = refs[refs.length - 1]
-  console.table(refs)
+  // console.table(refs)
 }
 
 
@@ -192,7 +192,7 @@ function refAdd() {
   myVisu[props.position].positionCamera = [lngLat.lng.toFixed(5), lngLat.lat.toFixed(5)]
   myVisu[props.position].altitudeCamera = parseInt(position.toAltitude())
 
-  console.table(myVisu[props.position])
+  // console.table(myVisu[props.position])
   // if (init) {
   //   disabledSaveRef.value = false
   //   majBtnDistance()
@@ -206,8 +206,8 @@ function refAdd() {
 }
 
 function refDel() {
-    console.log(`function refDel`)
-    console.log(`avancement : ${props.position}`)
+    // console.log(`function refDel`)
+    // console.log(`avancement : ${props.position}`)
     myVisu[props.position].ref = false
     myVisu[props.position].start = 0
     myVisu[props.position].longueur = 0
@@ -219,7 +219,7 @@ function refDel() {
 }
 
 function refSave()  {
-  console.log(`function refSave`)
+  // console.log(`function refSave`)
   emit('save', myVisu)
 }
 
