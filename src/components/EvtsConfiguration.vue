@@ -6,7 +6,7 @@
         <v-spacer></v-spacer>
         <v-btn
           :icon="showPause ? 'mdi-chevron-up' : 'mdi-chevron-down'"
-          @click="showPause = !showPause; showInfo=false; showZoom=false"
+          @click="fnShowPause"
         ></v-btn>
       </v-card-actions>
       <v-expand-transition>
@@ -15,7 +15,7 @@
           <EvtPause
           :position
           :pauses
-          @save="savePause"
+          @save="savePauses"
           @new-position="newPosition"
           ></EvtPause>
         </div>
@@ -28,13 +28,21 @@
         <v-spacer></v-spacer>
         <v-btn
           :icon="showInfo ? 'mdi-chevron-up' : 'mdi-chevron-down'"
-          @click="showInfo = !showInfo; showPause=false; showZoom=false"
+          @click="fnShowInfo"
         ></v-btn>
       </v-card-actions>
       <v-expand-transition>
         <div v-show="showInfo">
           <v-divider></v-divider>
-          <p>&nbsp; A faire</p>
+          <EvtInfo
+            :position
+            :longueur
+            :zoom
+            :cap
+            :map
+            @new-zoom="newZoom"
+            @new-cap="newCap"
+          ></EvtInfo>
         </div>
       </v-expand-transition>
     </v-card>
@@ -45,13 +53,15 @@
         <v-spacer></v-spacer>
         <v-btn
           :icon="showZoom ? 'mdi-chevron-up' : 'mdi-chevron-down'"
-          @click="showZoom = !showZoom; showInfo= false; showPause=false"
+          @click="fnShowZoom"
         ></v-btn>
       </v-card-actions>
       <v-expand-transition>
         <div v-show="showZoom">
           <v-divider></v-divider>
-          <p>&nbsp; A faire</p>
+          <EvtZoom>
+
+          </EvtZoom>
         </div>
       </v-expand-transition>
     </v-card>
@@ -61,14 +71,20 @@
 
 <script setup>
 import EvtPause from './EvtPause.vue';
+import EvtZoom from './EvtZoom.vue';
+import EvtInfo from './EvtInfo.vue';
 import { ref, watch } from 'vue';
 
 const props = defineProps({
   position: Number,
+  longueur: Number,
+  zoom: Number,
+  cap: Number,
   evt: Object,
+  map: Object,
 })
 
-const emit = defineEmits(['newPosition'])
+const emit = defineEmits(['newPosition', 'save', 'newZoom', 'newCap', 'showInfo', 'showCurseur'])
 
 // Décalaration des tableaux qui reçcoivent les évènements originaux
 const pauses=ref([])
@@ -83,6 +99,9 @@ let infosToSave=[]
 const showPause = ref(false)
 const showInfo = ref(false)
 const showZoom = ref(false)
+
+console.log(`EvtsConfiguration.vue - longueur : ${props.longueur}`)
+
 
 watch(() => props.evt.length, (newvalue, oldValue) => {
   console.table(props.evt)
@@ -148,14 +167,46 @@ function newPosition(position) {
   emit('newPosition', position)
 }
 
-function savePause(myPauses){
+function savePauses(myPauses){
   console.log(`EvtsConfiguration - savePause`) 
   console.table(myPauses)
   pausesToSave = [].concat(myPauses)
   console.table(pausesToSave)
+}
 
+function newZoom(newZoom) {
+  emit('newZoom', newZoom)
+}
 
+function newCap(newCap) {
+  emit('newCap', newCap)
+}
 
+function fnShowInfo() {
+  showInfo.value = !showInfo.value; 
+  showPause.value=false; 
+  showZoom.value=false
+  console.log(`EvtsConfigurationo - fnShowInfo ${showInfo.value}`)
+  emit('showInfo', showInfo.value)
+  emit('showCurseur', showInfo.value || showZoom.value)
+}
+
+function fnShowPause() {
+  showPause.value = !showPause.value; 
+  showInfo.value=false; 
+  showZoom.value=false
+  console.log(`EvtsConfigurationo - fnShowPause ${showInfo.value}`)
+  emit('showInfo', showInfo.value)
+  emit('showCurseur', showInfo.value || showZoom.value)
+}
+
+function fnShowZoom() {
+  showZoom.value = !showZoom.value; 
+  showPause.value=false; 
+  showInfo.value=false
+  console.log(`EvtsConfigurationo - fnShowZoom ${showInfo.value}`)
+  emit('showInfo', showInfo.value)
+  emit('showCurseur', showInfo.value || showZoom.value)
 }
 </script>
 

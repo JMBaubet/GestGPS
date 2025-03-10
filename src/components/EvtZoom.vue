@@ -1,128 +1,104 @@
 <template>
-  <div v-if="mask === true">
+  <EvtPositionWidget
+  ></EvtPositionWidget>
+  
 
-  </div>
-  <div v-else id="evtPause" >
-    <v-card class="mx-auto pa-0" max-width="320" min-width="320"  color="#23374AC0">
-      <v-card-text>
+  <v-divider class="mt-2"></v-divider>
 
 
-        <v-row justify="center" >
-          Gestion des zoom
-        </v-row>    
 
-        <v-divider class="my-4"></v-divider>
-        <v-row>
-          <v-col cols = "4" class="pr-0">
-            <p id="text">KM 0 :</p>
-
-          </v-col>
-          <v-col cols="8"  class="pa-0 ma-0"> 
-            <v-switch 
-              id="switchPause"
-              class="pl-2"
-              color="green"
-              base-color="red"
-              hide-details="true"
-              v-tooltip="'Sélectionnez pour avoir une pause au lancement.', location='top'" 
-
-            ></v-switch>
-          </v-col>
-        </v-row>
-
-        <v-row id="pauseInput" >
-          <v-col cols = "4" class="pr-0">
-            <p id="text">Distance :</p>
-          </v-col>
-          <v-col cols="8"  class="pa-0 ma-0"> 
-            <InputNumber
-            :incrementMin=0.1
-            :incrementMax=1
-            :nombre=distance
-              :min=0
-              :max=21
-            >
-            </InputNumber>
-          </v-col>
-        </v-row>
-
-        <v-row id="pauseInput" >
-          <v-col cols = "4" class="pr-0">
-            <p id="text">Fin :</p>
-
-          </v-col>
-          <v-col cols="8"  class="pa-0 ma-0"> 
-            <InputNumber
-            :incrementMin=0.1
-            :incrementMax=1
-            :nombre=distance
-              :min=0
-              :max=21
-            >
-            </InputNumber>
-          </v-col>
-        </v-row>
-        <v-divider class="mb-2 mt-4"></v-divider>
-        <v-row  justify="end">
-        <v-btn  class="ma-2 text-none" 
-          @click="emit('del')"
-          :disabled=disabledDepart
-          size="small" 
-          min-width="90px"
-          color="red-darken-2"
-        > Supprimer  
+  <v-row class="mt-0">
+    <v-col cols = "5" class="pr-0 mt-2" >
+      
+    </v-col>
+    <v-col cols="6"  class="pr-0" align="end">
+      <v-btn  class="ml-2"
+          @click="precedent()"
+          :disabled=disabledPrecedent
+          size="x-small" 
+          color="grey-darken-4"
+          icon="mdi-chevron-left"
+          v-tooltip="'Aller au zoom précédent', location='bottom'" 
+        > 
+        </v-btn>
+        <v-btn  class="ml-2"
+          @click="suivant()"
+          :disabled=disabledSuivant
+          size="x-small" 
+          color="grey-darken-4"
+          icon="mdi-chevron-right"
+          v-tooltip="'Aller au zoom suivant', location='bottom'" 
+        > 
         </v-btn>
 
-        <v-btn class="ma-2 text-none"
-          @click="emit('add')"
-          :disabled=disabledM1k
+        <v-btn  class="ml-6"
+          @click="save()"
           size="small" 
-          min-width="90px"
-          color="green-darken-2"
-        > Ajouter
+          color="red-darken-4"
+          icon="mdi-content-save-outline"
+          v-tooltip="'Sauvegarder les zooms', location='bottom'" 
+        > 
         </v-btn>
-        </v-row>
 
-        
-      </v-card-text>
-    </v-card>
-  </div>
+   </v-col> 
+
+  </v-row>
+
+  <v-divider class="my-2"></v-divider>
+
+
+
+
+  <v-row  v-if="isPresent" class="mx-0">
+    <v-col sm="4"  class="my-0">
+      <v-btn class="mb-2 text-none" 
+        :disabled=disabledAddDel
+        @click="del(props.position)"
+        size="small" 
+        min-width="90px"
+        color="red-darken-2"
+      > Supprimer  
+      </v-btn>
+    </v-col>
+    <v-col sm="8" class="mt-1" >
+      <span id="distance">
+        le zoom du km <b>{{ distance }} </b>
+      </span> 
+    </v-col>
+  </v-row>
+  <v-row  v-else class="mx-0">
+    <v-col  sm="4"  class="my-0">
+      <v-btn  class="mb-2 text-none" 
+        :disabled=disabledAddDel
+        @click="add(props.position)"
+        size="small" 
+        min-width="90px"
+        color="green-darken-2"
+      > Ajouter  
+      </v-btn>
+    </v-col>
+    <v-col sm="8" class="mt-1" >
+      <span id="distance">
+        un zoom au km <b>{{ distance }} </b>
+      </span> 
+    </v-col>
+  </v-row>   
+
 </template>
 
 <script setup>
-import InputNumber from './InputNumber.vue';
+import EvtPositionWidget from './EvtPositionWidget.vue';
 import { ref } from 'vue';
 
-const mask = ref(false)
-const distance = ref(15.1)
-
-function ajout() {
-  console.log(`Ajout`)
-}
-function sub() {
-  console.log(`Sub`)
-}
+const disabledAddDel = ref(false)
+const distance = ref(0)
+const isPresent = ref(true)
+const disabledPrecedent = ref(false)
+const disabledSuivant = ref(false)
 
 </script>
 
 <style scoped>
 
-
-#switchPause, .v-input--density-default {
-    --v-input-control-height: 43px;
-}
-
-  #evtPause {
-    padding: 2px;
-    z-index: 1;
-    position: absolute;
-    bottom:  30px;
-    right: 320px;
-
-  }
-
-  #text {
-    text-align: end;
-  }
 
 </style>

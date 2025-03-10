@@ -15,6 +15,7 @@ declare module 'vue' {
     DelGpxDialog: typeof import('./src/components/DelGpxDialog.vue')['default']
     Deplacement: typeof import('./src/components/Deplacement.vue')['default']
     EvtConfiguration: typeof import('./src/components/EvtConfiguration.vue')['default']
+    EvtImageSelection: typeof import('./src/components/EvtImageSelection.vue')['default']
     EvtInfo: typeof import('./src/components/EvtInfo.vue')['default']
     EvtPause: typeof import('./src/components/EvtPause.vue')['default']
     EvtPositionWidget: typeof import('./src/components/EvtPositionWidget.vue')['default']

@@ -1,239 +1,200 @@
 <template>
-  <div v-if="mask === true">
 
-  </div>
-  <div v-else id="evtContainer" >
-  <v-card class="mx-auto pa-0" max-width="300" min-width="300"  color="#23374AC0">
-    <v-card-text>
+  <v-row  class="ma-0">
+    <v-col cols="4" class="mt-2 mb-0"> 
+      <span id="zoom" >
+        Zoom : {{ zoomActif }}
+      </span> 
+    </v-col>
 
+     <v-col cols="5" class="px-0 mt-0" > 
+      <v-btn class="ml-2"
+        @click="changeZoom(0.5)"
+        :disabled=disabledZoomIn
+        color="cyan-lighten-1"
+        size="small" 
+        icon="mdi-magnify-plus" 
+      >  
+       </v-btn>
 
-      <v-row justify="center" >
-        {{ titre}}
-      </v-row>    
-      <v-divider class="my-4"></v-divider>
-
-      <v-row justify="center">
-        <v-col cols="auto"> 
-
-          <v-btn class="ml-2"
-            @click="zoomIn()"
-            :disabled=disabledZoomIn
-            color="cyan-lighten-1"
-            size="small" 
-            icon="mdi-magnify-plus" 
-          >  
-          </v-btn>
-
-          <v-btn class="ml-2"
-          @click="zoomOut()"
-          :disabled=disabledZoomOut
-            size="small" 
-            color="cyan-lighten-1"
-            icon="mdi-magnify-minus" 
-          >  
-          </v-btn>
-        </v-col>
-      </v-row>
+      <v-btn class="ml-2"
+        @click="changeZoom(-0.5)"
+        :disabled=disabledZoomOut
+        size="small" 
+        color="cyan-lighten-1"
+        icon="mdi-magnify-minus" 
+      >  
+      </v-btn>
+    </v-col>
+    <v-col cols="3" class="mt-0"> </v-col>
+  </v-row>
 
 
-      <v-row  justify="center">
-        <v-col sm="5"  >
-        </v-col>
-        <v-col sm="2" class = "pa-0" align="center">
-          <v-btn 
-            @click="emit('avanceP')"
-            size="small" 
-            color="light-green-lighten-1"
-            icon="mdi-chevron-double-up" 
-          >  
-          </v-btn>
-        </v-col>
-        <v-col sm="5"class = "pa-0" align="center">
-        </v-col >
-      </v-row>
+  <v-row  justify="center">
+    <v-col sm="5"  >
+    </v-col>
+    <v-col sm="2" class = "pa-0" align="center">
+      <v-btn 
+        @click="deplacement(-100)"
+        size="small" 
+        color="light-green-lighten-1"
+        icon="mdi-chevron-double-up" 
+      >  
+      </v-btn>
+    </v-col>
+    <v-col sm="5"class = "pa-0" align="center">
+    </v-col >
+  </v-row>
 
-      <v-row  justify="center">
-        <v-col sm="5"  >
-        </v-col>
-        <v-col sm="2" class = "pa-0" align="center">
-          <v-btn class="mt-1"
-            @click="emit('avance')"
-            size="small" 
-            color="light-green-lighten-1"
-            icon="mdi-chevron-up" 
-          >  
-          </v-btn>
-        </v-col>
-        <v-col sm="5"class = "pa-0" align="center">
-        </v-col >
-      </v-row>
+  <v-row  justify="center">
+    <v-col sm="5"  >
+    </v-col>
+    <v-col sm="2" class = "pa-0" align="center">
+      <v-btn class="mt-1"
+        @click="deplacement(-10)"
+        size="small" 
+        color="light-green-lighten-1"
+        icon="mdi-chevron-up" 
+      >  
+      </v-btn>
+    </v-col>
+    <v-col sm="5"class = "pa-0" align="center">
+    </v-col >
+  </v-row>
 
-      <v-row  justify="center">
-        <v-btn  class="mr-3"
-          @click="emit('capChangeLL')"
-          size="small" 
-          color="brown-lighten-2"
-          icon="mdi-chevron-double-left" 
-        >  
-        </v-btn>
+  <v-row  justify="center">
+    <v-btn  class="mr-3"
+      @click="changeCap(-10)"
+      size="small" 
+      color="brown-lighten-2"
+      icon="mdi-chevron-double-left" 
+    > </v-btn>
 
-        <v-btn class="mr-10"
-          @click="emit('capChangeL')"
-          size="small" 
-          color="brown-lighten-2"
-          icon="mdi-chevron-left" 
-        >  
-        </v-btn>
-      
-        <v-btn class="mr-2"
-          @click="emit('capChangeR')"
-          size="small" 
-          color="brown-lighten-2"
-          icon="mdi-chevron-right" 
-        >  
-        </v-btn>
-        <v-btn 
-          @click="emit('capChangeRR')"
-          size="small" 
-          color="brown-lighten-2"
-          icon="mdi-chevron-double-right" 
-        >  
-        </v-btn>
-      </v-row>
+    <v-btn class="mr-10"
+      @click="changeCap(-3)"
+      size="small" 
+      color="brown-lighten-2"
+      icon="mdi-chevron-left" 
+    > </v-btn>
+  
+    <v-btn class="mr-2"
+      @click="changeCap(3)"
+      size="small" 
+      color="brown-lighten-2"
+      icon="mdi-chevron-right" 
+    > </v-btn>
+    <v-btn 
+      @click="changeCap(10)"
+      size="small" 
+      color="brown-lighten-2"
+      icon="mdi-chevron-double-right" 
+    > </v-btn>
+  </v-row>
 
-      <v-row  justify="center">
-        <v-btn   class="mb-2"
-          @click="emit('recule')"
-          size="small" 
-          color="light-green-lighten-1"
-          icon="mdi-chevron-down" 
-        >  
-        </v-btn>
-      </v-row>
+  <v-row  justify="center">
+    <v-btn   class="mb-2"
+      @click="deplacement(10)"
+      size="small" 
+      color="light-green-lighten-1"
+      icon="mdi-chevron-down" 
+    > </v-btn>
+  </v-row>
 
-      <v-row justify="center">
-        <v-col sm="4" class = "pa-0" >
+  <v-row justify="center">
+    <v-col sm="4" class = "pa-0" ></v-col>
 
-        </v-col>
+    <v-col sm="4"  class = "pa-0 mb-4" align="center">
+      <v-btn 
+        @click="deplacement(100)"
+        size="small" 
+        color="light-green-lighten-1"
+        icon="mdi-chevron-double-down" 
+      > </v-btn>
+    </v-col>
 
-        <v-col sm="4"  class = "pa-0 mb-4" align="center">
-          <v-btn 
-            @click="emit('reculeP')"
-            size="small" 
-            color="light-green-lighten-1"
-            icon="mdi-chevron-double-down" 
-          >  
-          </v-btn>
-        </v-col>
-
-        <v-col sm="4"class = "pa-0">
-        </v-col>
-
-      </v-row>
-
-    </v-card-text>
-  </v-card>
-</div>
-
+    <v-col sm="4"class = "pa-0">
+    </v-col>
+  </v-row>
 </template>
 
 <script setup>
 
-import { ref } from 'vue';
-
-const emit = defineEmits(['zoomIn', 'zoomOut', 'capChangeLL', 'capChangeL', 'capChangeR', 'capChangeRR', 'avanceP', 'avance', 'recule', 'reculeP'])
+import { ref, watch } from 'vue';
 
 const props = defineProps({
-  titre: Number,
   zoom: Number,
-  pitch: Number,
-  cap: Number
+  cap: Number,
+  map: Object,
 })
-const mask=ref(false)
+
+const emit = defineEmits(['newZoom', 'newCap'])
+
 const disabledZoomIn = ref(false)
 const disabledZoomOut = ref(false)
+const zoomActif=ref(props.zoom)
+const capActif=ref(props.cap)
 
 
-function zoomIn() {
-  if (props.zoom === 19.5) { disabledZoomIn.value = true}
-  disabledZoomOut.value = false
-  emit('zoomIn')
+
+
+watch(() => props.zoom, (newvalue, oldValue) => {
+  zoomActif.value = props.zoom
+})
+
+watch(() => props.cap, (newvalue, oldValue) => {
+  capActif.value = props.cap
+})
+
+function changeZoom(delta) {
+  console.log(`EvtPositionWidget - changeZoom : ${delta}`)
+  // console.log(`changeZoom : ${delta}`)
+  switch(delta) {
+    case 0.5:
+      disabledZoomOut.value = false
+      zoomActif.value+=delta
+      if (zoomActif.value === 20) {
+        disabledZoomIn.value = true
+      } 
+      break
+    case -0.5:
+     disabledZoomIn.value = false
+      zoomActif.value+=delta
+      if (zoomActif.value === 2) {
+        disabledZoomOut.value = true
+      } 
+      break
+  }
+  emit('newZoom', zoomActif.value)
 }
 
-function zoomOut() {
-  if (props.zoom === 2.5) { disabledZoomOut.value = true}
-  disabledZoomIn.value = false
-  emit('zoomOut')
+function changeCap(delta) {
+  console.log(`EvtPositionWidget - changeCap : ${delta}`)
+  // console.log(`changeCap : ${delta}`)
+  switch(delta) {
+    case 10:
+    case 3:
+      capActif.value+=delta
+      if (capActif.value > 180) capActif.value = capActif.value - 360
+      break;
+    case -3:
+    case -10:
+      capActif.value +=delta
+      if (capActif.value <= -180) capActif.value = capActif.value + 360
+      break;
+    case 0:
+      capActif.value=0
+      break;
+  }
+  emit('newCap', capActif.value)  
 }
 
-function pitchPlusPlus() {
-  if (props.pitch >= 76) { disabledPitchPPlus.value = true}
-  if (props.pitch >= 84) { disabledPitchPlus.value = true}
-  disabledPitchMoins.value = false
-  disabledPitchMMoins.value = false
-  emit('pitchPlusPlus')  
-}
-
-function pitchPlus() {
-  if (props.pitch >= 80) { disabledPitchPPlus.value = true}
-  if (props.pitch >= 84) { disabledPitchPlus.value = true}
-  disabledPitchMoins.value = false
-  if (props.pitch >= 4) { disabledPitchMMoins.value = false}
-  emit('pitchPlus')
-}
-
-function pitchMoins() {
-  if (props.pitch === 1) {disabledPitchMoins.value=true}
-  if (props.pitch === 5) {disabledPitchMMoins.value=true}
-  if (props.pitch === 81 ) disabledPitchPPlus.value = false
-  disabledPitchPlus.value = false
-  emit('pitchMoins')
-}
-
-function pitchMoinsMoins() {
-  if (props.pitch === 0) {disabledPitchMoins.value=true}
-  if (props.pitch <= 9) {disabledPitchMMoins.value=true}
-  disabledPitchPlus.value = false
-  disabledPitchPPlus.value = false
-  emit('pitchMoinsMoins')
-}
-
-function capChange(delta) {
-  emit('capChange')  
+function deplacement(delta) {
+  console.log(`EvtPositionWidget - deplacement : ${delta}`)
+  props.map.panBy([0, delta, {easing: capActif.value}])
 }
 
 
 </script>
 
 <style scooped>
-  #evtContainer {
-    padding: 2px;
-    z-index: 1;
-    position: absolute;
-    bottom:  230px;
-    right: 10px;
-
-  }
-
-
-  #zoom {
-    min-width: 80px;
-    display: inline-block;
-    color: #26C6DA
-  }
-
-  #pitch {
-    min-width: 100px;
-    text-align: right;
-    display: inline-block;
-    color: #9CCC65
-  }
-
-  #cap {
-    min-width: 100px;
-    text-align: left;
-    display: inline-block;
-    color: #A1887F
-  }
-
 </style>

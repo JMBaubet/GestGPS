@@ -3,11 +3,11 @@
 
     <v-card class="mx-auto pa-0" max-width="320" min-width="320"  color="#90A4AEC0">
       <v-card-actions>
-        <v-btn color="black"  class="text-none" text="Configurations des évènements"></v-btn>
+        <v-btn color="black"  class="text-none" text="Configuration des évènements"></v-btn>
         <v-spacer></v-spacer>
         <v-btn color="black"
           :icon="showEvt ? 'mdi-chevron-up' : 'mdi-chevron-down'"
-          @click="showEvt = !showEvt; showPov=false"
+          @click="changeEvt"
         ></v-btn>
       </v-card-actions>
       <v-expand-transition>
@@ -16,7 +16,15 @@
           <EvtsConfiguration
             :position="positionActive"
             :evt
+            :longueur
+            :zoom
+            @new-zoom="newZoom"
+            :cap
+            @new-cap="newCap"
             @new-position="newPosition"
+            :map
+            @show-info="fnShowInfo"
+            @show-curseur="showCurseur"
           ></EvtsConfiguration>
         </div>
       </v-expand-transition>
@@ -28,7 +36,7 @@
         <v-spacer></v-spacer>
         <v-btn
           :icon="showPov ? 'mdi-chevron-up' : 'mdi-chevron-down'"
-          @click="showPov = !showPov; showEvt=false"
+          @click="changePov"
         ></v-btn>
       </v-card-actions>
       <v-expand-transition>
@@ -102,6 +110,7 @@ const props = defineProps({
   evt: Object,
 })
 
+console.log(`IhmConfiguration.vue - longueur : ${props.longueur}`)
 
 
 watch(() => props.evt.length, (newvalue, oldValue) => {
@@ -122,13 +131,35 @@ watchEffect(() => {
 
 const positionActive= ref(0)
 
-const emit = defineEmits(['newPosition', 'majAuto', 'newZoom', 'newPitch', 'newCap', 'saveVisu'])
+const emit = defineEmits(
+  ['newPosition', 'majAuto', 'newZoom', 'newPitch', 'newCap', 'saveVisu', 'showEvt', 'showInfo', 'showCurseur'])
 
 const showEvt = ref(false)
 const showDep = ref(true)
 const showPov = ref(false)
 
 // const pauses = ref([])
+
+function changeEvt() {
+  // console.log(`changeEvt`)
+  showEvt.value = !showEvt.value; 
+  showPov.value = false  
+  console.log(`changeEvt : ${showEvt.value}`)
+  emit('showEvt', showEvt.value)
+}
+
+function changePov() {
+  // console.log(`changeEvt`)
+  showPov.value = !showPov.value; 
+  showEvt.value = false  
+  console.log(`changePov :  ${showEvt.value}`)
+  emit('showEvt', showEvt.value)
+}
+
+function fnShowEvt(evt) {
+  console.log(`IhmConfiguration - showEvt : ${evt}`)
+  emit('showEvt', evt )
+}
 
 function newZoom(zoom) {
   emit('newZoom', zoom)
@@ -159,6 +190,12 @@ function initEvts() {
   console.log(`ihmConfiguration : initEvt`)
 }
 
+function fnShowInfo(info) {
+  emit('showInfo', info)
+}
+function showCurseur(curseur) {
+  emit('showCurseur', curseur)
+}
 </script>
 
 <style lang="css" scoped>

@@ -61,7 +61,7 @@
     </v-col>
     <v-col sm="8" class="mt-1" >
       <span id="distance">
-        la pause au km <b>{{ distance }} </b>
+        la pause du km <b>{{ distance }} </b>
       </span> 
     </v-col>
   </v-row>
