@@ -23,8 +23,12 @@
             @new-cap="newCap"
             @new-position="newPosition"
             :map
+            :vignette
+            :vignetteSize
             @show-info="fnShowInfo"
             @show-curseur="showCurseur"
+            @voir-vignette="voirVignette"
+            @aff-vignette="affVignette"
           ></EvtsConfiguration>
         </div>
       </v-expand-transition>
@@ -108,14 +112,18 @@ const props = defineProps({
   visu: Object,
   map: Object,
   evt: Object,
+  vignette: String,
+  vignetteSize: Number,
 })
 
-console.log(`IhmConfiguration.vue - longueur : ${props.longueur}`)
+// watch(() => props.vignetteSize, (newvalue, oldValue) => {
+//   console.log(`IhmConfiguration - vignetteSize ${props.vignetteSize}`)
+// })
 
 
-watch(() => props.evt.length, (newvalue, oldValue) => {
-  // console.table(props.evt)
-})
+// console.log(`IhmConfiguration.vue - longueur : ${props.longueur}`)
+
+
 
 
 
@@ -124,15 +132,15 @@ watchEffect(() => {
 })
 
 watchEffect(() => {
-  const zoom = ref(props.zoom)
+  // const zoom = ref(props.zoom)
   const pitch = ref(props.pitch)
-  const cap = ref(props.cap)
+  // const cap = ref(props.cap)
 })
 
 const positionActive= ref(0)
 
 const emit = defineEmits(
-  ['newPosition', 'majAuto', 'newZoom', 'newPitch', 'newCap', 'saveVisu', 'showEvt', 'showInfo', 'showCurseur'])
+  ['newPosition', 'majAuto', 'newZoom', 'newPitch', 'newCap', 'saveVisu', 'showEvt', 'showInfo', 'showCurseur', 'voirVignette', 'affVignette'])
 
 const showEvt = ref(false)
 const showDep = ref(true)
@@ -144,7 +152,7 @@ function changeEvt() {
   // console.log(`changeEvt`)
   showEvt.value = !showEvt.value; 
   showPov.value = false  
-  console.log(`changeEvt : ${showEvt.value}`)
+  // console.log(`changeEvt : ${showEvt.value}`)
   emit('showEvt', showEvt.value)
 }
 
@@ -152,7 +160,7 @@ function changePov() {
   // console.log(`changeEvt`)
   showPov.value = !showPov.value; 
   showEvt.value = false  
-  console.log(`changePov :  ${showEvt.value}`)
+  // console.log(`changePov :  ${showEvt.value}`)
   emit('showEvt', showEvt.value)
 }
 
@@ -195,6 +203,13 @@ function fnShowInfo(info) {
 }
 function showCurseur(curseur) {
   emit('showCurseur', curseur)
+}
+
+function voirVignette() {
+  emit('voirVignette')
+}
+function affVignette(vignette) {
+  emit('affVignette', vignette)
 }
 </script>
 

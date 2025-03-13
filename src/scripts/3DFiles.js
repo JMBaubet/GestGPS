@@ -34,7 +34,7 @@ export const genere100mFile = (id) => {
     const chunk = turf.lineChunk(turf.lineString(coords), 0.1).features
     console.log(chunk.length)
     for (let key = 0; key < chunk.length; key++) {
-      console.table(chunk[key].geometry.coordinates)
+      // console.table(chunk[key].geometry.coordinates)
     }
   })
 }

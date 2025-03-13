@@ -96,7 +96,7 @@ const props = defineProps({
   pauses: Object,
 })
 
-const emit = defineEmits(['newPosition', 'save'])
+const emit = defineEmits(['newPosition', 'savePauses'])
 
 
 const distance = ref(props.position/10)
@@ -114,33 +114,36 @@ watch(() => props.position, (newvalue, oldValue) => {
 })
 
 watch(() => props.pauses.length, (newValue, oldValue) => {
-  console.table(props.pauses)
+  // console.table(props.pauses)
   initMyPauses()
 })
 
 watch(() => km0.value, (newValue, oldValue) => {
-  console.log(`Km0 change :${km0.value}`)
+  // console.log(`Km0 change :${km0.value}`)
   if (km0.value) {del(0); add(0)} // On fait un del(0) pour eviter un effet de bord à l'init
   else del(0)
 })
 
 function initMyPauses() {
-  // console.log(`function initMyRef`)
-  for (let i = 0; i< props.pauses.length; i++) {
-    myPauses[i] = props.pauses[i]
-  }
-  if (myPauses[0] === 0) km0.value = true
+  // console.log(`function initMyPause`)
+  myPauses.length = 0
+  myPauses = [].concat(props.pauses)
+
+  // if (props.pauses[0].start === 0) km0.value = true
+  // console.table(myPauses)
   majBtn()
 }
 
 
+
+
 function add(position) {
-  console.log(`EvtPause : add ${position}`)
-  myPauses.push(position)
+  // console.log(`EvtPause : add ${position}`)
+  myPauses.push({type: "pause", start: position})
   myPauses.sort(function compare(a,b) {
-    if (a < b)
+    if (a.start < b.start)
       return -1;
-    if (a> b )
+    if (a.start > b.start )
       return 1;
     return 0;
   })
@@ -149,10 +152,10 @@ function add(position) {
 }
 
 function del(position) {
-  console.log(`EvtPause : del ${position}`)
+  // console.log(`EvtPause : del ${position}`)
   let i = 0
   while (i < myPauses.length) {
-    if (myPauses[i] === position) {
+    if (myPauses[i].start === position) {
       myPauses.splice(i,1)
     }
     i++
@@ -162,28 +165,31 @@ function del(position) {
 }
 
 function save() {
-  console.log(`EvtPause : save`)
-  emit('save', myPauses)
+  // console.log(`EvtPause : save`)
+  emit('savePauses', myPauses)
 }
 
 function precedent() {
-  console.log(`EvtPause : precedent`)
+  console.log(`EvtPause : precedent : ${myPauses.length}`)
   let i = myPauses.length - 1
-  while (myPauses[i] >= props.position)
+  console.log(`${myPauses[i].start}, ${props.position}`) 
+  while (myPauses[i].start >= props.position){
+    console.log(`${myPauses[i].start}, ${props.position}`) 
     i--
-  emit('newPosition', myPauses[i])
-  console.log(`On va vers ${myPauses[i]}`)
+  }  
+  console.log(`On va vers ${myPauses[i].start}`)
+  emit('newPosition', myPauses[i].start)
 }
 
 function suivant() {
-  console.log(`EvtPause : suivant`)
+  // console.log(`EvtPause : suivant`)
   let i = 0
-  while (myPauses[i] <= props.position) i++
-  emit('newPosition', myPauses[i])
+  while (myPauses[i].start <= props.position) i++
+  emit('newPosition', myPauses[i].start)
 }
 
 function majBtn() {
-  console.log(`EvtPause : majBtn`)
+  // console.log(`EvtPause : majBtn`)
   if (props.position === 0) disabledAddDel.value = true
   else disabledAddDel.value = false
 
@@ -192,9 +198,9 @@ function majBtn() {
   disabledSuivant.value=true
   isPresent.value=false
   while (i < myPauses.length) {
-    if (myPauses[i] < props.position) disabledPrecedent.value = false
-    if (myPauses[i] > props.position) disabledSuivant.value = false
-    if (myPauses[i] === props.position) isPresent.value = true
+    if (myPauses[i].start < props.position) disabledPrecedent.value = false
+    if (myPauses[i].start > props.position) disabledSuivant.value = false
+    if (myPauses[i].start === props.position) isPresent.value = true
     i++
   }
 }

@@ -34,9 +34,13 @@
       :map="map"
       @save-visu="saveVisu"
       :evt
+      :vignette
+      :vignetteSize="parseInt(vignetteSize)"
       @show-evt="fnShowEvt"
       @show-info="fnShowInfo"
       @show-curseur="fnShowCurseur"
+      @voir-vignette="voirVignette"
+      @aff-vignette="affVignette"
     ></IhmConfiguration>
 
 
@@ -46,9 +50,12 @@
     >
     </CurseurCenter>
     
-    <EvtImageSelection
-    :mask = maskImagesSelection
-    ></EvtImageSelection>
+    <EvtVignetteSelection
+    :mask = maskVignetteSelection
+    @new-vignette="newVignette"
+    @new-size="newSize"
+    @voir="voirVignette"
+    ></EvtVignetteSelection>
 
   </v-container>
 </template>
@@ -58,8 +65,7 @@
   import MapHomeWidget from '@/components/MapHomeWidget.vue';
   import CurseurCenter from '@/components/CurseurCenter.vue';
   import IhmConfiguration from '@/components/IhmConfiguration.vue';
-  import EvtImageSelection from '@/components/EvtImageSelection.vue';
-
+  import EvtVignetteSelection from '@/components/EvtVignetteSelection.vue'; 
   import { useRouter } from 'vue-router';
 
   import '../../node_modules/mapbox-gl/dist/mapbox-gl.css';
@@ -86,7 +92,8 @@
   const initCenterLat = import.meta.env.VITE_MAPBOX_INIT_CENTER_LAT
   const initBear = import.meta.env.VITE_MAPBOX_INIT_BEAR
   const initPitch = import.meta.env.VITE_MAPBOX_INIT_PITCH
-
+  const urlSvg = import.meta.env.VITE_URL_SVG
+  const vignetteDefaultSize = import.meta.env.VITE_VIGNETTE_DEFAULT_SIZE
   let map = null
   let longueurTrace = 0
 
@@ -114,6 +121,8 @@
   const pitch = ref(0)
   const capRef = ref(0)
   const titre = ref("Positionnement du marker")
+  const vignette = ref("")
+  const vignetteSize = ref(vignetteDefaultSize)
 
   // const disabledBtnPitchPPlus = ref(false)
   // const disabledBtnPitchPlus = ref(false)
@@ -132,8 +141,11 @@
   let showEvt = false
   let showInfo = false
   let showCurseur = false
-  const maskImagesSelection = ref(true)
+  const maskVignetteSelection = ref(true)
   const maskCurseur = ref(true)
+  let divVignette
+  let markerVignette
+
 
   let positionsCamera = []    
 
@@ -418,6 +430,7 @@
     // console.log(`Camera.vue newPosition : ${position}`)
     avancement = position
     setCamera(reload || relaodAuto)
+    affVignette(null)
   }
 
 function majAuto(maj) {
@@ -443,29 +456,88 @@ function majAuto(maj) {
   }
 
 function fnShowEvt(evt) {
-  console.log(`CameraContainer - fnShowEvt : ${evt}`)
+  // console.log(`CameraContainer - fnShowEvt : ${evt}`)
   showEvt = evt
-  if (showEvt && showInfo) maskImagesSelection.value = false
-  else maskImagesSelection.value = true
+  if (showEvt && showInfo) maskVignetteSelection.value = false
+  else maskVignetteSelection.value = true
   if (showEvt && showCurseur) maskCurseur.value = false
   else maskCurseur.value = true
 }
 
 function fnShowInfo(info) {
-  console.log(`CameraContainer - fnShowInfo : ${info}`)
+  // console.log(`CameraContainer - fnShowInfo : ${info}`)
   showInfo = info
-  if (showEvt && showInfo) maskImagesSelection.value = false
-  else maskImagesSelection.value = true
+  if (showEvt && showInfo) maskVignetteSelection.value = false
+  else maskVignetteSelection.value = true
 }
 
 function fnShowCurseur(curseur) {
-  console.log(`CameraContainer - showCurseur : ${curseur}`)
+  // console.log(`CameraContainer - showCurseur : ${curseur}`)
   showCurseur = curseur
   if (showEvt && showCurseur) maskCurseur.value = false
   else maskCurseur.value = true
+}
 
+function affVignette(vignette) {
+  console.log(`affVignette`)
+
+  console.log(`on affiche la vignette`) 
+  try {
+    markerVignette.remove()
+  } catch (err){
+  }
+  if (vignette !== null ){
+    console.table(`${vignette.id}`)
+    divVignette = document.createElement('div');
+    divVignette.id = "visuVignette"
+    divVignette.style.backgroundImage = `${urlSvg}${vignette.fichier}`
+    divVignette.style.width = `${vignette.taille}px`
+    divVignette.style.height = `${vignette.taille}px`
+    // markers[elements[listEvts[indexEvt]][nbr].id].style.zIndex = 101
+    divVignette.style.backgroundSize = '100%';
+
+    // const offset = -evt[indexMarker].marker.taille / 2
+    markerVignette = new mapboxgl.Marker({ element: divVignette, offset: [vignette.taille/2, vignette.taille/-6] })
+      .setLngLat(vignette.coord)
+      .addTo(map);
+  } else {    
+    console.log(`${vignette}`)
+  }
+}
+
+function newVignette(vignetteSel){
+  console.log(`newVignette, ${vignetteSel}`)
+  vignette.value=vignetteSel
+}
+
+function newSize(size){
+  console.log(` CameraContainer.vue - newSize, ${size}`)
+  vignetteSize.value=size
+  console.log(vignetteSize.value)
+}
+
+function voirVignette(){
+  console.log(`voirVignette`)
+
+  console.log(`on affiche la vignette : ${vignetteSize.value}`)
+  try {
+    markerVignette.remove()
+  } catch (err){}
+  divVignette = document.createElement('div');
+  divVignette.id = "visuVignette"
+  divVignette.style.backgroundImage = `${urlSvg}${vignette.value}.png`
+  divVignette.style.width = `${vignetteSize.value}px`
+  divVignette.style.height = `${vignetteSize.value}px`
+  // markers[elements[listEvts[indexEvt]][nbr].id].style.zIndex = 101
+  divVignette.style.backgroundSize = '100%';
+
+  // const offset = -evt[indexMarker].marker.taille / 2
+  markerVignette = new mapboxgl.Marker({ element: divVignette, offset: [vignetteSize.value/2, vignetteSize.value/-6] })
+    .setLngLat(map.getCenter())
+    .addTo(map);
 
 }
+
 
   /**
    * 

@@ -29,92 +29,68 @@
     <v-col cols="3" class="mt-0"> </v-col>
   </v-row>
 
+  <v-divider class="mb-4"></v-divider>
 
-  <v-row  justify="center">
-    <v-col sm="5"  >
-    </v-col>
-    <v-col sm="2" class = "pa-0" align="center">
-      <v-btn 
-        @click="deplacement(-100)"
-        size="small" 
-        color="light-green-lighten-1"
-        icon="mdi-chevron-double-up" 
-      >  
-      </v-btn>
-    </v-col>
-    <v-col sm="5"class = "pa-0" align="center">
-    </v-col >
-  </v-row>
-
-  <v-row  justify="center">
-    <v-col sm="5"  >
-    </v-col>
-    <v-col sm="2" class = "pa-0" align="center">
-      <v-btn class="mt-1"
-        @click="deplacement(-10)"
-        size="small" 
-        color="light-green-lighten-1"
-        icon="mdi-chevron-up" 
-      >  
-      </v-btn>
-    </v-col>
-    <v-col sm="5"class = "pa-0" align="center">
-    </v-col >
-  </v-row>
-
-  <v-row  justify="center">
-    <v-btn  class="mr-3"
-      @click="changeCap(-10)"
-      size="small" 
-      color="brown-lighten-2"
-      icon="mdi-chevron-double-left" 
-    > </v-btn>
-
-    <v-btn class="mr-10"
+  <v-row  justify="center" >
+    <v-btn  class="mr-2"
       @click="changeCap(-3)"
       size="small" 
       color="brown-lighten-2"
       icon="mdi-chevron-left" 
     > </v-btn>
-  
+
     <v-btn class="mr-2"
-      @click="changeCap(3)"
+      @click="changeCap(-10)"
       size="small" 
       color="brown-lighten-2"
-      icon="mdi-chevron-right" 
+      icon="mdi-chevron-double-left" 
     > </v-btn>
-    <v-btn 
+  
+    <v-btn class="mr-2"
       @click="changeCap(10)"
       size="small" 
       color="brown-lighten-2"
       icon="mdi-chevron-double-right" 
     > </v-btn>
-  </v-row>
-
-  <v-row  justify="center">
-    <v-btn   class="mb-2"
-      @click="deplacement(10)"
+    <v-btn 
+      @click="changeCap(3)"
       size="small" 
-      color="light-green-lighten-1"
-      icon="mdi-chevron-down" 
+      color="brown-lighten-2"
+      icon="mdi-chevron-right" 
     > </v-btn>
   </v-row>
 
-  <v-row justify="center">
-    <v-col sm="4" class = "pa-0" ></v-col>
+  <v-divider class="my-4"></v-divider>
 
-    <v-col sm="4"  class = "pa-0 mb-4" align="center">
-      <v-btn 
-        @click="deplacement(100)"
+  <v-row  justify="center" class="mb-1">
+    <v-btn  class="mr-2"
+    @click="deplacement(-10)"
         size="small" 
         color="light-green-lighten-1"
-        icon="mdi-chevron-double-down" 
-      > </v-btn>
-    </v-col>
+        icon="mdi-chevron-up" 
+    > </v-btn>
 
-    <v-col sm="4"class = "pa-0">
-    </v-col>
+    <v-btn class="mr-2"
+    @click="deplacement(-100)"
+        size="small" 
+        color="light-green-lighten-1"
+        icon="mdi-chevron-double-up" 
+    > </v-btn>
+  
+    <v-btn class="mr-2"
+    @click="deplacement(100)"
+      size="small" 
+      color="light-green-lighten-1"
+      icon="mdi-chevron-double-down" 
+    > </v-btn>
+    <v-btn 
+    @click="deplacement(10)"
+        size="small" 
+        color="light-green-lighten-1"
+        icon="mdi-chevron-down" 
+    > </v-btn>
   </v-row>
+
 </template>
 
 <script setup>

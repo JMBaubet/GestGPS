@@ -36,12 +36,12 @@ watch(() => props.nombre, (newvalue, oldValue) => {
 })
 
 
-console.log(`Nombre : ${props.nombre}`)
+// console.log(`Nombre : ${props.nombre}`)
 
 const valeur = ref()
 valeur.value = props.nombre
 // valeur.value = parseFloat(props.nombre).toFixed(1)
-console.log(`Valeur : ${valeur.value}`)
+// console.log(`Valeur : ${valeur.value}`)
 
 function changeNumber(increment) {
   console.log(`InputNumber changeNumber : ${increment}`)

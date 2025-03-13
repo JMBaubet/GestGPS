@@ -166,7 +166,7 @@ const disabledPitchMMoins = ref(false)
 const capActif = ref(props.cap)
 
 watchEffect(() => {
-  zoomActif.value = props.zoom
+  // zoomActif.value = props.zoom
   pitchActif.value = props.pitch
   capActif.value = props.cap
 })
