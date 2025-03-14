@@ -30,10 +30,12 @@
       @new-pitch="newPitch"
       :cap
       @new-cap="newCap"
+      :endFlyTo
       :visu
       :map="map"
       @save-visu="saveVisu"
       :evt
+      @save-evts="saveEvts"
       :vignette
       :vignetteSize="parseInt(vignetteSize)"
       @show-evt="fnShowEvt"
@@ -41,6 +43,7 @@
       @show-curseur="fnShowCurseur"
       @voir-vignette="voirVignette"
       @aff-vignette="affVignette"
+      @voir-zoom="voirZoom"
     ></IhmConfiguration>
 
 
@@ -119,6 +122,7 @@
   const zoom = ref(16.0)
   const cap = ref(0)
   const pitch = ref(0)
+  const endFlyTo = ref(false)
   const capRef = ref(0)
   const titre = ref("Positionnement du marker")
   const vignette = ref("")
@@ -420,8 +424,30 @@
     .catch((err) => {
       console.error(`Erreur JsonTrace : ${err}`)
     })
+  }
+  
 
+  function saveEvts(evt) {
+    // console.log(`Fonction saveEvt`)
+    let url = `http://localhost:4000/api/evt/` + zpad(props.id, 6)
 
+    fetch(url, { 
+      method: 'POST', 
+      headers: { 
+        'Content-Type': 'application/json; charset=UTF-8' 
+      }, 
+      body: JSON.stringify({evt : evt}), 
+      signal: AbortSignal.timeout(4000) 
+    })
+    .then((rep) => {
+      return rep.json()
+    })
+    .then((json) => {
+      // On lit le 
+    })
+    .catch((err) => {
+      console.error(`Erreur JsonTrace : ${err}`)
+    })
   }
   
 
@@ -478,16 +504,21 @@ function fnShowCurseur(curseur) {
   else maskCurseur.value = true
 }
 
-function affVignette(vignette) {
-  console.log(`affVignette`)
 
-  console.log(`on affiche la vignette`) 
+/**
+ * Fonction qui affiche la vignette de la position active
+ * @param vignette 
+ */
+function affVignette(vignette) {
+  // console.log(`affVignette`)
+
+  // console.log(`on affiche la vignette`) 
   try {
     markerVignette.remove()
   } catch (err){
   }
   if (vignette !== null ){
-    console.table(`${vignette.id}`)
+    // console.table(`${vignette.id}`)
     divVignette = document.createElement('div');
     divVignette.id = "visuVignette"
     divVignette.style.backgroundImage = `${urlSvg}${vignette.fichier}`
@@ -501,7 +532,7 @@ function affVignette(vignette) {
       .setLngLat(vignette.coord)
       .addTo(map);
   } else {    
-    console.log(`${vignette}`)
+    // console.log(`${vignette}`)
   }
 }
 
@@ -515,7 +546,9 @@ function newSize(size){
   vignetteSize.value=size
   console.log(vignetteSize.value)
 }
-
+/**
+ * Fonction qui affiche la vignette selectionnée pour prévisualiser avant d'ajouter la vignette
+ */
 function voirVignette(){
   console.log(`voirVignette`)
 
@@ -536,6 +569,24 @@ function voirVignette(){
     .setLngLat(map.getCenter())
     .addTo(map);
 
+}
+
+function voirZoom(zoom) {
+  console.log(`voirZoom : `)
+  console.table(zoom)
+
+  map.flyTo({  center: zoom.coord,
+    bearing: zoom.cap, 
+    zoom: zoom.zoom, 
+    pitch: zoom.pitch, 
+    duration:  zoom.duree * 1000
+  })
+
+  map.once('moveend', async () => {
+    console.log("On lance la suite")
+    // On chnage
+    endFlyTo.value = !endFlyTo.value
+  })
 }
 
 

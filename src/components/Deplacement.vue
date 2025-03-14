@@ -160,7 +160,7 @@ function majBtn() {
 }
 
 function changePosition(delta) {
-  console.log(`Change Position : ${delta}, ${majAuto.value}`)
+  // console.log(`Change Position : ${delta}, ${majAuto.value}`)
   // console.table(props.longueur)
   switch (delta) {
     case 0:

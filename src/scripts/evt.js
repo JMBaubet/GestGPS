@@ -22,3 +22,22 @@ export const getEvt = (id) => {
     }
   })
 }
+
+
+
+export const saveEvt = (id, evt) => {
+  return new Promise((resolve, reject) => {
+    console.log(`Enregistrement du fichier evt : ${id}`)
+    console.table(evt)
+
+    fs.promises.writeFile(dataDirectory + id + "\\" + fileEvt, JSON.stringify(evt))
+      .then(() => {
+        resolve({ status: "OK" })
+      })
+      .catch((err) => {
+        console.error(`Erreur archivage du fichier evt : ${err}`)
+        reject({ id: "21??", error: `Erreur écriture de fichier !` })
+      })
+  })
+}
+

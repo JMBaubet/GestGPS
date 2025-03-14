@@ -6,7 +6,7 @@
     <v-btn v-else id="center"
       variant="text"
       size="x-large" 
-      color="deep-orange-accent-4"
+      color="deep-purple-darken-1"
       icon="mdi-crosshairs"
       class="clignotant" 
     > </v-btn>
@@ -38,7 +38,7 @@ const props = defineProps({
 
 @keyframes clignoter {
   0%   { background-color :#eeff0000 ; }
-  40%   {background-color :#ff000040 ; }
+  40%   {background-color :#5E35B180 ; }
   100% { background-color :#ff00ff00 ; }
 }
 

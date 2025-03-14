@@ -37,7 +37,7 @@
     </v-col>
     <v-col sm="2" class = "pa-0" align="center">
       <v-btn 
-        @click="changePitch(5)"
+        @click="changePitch(-5)"
         :disabled=disabledPitchPPlus
         size="small" 
         color="light-green-lighten-1"
@@ -57,7 +57,7 @@
     </v-col>
     <v-col sm="2" class = "pa-0" align="center">
       <v-btn class="mt-1"
-        @click="changePitch(1)"
+        @click="changePitch(-1)"
         :disabled=disabledPitchPlus
         size="small" 
         color="light-green-lighten-1"
@@ -112,7 +112,7 @@
 
   <v-row  justify="center"  class="ml-1">
     <v-btn   class="mb-2"
-      @click="changePitch(-1)"
+      @click="changePitch(1)"
       :disabled=disabledPitchMoins
       size="small" 
       color="light-green-lighten-1"
@@ -126,7 +126,7 @@
     </v-col>
     <v-col sm="4"  class = "pa-0" align="center">
       <v-btn 
-        @click="changePitch(-5)"
+        @click="changePitch(5)"
         :disabled=disabledPitchMMoins
         size="small" 
         color="light-green-lighten-1"

@@ -15,7 +15,7 @@ import { delCircuit2DataModel } from './src/scripts/dataModel.js'
 import { getLineString } from './src/scripts/circuits.js'
 import { getVisu } from './src/scripts/3DFiles.js'
 import { saveVisu } from './src/scripts/visu.js'
-import { getEvt } from './src/scripts/evt.js'
+import { getEvt, saveEvt } from './src/scripts/evt.js'
 
 const app = express()
 dotenv.config()
@@ -239,6 +239,22 @@ app.get('/api/evt/:id', (req, res) => {
       res.status(500).send({ id: 9999, error: `Le fichier evt ne peut être récupéré !` })
     })
 })
+
+
+//Sauvegarde du fichiervisu.json
+app.post('/api/evt/:id/', (req, res) => {
+  saveEvt(req.params.id, req.body.evt)
+    .then((retour) => {
+      res.setHeader('Content-Type', 'application/json')
+      res.status(200)
+      res.send({ status: "OK" })
+
+    })
+    .catch((err) => {
+      console.error(`backend.js : ${err.id}`)
+    })
+})
+
 
 
 

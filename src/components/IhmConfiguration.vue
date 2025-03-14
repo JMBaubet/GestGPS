@@ -21,6 +21,9 @@
             @new-zoom="newZoom"
             :cap
             @new-cap="newCap"
+            :pitch
+            @new-pitch="newPitch"
+            :endFlyTo
             @new-position="newPosition"
             :map
             :vignette
@@ -29,6 +32,8 @@
             @show-curseur="showCurseur"
             @voir-vignette="voirVignette"
             @aff-vignette="affVignette"
+            @voir-zoom="voirZoom"
+            @save-evts="saveEvts"
           ></EvtsConfiguration>
         </div>
       </v-expand-transition>
@@ -101,6 +106,7 @@ import EvtsConfiguration from './EvtsConfiguration.vue';
 import CameraConfiguration from './CameraConfiguration.vue';
 import PovConfiguration from './PovConfiguration.vue';
 import Deplacement from './Deplacement.vue';
+import { endFlyToEvt } from '@/scripts/mapEvt';
 
 
 
@@ -110,6 +116,7 @@ const props = defineProps({
   pitch: Number,
   cap: Number,
   visu: Object,
+  endFlyTo: Boolean,
   map: Object,
   evt: Object,
   vignette: String,
@@ -140,7 +147,7 @@ watchEffect(() => {
 const positionActive= ref(0)
 
 const emit = defineEmits(
-  ['newPosition', 'majAuto', 'newZoom', 'newPitch', 'newCap', 'saveVisu', 'showEvt', 'showInfo', 'showCurseur', 'voirVignette', 'affVignette'])
+  ['newPosition', 'majAuto', 'newZoom', 'newPitch', 'newCap', 'saveVisu', 'saveEvts', 'showEvt', 'showInfo', 'showCurseur', 'voirVignette', 'affVignette', 'voirZoom'])
 
 const showEvt = ref(false)
 const showDep = ref(true)
@@ -194,6 +201,10 @@ function saveVisu(visu) {
   emit('saveVisu', visu)
 }
 
+function saveEvts(evt) {
+  emit('saveEvts', evt)
+}
+
 function initEvts() {
   console.log(`ihmConfiguration : initEvt`)
 }
@@ -211,6 +222,11 @@ function voirVignette() {
 function affVignette(vignette) {
   emit('affVignette', vignette)
 }
+
+function voirZoom(zoom) {
+  emit('voirZoom', zoom)
+}
+
 </script>
 
 <style lang="css" scoped>

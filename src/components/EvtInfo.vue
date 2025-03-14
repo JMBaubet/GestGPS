@@ -1,10 +1,11 @@
 <template>
   <EvtPositionWidget
-   :zoom
-   :cap
-   :map
-   @new-zoom="newZoom"
-   @new-cap="newCap"
+    :showPitch="false"
+    :zoom
+    :cap
+    :map
+    @new-zoom="newZoom"
+    @new-cap="newCap"
   ></EvtPositionWidget>
 
   <v-divider class="mt-0"></v-divider>
@@ -109,7 +110,7 @@
   <v-divider class="mt-1"></v-divider>
 
   <v-row   class="mx-0 my-1">
-    <v-col sm="3"  class="my-0 pa-1">
+    <v-col sm="3"  class="mt-1 pa-1">
       <v-btn class="mb-1 text-none  ml-3" 
         :disabled=disabledAddDel
         @click="emit('voirVignette')"
@@ -122,7 +123,7 @@
 
 
     <v-col sm="3"  class="my-0 pa-1">
-      <v-btn v-if="isPresent"class="mb-1 text-none  ml-3" 
+      <v-btn v-if="isPresent"class="my-1 text-none  ml-3" 
         :disabled=disabledAddDel
         @click="del()"
         size="small" 
@@ -130,7 +131,7 @@
         color="red-darken-2"
       > Supprimer
       </v-btn>
-      <v-btn v-else   class="mb-1 text-none ml-3" 
+      <v-btn v-else   class="my-1 text-none ml-3" 
         :disabled=disabledAddDel
         @click="add()"
         size="small" 
@@ -139,7 +140,7 @@
       > Ajouter
       </v-btn>
     </v-col>
-    <v-col sm="6" class="my-0  py-0 pl-4">
+    <v-col sm="6" class="my-0  py-1 pl-4">
       <v-btn  class="ml-2"
           @click="precedent()"
           :disabled=disabledPrecedent
@@ -169,8 +170,6 @@
         </v-btn>
 
    </v-col> 
-
-
   </v-row>   
 
 
@@ -235,7 +234,7 @@
   if (fin.value*10  >  props.distance) fin.value = props.distance/10
 
   watch(() => props.position, (newValue, oldValue) => {
-    console.log(`EvtInfo - watch props.position : ${props.position} ${typeof(postVisu)}`)
+    // console.log(`EvtInfo - watch props.position : ${props.position} ${typeof(postVisu)}`)
     majBtn()
   })
 
@@ -263,12 +262,12 @@
   }
 
   function newZoom(newZoom) {
-    console.log(`EvtInfo - newZoom : ${newZoom}`)
+    // console.log(`EvtInfo - newZoom : ${newZoom}`)
     emit('newZoom', newZoom)
   }
 
   function newCap(newCap) {
-    console.log(`EvtInfo - newCap : ${newCap}`)
+    // console.log(`EvtInfo - newCap : ${newCap}`)
     emit('newCap', newCap)  
   }
 
@@ -279,12 +278,10 @@
     }  
     // console.table(myInfos)
     majBtn()
-  
-
   }
 
   function majBtn() {
-    console.log(`EvtInfo.vue - majBtn : ${props.position}`)
+    // console.log(`EvtInfo.vue - majBtn : ${props.position}`)
     let i=0
     disabledPrecedent.value=true
     disabledSuivant.value=true
@@ -302,7 +299,7 @@
       // if (myInfos[i].position < props.position) disabledPrecedent.value = false
       // if (myInfos[i].position > props.position) disabledSuivant.value = false
       if (myInfos[i].position === props.position) {
-        console.log(`EvtInfo.vue - majBtn : Position trouvée ! Fin : ${myInfos[i].end}`)
+        // console.log(`EvtInfo.vue - majBtn : Position trouvée ! Fin : ${myInfos[i].end}`)
         isPresent.value = true
         disabledAddDel.value=false
         debut.value = myInfos[i].start/10 
@@ -320,7 +317,7 @@
   }
 
   function add() {
-    console.log(`EvtPause : add`)
+    // console.log(`EvtPause : add`)
     let info = {}
     let marker = {}
   
@@ -331,7 +328,7 @@
     marker.fichier=`${props.vignette}.png`
     marker.taille = props.vignetteSize
     marker.id = uuidv6()
-    marker.coord = props.map.getCenter()
+    marker.coord = [props.map.getCenter().lng, props.map.getCenter().lat] 
     info.marker = marker
     myInfos.push(info)
 
@@ -345,12 +342,12 @@
 
 
     isPresent.value = true
-    console.table(myInfos)
+    // console.table(myInfos)
     majBtn()
   }
 
   function del() {
-    console.log(`EvtPause : del : ${props.position}`)
+    // console.log(`EvtPause : del : ${props.position}`)
     let i = 0
     while (i < myInfos.length) {
       if (myInfos[i].position === props.position) {
@@ -360,31 +357,31 @@
       }
       i++
     }
-    emit('newPosition', props.position)
-    console.table(myInfos)
+    emit('newPosition', props.position)  // #TODO voir pourquoi origine EvtInfo
+    // console.table(myInfos)
     majBtn()
   }
 
   function precedent() {
-    console.log(`EvtPause : precedent`)
+    // console.log(`EvtPause : precedent`)
     let i = myInfos.length - 1
     while (myInfos[i].position >= props.position)
       i--
     emit('newPosition', myInfos[i].position)
-    console.log(`On va vers ${myInfos[i].position}`)
+    // console.log(`On va vers ${myInfos[i].position}`)
   }
 
   function suivant() {
-    console.log(`EvtPause : suivant`)
+    // console.log(`EvtPause : suivant`)
     let i = 0
     while (myInfos[i].position <= props.position) i++
     emit('newPosition', myInfos[i].position)
-    console.log(`On va vers ${myInfos[i].position}`)
+    // console.log(`On va vers ${myInfos[i].position}`)
   }
 
 
   function save() {
-    console.log(`EvtInfo.vue - save `)
+    // console.log(`EvtInfo.vue - save `)
     emit('saveInfos', myInfos)
   }
 </script>

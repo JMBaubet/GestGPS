@@ -1,5 +1,5 @@
 <template>
-  <v-card width="580">
+  <v-card width="560">
     <v-img :src=vignette class="align-end text-white" cover>
     </v-img>
     <v-card-item class="pa-0">

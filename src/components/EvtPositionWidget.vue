@@ -30,7 +30,7 @@
   </v-row>
 
   <v-divider class="mb-4"></v-divider>
-
+  
   <v-row  justify="center" >
     <v-btn  class="mr-2"
       @click="changeCap(-3)"
@@ -59,6 +59,40 @@
       icon="mdi-chevron-right" 
     > </v-btn>
   </v-row>
+  <v-divider v-if="showPitch === true" class="my-4"></v-divider>
+
+  <v-row v-if="showPitch === true" justify="center" >
+    <v-btn  class="mr-2"
+      :disabled=disabledPitchMoins
+      @click="changePitch(-2)"
+      size="small" 
+      color="light-green-lighten-1"
+      icon="mdi-chevron-up" 
+    > </v-btn>
+
+    <v-btn class="mr-2"
+      :disabled=disabledPitchMoins
+      @click="changePitch(-10)"
+      size="small" 
+      color="light-green-lighten-1"
+      icon="mdi-chevron-double-up" 
+    > </v-btn>
+  
+    <v-btn class="mr-2"
+      :disabled=disabledPitchPlus
+      @click="changePitch(10)"
+      size="small" 
+      color="light-green-lighten-1"
+      icon="mdi-chevron-double-down" 
+    > </v-btn>
+    <v-btn 
+      :disabled=disabledPitchPlus
+      @click="changePitch(2)"
+      size="small" 
+      color="light-green-lighten-1"
+      icon="mdi-chevron-down" 
+    > </v-btn>
+  </v-row>
 
   <v-divider class="my-4"></v-divider>
 
@@ -66,27 +100,27 @@
     <v-btn  class="mr-2"
     @click="deplacement(-10)"
         size="small" 
-        color="light-green-lighten-1"
+        color="deep-purple-darken-1"
         icon="mdi-chevron-up" 
     > </v-btn>
 
     <v-btn class="mr-2"
     @click="deplacement(-100)"
         size="small" 
-        color="light-green-lighten-1"
+        color="deep-purple-darken-1"
         icon="mdi-chevron-double-up" 
     > </v-btn>
   
     <v-btn class="mr-2"
     @click="deplacement(100)"
       size="small" 
-      color="light-green-lighten-1"
+      color="deep-purple-darken-1"
       icon="mdi-chevron-double-down" 
     > </v-btn>
     <v-btn 
     @click="deplacement(10)"
         size="small" 
-        color="light-green-lighten-1"
+        color="deep-purple-darken-1"
         icon="mdi-chevron-down" 
     > </v-btn>
   </v-row>
@@ -98,17 +132,24 @@
 import { ref, watch } from 'vue';
 
 const props = defineProps({
+  showPitch: Boolean,
   zoom: Number,
   cap: Number,
+  pitch: Number,
   map: Object,
 })
 
-const emit = defineEmits(['newZoom', 'newCap'])
+const emit = defineEmits(['newZoom', 'newCap', 'newPitch'])
 
 const disabledZoomIn = ref(false)
 const disabledZoomOut = ref(false)
+const disabledPitchMoins = ref(false)
+const disabledPitchPlus = ref(false)
+const pitchActif = ref(props.pitch)
 const zoomActif=ref(props.zoom)
 const capActif=ref(props.cap)
+
+
 
 
 
@@ -119,6 +160,10 @@ watch(() => props.zoom, (newvalue, oldValue) => {
 
 watch(() => props.cap, (newvalue, oldValue) => {
   capActif.value = props.cap
+})
+
+watch(() => props.pitch, (newvalue, oldValue) => {
+  pitchActif.value = props.pitch
 })
 
 function changeZoom(delta) {
@@ -163,6 +208,33 @@ function changeCap(delta) {
   }
   emit('newCap', capActif.value)  
 }
+
+function changePitch(delta) {
+  // console.log(`changePitch : ${delta}`)
+  switch(delta) {
+    case 10:
+    case 2:
+      disabledPitchMoins.value = false
+      pitchActif.value += delta
+      if (pitchActif.value >= 85) {
+        pitchActif.value = 85
+        disabledPitchPlus.value = true
+      }
+      break;
+    case -2:
+    case -10:
+      disabledPitchPlus.value = false
+      pitchActif.value += delta
+      if (pitchActif.value <= 0) {
+        pitchActif.value = 0
+        disabledPitchMoins.value = true
+      }
+      break;
+  }
+  // console.log(pitchActif.value)
+  emit('newPitch', pitchActif.value)
+}
+
 
 function deplacement(delta) {
   console.log(`EvtPositionWidget - deplacement : ${delta}`)

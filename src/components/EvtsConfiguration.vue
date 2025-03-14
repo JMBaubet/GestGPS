@@ -67,8 +67,21 @@
       <v-expand-transition>
         <div v-show="showZoom">
           <v-divider></v-divider>
-          <EvtZoom>
-
+          <EvtZoom
+            :position
+            :zooms
+            :zoom
+            :cap
+            :pitch
+            :map
+            :endFlyTo
+            @new-zoom="newZoom"
+            @new-cap="newCap"
+            @new-pitch="newPitch"
+            @new-position="newPosition"
+            @voir-zoom="voirZoom"
+            @save-zooms="saveZooms"
+          >
           </EvtZoom>
         </div>
       </v-expand-transition>
@@ -88,6 +101,8 @@ const props = defineProps({
   longueur: Number,
   zoom: Number,
   cap: Number,
+  pitch: Number,
+  endFlyTo: Boolean,
   evt: Object,
   map: Object,
   vignette: String,
@@ -98,7 +113,7 @@ const props = defineProps({
 //   console.log(`EvtsConfiguration - vignetteSize ${props.vignetteSize}`)
 // })
 
-const emit = defineEmits(['newPosition', 'save', 'newZoom', 'newCap', 'showInfo', 'showCurseur', 'voirVignette', 'affVignette'])
+const emit = defineEmits(['newPosition', 'save', 'newZoom', 'newCap', 'newPitch', 'showInfo', 'showCurseur', 'voirVignette', 'affVignette', 'voirZoom', 'saveEvts'])
 
 // Décalaration des tableaux qui reçcoivent les évènements originaux
 const pauses=ref([])
@@ -193,6 +208,10 @@ function voirVignette() {
   emit('voirVignette')
 }
 
+function voirZoom(zoom) {
+  emit('voirZoom', zoom)
+}
+
 function savePauses(myPauses){
   console.log(`EvtsConfiguration - savePauses`) 
   // console.table(myPauses)
@@ -207,12 +226,22 @@ function saveInfos(myInfos) {
   saveEvts()
 }
 
+function saveZooms(myZooms) {
+  console.log(`EvtsConfiguration - saveZooms`) 
+  zoomsToSave = [].concat(myZooms)
+  saveEvts()
+}
+
 function newZoom(newZoom) {
   emit('newZoom', newZoom)
 }
 
 function newCap(newCap) {
   emit('newCap', newCap)
+}
+
+function newPitch(newPitch) {
+  emit('newPitch', newPitch)
 }
 
 function fnShowInfo() {
@@ -248,7 +277,7 @@ function saveEvts() {
   let id = 0
   for (let i=0; i<pausesToSave.length; i++) {
     evtsToSave.push({
-      id :++id, 
+      id :id++, 
       type: pausesToSave[i].type, 
       start: pausesToSave[i].start
     } )
@@ -256,7 +285,7 @@ function saveEvts() {
 
   for (let i=0; i<infosToSave.length; i++) {
     evtsToSave.push({
-      id :++id, 
+      id :id++, 
       type: infosToSave[i].type,
       start: infosToSave[i].start,
       position: infosToSave[i].position,
@@ -264,6 +293,18 @@ function saveEvts() {
       marker: infosToSave[i].marker
     })
   }
+
+  for (let i=0; i<zoomsToSave.length; i++) {
+    evtsToSave.push({
+      id :id++, 
+      type: zoomsToSave[i].type,
+      start: zoomsToSave[i].start,
+      flyTo: zoomsToSave[i].flyTo,
+
+    })
+  }  
+  
+  emit('saveEvts', evtsToSave)
   console.table(evtsToSave)
 
 }
