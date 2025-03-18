@@ -55,6 +55,7 @@
     
     <EvtVignetteSelection
     :mask = maskVignetteSelection
+    :pngs = vignettesPng
     @new-vignette="newVignette"
     @new-size="newSize"
     @voir="voirVignette"
@@ -125,6 +126,7 @@
   const endFlyTo = ref(false)
   const capRef = ref(0)
   const titre = ref("Positionnement du marker")
+  const vignettesPng = ref([])
   const vignette = ref("")
   const vignetteSize = ref(vignetteDefaultSize)
 
@@ -229,6 +231,39 @@
   })
 
 
+  // Récupération des vignettes pour 
+  let urlVignettes = `http://localhost:4000/api/vignettes/`
+  
+  fetch(urlVignettes, { method: 'GET', signal: AbortSignal.timeout(1000) })
+  .then((rep) => {
+    return rep.json()
+  })
+  .then((jsonVignettes) => {
+    // console.table(jsonVignettes.vignettes)
+    const tabVignettes = jsonVignettes.vignettes.split(",")
+    // console.table(tabVignettes)
+    for (let i=0; i<tabVignettes.length; i++) {
+      vignettesPng.value[i] = tabVignettes[i].replace(".png", "")
+    }
+
+    vignettesPng.value.sort(function compare(a,b) {
+      if (a < b)
+        return -1;
+      if (a > b )
+        return 1;
+      return 0;
+    })
+
+    // console.table(vignettesPng.value)
+    // on initialise les données évènements
+    // console.table(evt.value)
+    // initEvt(evt)
+  })
+  .catch((err) => {
+    console.error(`Erreur Evt : ${err}`)
+  })
+
+
 
 
   onMounted(() => {
@@ -247,6 +282,8 @@
         pitch: initPitch,
         interactive: false
       })
+      position = map.getSource('point')
+
 
 
     } catch (error) {console.log(error)}

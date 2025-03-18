@@ -40,8 +40,8 @@
             @click="emit('reprise')"
             :disabled=disabledReprise            
             size="large" 
-            color="red-accent-4"
-            icon="mdi-restart" 
+            color="cyan-darken-1"
+            icon="mdi-ray-start-arrow" 
           >  
           </v-btn>
         </div>

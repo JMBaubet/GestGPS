@@ -183,7 +183,7 @@ function newPitch(newPitch) {
 function initMyZooms() {
   myZooms.length = 0
   myZooms = [].concat(props.zooms)
-  console.table(myZooms)
+  // console.table(myZooms)
   majBtn()
 }
 
@@ -279,7 +279,7 @@ function suivant() {
 
 
 function majBtn() {
-  console.log(`EvtZoom.vue - majBtn : ${props.position}`)
+  // console.log(`EvtZoom.vue - majBtn : ${props.position}`)
   let i=0
   disabledPrecedent.value=true
   disabledSuivant.value=true

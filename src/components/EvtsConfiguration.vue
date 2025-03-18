@@ -36,6 +36,7 @@
           <v-divider></v-divider>
           <EvtInfo
             :position
+            :visu
             :infos
             :longueur
             :zoom
@@ -43,6 +44,7 @@
             :map
             :vignette
             :vignetteSize
+            :showInfo
             @new-zoom="newZoom"
             @new-cap="newCap"
             @new-position="newPosition"
@@ -98,6 +100,7 @@ import { ref, watch } from 'vue';
 
 const props = defineProps({
   position: Number,
+  visu: Object,
   longueur: Number,
   zoom: Number,
   cap: Number,
@@ -156,7 +159,7 @@ const extractPauses = (() => {
     return 0;
   })
   pausesToSave = [].concat(pauses.value)
-  console.table(pausesToSave)
+  // console.table(pausesToSave)
 })
 
 const extractZooms = (() => {
@@ -174,7 +177,7 @@ const extractZooms = (() => {
     return 0;
   })
   zoomsToSave = [].concat(zooms.value)
-  console.table(zoomsToSave)
+  // console.table(zoomsToSave)
 })
 
 const extractInfos = (() => {
@@ -192,7 +195,7 @@ const extractInfos = (() => {
     return 0;
   })
   infosToSave = [].concat(infos.value)
-  console.table(infosToSave)
+  // console.table(infosToSave)
 })
 
 

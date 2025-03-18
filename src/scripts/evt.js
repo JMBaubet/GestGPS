@@ -5,6 +5,7 @@ import * as dotenv from 'dotenv'
 dotenv.config()
 const dataDirectory = process.env.DATA_DIRECTORY
 const fileEvt = process.env.FILE_EVT
+const pngDirectory = process.env.VIGNETTE_PNG_DIRECTORY
 
 /**
  * @desc Promesse qui retourne sous forme d'un objet JSON le fichier FILE_VISU
@@ -41,3 +42,14 @@ export const saveEvt = (id, evt) => {
   })
 }
 
+export const getVignettes = () => {
+  return new Promise((resolve, reject) => {
+    const pngFile = fs.promises.readdir(pngDirectory)
+    resolve(pngFile)
+  }).catch((err) => {
+    console.error(`Erreur lecture dossier vignettes : ${err}`)
+    reject({ id: "21??", error: `Erreur lecture dossier vignettes !` })
+  })
+
+
+} 

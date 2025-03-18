@@ -15,6 +15,7 @@
           <v-divider></v-divider>
           <EvtsConfiguration
             :position="positionActive"
+            :visu
             :evt
             :longueur
             :zoom

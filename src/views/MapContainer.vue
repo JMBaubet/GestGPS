@@ -46,7 +46,7 @@
   import {ref, onMounted, onUnmounted} from 'vue' 
   import * as turf from '@turf/turf'
   import {mapLoadLayers, mapMaskSymbols, mapAdd3D} from "../scripts/mapLayers" 
-  import {initEvt, traiteEvt, flyToEvt, endFlyToEvt} from '../scripts/mapEvt'
+  import {resetIndexEvt, initEvt, traiteEvt, flyToEvt, endFlyToEvt} from '../scripts/mapEvt'
 import { ca } from 'vuetify/locale';
 
   const props = defineProps({
@@ -267,6 +267,7 @@ import { ca } from 'vuetify/locale';
   if (!start) {
     disabledBtnHome.value=false
     start = time;
+    resetIndexEvt()
     // console.log(`start : ${start}, time : ${time}, phase = ${phase}`)
   }
 

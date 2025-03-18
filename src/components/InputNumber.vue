@@ -22,7 +22,6 @@ import { ref, watch } from 'vue';
 const emit = defineEmits(['newNumber'])
 
 const props = defineProps({
-  label: String,
   nombre: Number,
   max: Number,
   min: Number,
@@ -45,7 +44,7 @@ valeur.value = props.nombre
 
 function changeNumber(increment) {
   console.log(`InputNumber changeNumber : ${increment}`)
-  valeur.value += increment
+  valeur.value = parseFloat(parseFloat(valeur.value + increment).toFixed(1))
   if (increment > 0 ) {
     console.log(`max : ${props.max}`)
     if (valeur.value > props.max) valeur.value = props.max

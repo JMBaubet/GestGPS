@@ -9,7 +9,7 @@
       <v-card-title>Sélection des vignettes</v-card-title>
       <v-radio-group @click="select">
 
-        <v-virtual-scroll :items="pngs" height="600" item-height="100" color="#40404080">
+        <v-virtual-scroll :items="pngs" height="610" item-height="60" color="#40404080">
         <template v-slot:default="{ item }">
 
           <v-list-item :subtitle="`${item}` " >
@@ -72,12 +72,13 @@ const vignetteDefaultSize = import.meta.env.VITE_VIGNETTE_DEFAULT_SIZE
 
 const props = defineProps({
   mask: Boolean,
+  pngs: Array,
 })
 
 const emit = defineEmits(['newVignette', 'newSize', 'voir'])
 
 
-const pngs = ref(['Arrivee', 'depart2', 'Ravitaillement', 'eau', 'Stop' ])
+// const pngs = ref(['Arrivee', 'depart2', 'Ravitaillement', 'eau', 'Stop' ])
 const sizes = ref([])
 const defaultValue = ref(`${vignetteDefaultSize} px`)
 const tabSize = vignetteSizes.split(',')
