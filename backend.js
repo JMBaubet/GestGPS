@@ -85,10 +85,10 @@ app.get('/api/lineString/:id', (req, res) => {
 
 // Ajout d'un fichier gpx
 app.post('/api/GpxFile/:fileName/:traceur', (req, res) => {
-  console.log(`backend.js : Traceur sélectionné : ${req.params.traceur}?, fichier : ${req.params.fileName}`)
+  // console.log(`backend.js : Traceur sélectionné : ${req.params.traceur}?, fichier : ${req.params.fileName}`)
   decodeTraceGpx(`${directory}\\${req.params.fileName}`, `${req.params.traceur}`)
     .then(retour => {
-      console.log(`backend.js : Retour de la promise : ${retour.circuitId}, ${retour.peutEtrePresent}`)
+      // console.log(`backend.js : Retour de la promise : ${retour.circuitId}, ${retour.peutEtrePresent}`)
 
       res.setHeader('Content-Type', 'application/json')
       res.status(200)

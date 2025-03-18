@@ -88,14 +88,14 @@ for (let i=0; i< tabSize.length; i++) {
 
 
 function select(id) {
-  console.log(`select ${id.target.value}`)
+  // console.log(`select ${id.target.value}`)
   if (id.target.value !== undefined) {
     emit('newVignette', id.target.value)
   }
 }
 
 function changeSize(value) {
-  console.log(`changeSize : ${value}`)
+  // console.log(`changeSize : ${value}`)
   const size=value.split(' ')
   emit('newSize', size[0])
 }

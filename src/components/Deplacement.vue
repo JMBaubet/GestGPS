@@ -135,7 +135,7 @@ const positionActive = ref(0)
 const majAuto = ref(true)
 
 watch(() => majAuto.value, () => {
-  console.log(`majAuto : ${majAuto.value}`)
+  // console.log(`majAuto : ${majAuto.value}`)
   emit('majAuto', majAuto.value)
 })
 

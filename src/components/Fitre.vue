@@ -51,7 +51,7 @@ let traceurPrecedent = null
 
 function selectVille() {
   if (ville.value !== villePrecedente) {
-    console.log(`Filtre.vue ${ville.value}`)
+    // console.log(`Filtre.vue ${ville.value}`)
     villePrecedente = ville.value
     // On peut emettre le signal avec la ville en paramètre
     emit('filtrerVille', ville.value)
@@ -60,7 +60,7 @@ function selectVille() {
 
 function selectTraceur() {
   if (traceur.value !== traceurPrecedent) {
-    console.log(`Filtre.vue ${traceur.value}`)
+    // console.log(`Filtre.vue ${traceur.value}`)
     traceurPrecedent = traceur.value
     // On peut emettre le signal avec le traceur en paramètre
     emit('filtrerTraceur', traceur.value)

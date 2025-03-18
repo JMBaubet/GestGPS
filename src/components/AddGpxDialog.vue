@@ -73,7 +73,7 @@ function choix(fichier) {
 
 function selectTraceur(items) {
   traceur.value = items
-  console.log(`AddGpxDialog.vue, selectTraceur : Le traceur ${items} a été sélectionné.`)
+  // console.log(`AddGpxDialog.vue, selectTraceur : Le traceur ${items} a été sélectionné.`)
 }
 
 function cancel(){

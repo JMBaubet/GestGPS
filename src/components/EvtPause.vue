@@ -94,6 +94,7 @@ import { ref, watch } from 'vue';
 const props = defineProps({
   position: Number,
   pauses: Object,
+  showPause: Boolean,
 })
 
 const emit = defineEmits(['newPosition', 'savePauses'])
@@ -124,6 +125,21 @@ watch(() => km0.value, (newValue, oldValue) => {
   else del(0)
 })
 
+watch(() => props.showPause, () => {
+  try {
+    if (myPauses[0].start === 0) {
+      km0.value = true
+    } else {
+      km0.value = false
+    }
+  } catch (err) {
+    km0.value = false
+    console.warning(`Le tableau myInfos est vide`)
+  }
+  
+
+})
+
 function initMyPauses() {
   // console.log(`function initMyPause`)
   myPauses.length = 0
@@ -147,7 +163,7 @@ function add(position) {
       return 1;
     return 0;
   })
-  console.table(myPauses)
+  // console.table(myPauses)
   majBtn()
 }
 
@@ -160,7 +176,7 @@ function del(position) {
     }
     i++
   }
-  console.table(myPauses)
+  // console.table(myPauses)
   majBtn()
 }
 
@@ -170,14 +186,14 @@ function save() {
 }
 
 function precedent() {
-  console.log(`EvtPause : precedent : ${myPauses.length}`)
+  // console.log(`EvtPause : precedent : ${myPauses.length}`)
   let i = myPauses.length - 1
-  console.log(`${myPauses[i].start}, ${props.position}`) 
+  // console.log(`${myPauses[i].start}, ${props.position}`) 
   while (myPauses[i].start >= props.position){
-    console.log(`${myPauses[i].start}, ${props.position}`) 
+    // console.log(`${myPauses[i].start}, ${props.position}`) 
     i--
   }  
-  console.log(`On va vers ${myPauses[i].start}`)
+  // console.log(`On va vers ${myPauses[i].start}`)
   emit('newPosition', myPauses[i].start)
 }
 

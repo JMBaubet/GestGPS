@@ -59,7 +59,7 @@ export const mapLoadLayers = (map, trace) => {
     // Création du point indiquant la position
     map.addSource('point', {
       'type': 'geojson',
-      'data': { type: 'Point', coordinates: [initCenterLon, initCenterLat] }
+      'data': { type: 'Point', coordinates: [ initCenterLon, initCenterLat ] }
 
     });
 
@@ -90,7 +90,7 @@ export const mapMaskSymbols = (map) => {
     map.style.stylesheet.layers.forEach(function (layer) {
       // console.table(layer.type)
       if (layer.type === 'symbol') {
-        console.log(`layer.id`)
+        // console.log(`layer.id`)
         map.setLayoutProperty(layer.id, "visibility", "none");
       }
     })
@@ -114,22 +114,22 @@ export const mapAdd3D = (map) => {
   // Add some fog in the background
   map.on('load', () => {
     map.setFog({
-      range: [5, 10],
+      range: [ 5, 10 ],
       color: "grey",
       "horizon-blend": 0.2,
     });
 
-    map.setLights([{
+    map.setLights([ {
       "id": "sun_light",
       "type": "directional",
       "properties": {
         "color": "rgba(255.0, 0.0, 0.0, 1.0)",
         "intensity": 0.4,
-        "direction": [200.0, 40.0],
+        "direction": [ 200.0, 40.0 ],
         "cast-shadows": true,
         "shadow-intensity": 0.2
       }
-    }]);
+    } ]);
 
     // // Add a sky layer over the horizon
     map.addLayer({

@@ -28,6 +28,7 @@
     :disabledPlayPause=disabledPlayPause
     :disabledReprise=disabledReprise
     @playPause="playPause()"
+    @reprise="reprise()"
     ></MapCmdWidget>
   </v-container>
 </template>
@@ -280,17 +281,22 @@ import { ca } from 'vuetify/locale';
     // Traitement des évènements
     let retour = traiteEvt(map, evt, avancement)
     if (retour.pause === true) playPause()  // On a une pause de progrmmée.
+    
     if (retour.flyTo !== 0) {               // On a un flyTo de programmé. La pause a été faite
       disabledPlayPause.value = true
       flyToState = true                     // On interdit la prise en compte d'une pause
       flyToEvt(map, retour.flyTo)
       map.once('moveend', function() {      // On attend la fin du flyTo pour lancer l'attente sur le retour
         // console.log(`On attend le click souris`)
-        endFlyToEvt(map, avancement)        // On attend un click souris pour lancer le retour au point de départ
+
+       
         map.once('moveend', function() {      // Le click souris a été fait 
           // console.log(`On met un message`)
           disabledReprise.value = false
+        
+
           map.once('moveend', function() {
+            // console.log("Fin du flyTo de retour")
             flyToState = false
             disabledReprise.value = true
             playPause()
@@ -422,6 +428,11 @@ function playPause() {
   
 }
 
+function reprise () {
+  // console.log(`reprise`)
+  endFlyToEvt(map, avancement)        // On a reçu un click souris pour lancer le retour au point de départ
+
+}
 
 function home() {
   router.push({ path: `/` })

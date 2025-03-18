@@ -208,7 +208,9 @@
   let preVisu = parseInt(import.meta.env.VITE_EVT_INFO_PRE_VISU)
   let postVisu = parseInt(import.meta.env.VITE_EVT_INFO_POST_VISU)
   const vignetteDepart = import.meta.env.VITE_VIGNETTE_DEPART
+  const vignetteDepartPostAff = parseInt(import.meta.env.VITE_VIGNETTE_DEPART_POST_AFFICHAGE)
   const vignetteArrivee = import.meta.env.VITE_VIGNETTE_ARRIVEE
+  const vignetteArriveePreAff = parseInt(import.meta.env.VITE_VIGNETTE_ARRIVEE_PRE_AFFICHAGE)
   const preAff10km = import.meta.env.VITE_VIGNETTE_PRE_AFFICHAGE_10_KM
   const postAff10km = import.meta.env.VITE_VIGNETTE_POST_AFFICHAGE_10_KM
 
@@ -287,21 +289,17 @@
 
 
   function newDebut(number) {
-    console.log(`newDebut : ${number}`)
+    // console.log(`newDebut : ${number}`)
     preAff.value = number
     preVisu = number / 100
     debut.value=number/10
   }
 
   function newFin(number) {
-    console.log(`newFin : ${number}`)
+    // console.log(`newFin : ${number}`)
     postAff.value = number
     postVisu = number / 100
     fin.value=number/10
-  }
-
-  function positionInfo() {
-
   }
 
   function newZoom(newZoom) {
@@ -319,7 +317,7 @@
     for (let i = 0; i< props.infos.length; i++) {
       myInfos[i] = props.infos[i]
     }  
-    console.table(myInfos)
+    // console.table(myInfos)
     majBtn()
   }
 
@@ -353,7 +351,7 @@
   } catch (err) {
     affDepart.value = false
     affArrivee.value = false
-    console.info(`Le tableau myInfos est vide`)}
+    console.warning(`Le tableau myInfos est vide`)}
   }
 
   function majBtn() {
@@ -398,12 +396,10 @@
       preAff.value = props.position * 100
     }
 
-    console.log(`distance : ${props.longueur}`)
+    // console.log(`distance : ${props.longueur}`)
     if (props.position + postVisu >= props.longueur) {
-      console.log("cas 1")
       postAff.value = (props.longueur - props.position) * 100
     } else {
-      console.log("cas 2")
       postAff.value =  postVisu * 100
     }
 
@@ -438,7 +434,7 @@
 
 
     isPresent.value = true
-    console.table(myInfos)
+    // console.table(myInfos)
     majBtn()
   }
 
@@ -459,7 +455,7 @@
   }
 
   function addDepart() {
-    console.log(`addDepart : ${affDepart.value}`)
+    // console.log(`addDepart : ${affDepart.value}`)
     let info = {}
     let marker = {}
     if (affDepart.value === true) {
@@ -468,7 +464,7 @@
       info.position = 0
 
       info.start = 0
-      info.end = postAff.value / 100
+      info.end = vignetteDepartPostAff
       marker.fichier = vignetteDepart // Voir si on met Km0 si aff des kilomètres..
       marker.taille = props.vignetteSize
       marker.id = uuidv6()
@@ -485,7 +481,7 @@
       })
 
       isPresent.value = true
-      console.table(myInfos)
+      // console.table(myInfos)
       majBtn()
     } else {
       // console.log(`addDepart : On supprime`)
@@ -499,14 +495,14 @@
         i++
       }
       emit('newPosition', props.position)  // #TODO voir pourquoi origine EvtInfo
-      console.table(myInfos)
+      // console.table(myInfos)
       majBtn()
 
     }
   }
 
   function addArrivee() {
-    console.log(`addArrivee : ${affArrivee.value}`)
+    // console.log(`addArrivee : ${affArrivee.value}`)
     // console.table(props.visu)
     let info = {}
     let marker = {}
@@ -515,7 +511,7 @@
       info.type = 'marker'
       info.position = props.visu.length -1 
 
-      info.start = info.position - (preAff.value / 100) 
+      info.start = info.position - vignetteArriveePreAff
       info.end =  props.visu.length - 1
       marker.fichier = vignetteArrivee 
       marker.taille = props.vignetteSize
@@ -533,10 +529,10 @@
       })
 
       isPresent.value = true
-      console.table(myInfos)
+      // console.table(myInfos)
       majBtn()
     } else {
-      console.log(`addDepart : On supprime`)
+      // console.log(`addDepart : On supprime`)
       // console.table(props.visu)
       let i = 0
       while (i < myInfos.length) {
@@ -548,14 +544,14 @@
         i++
       }
       emit('newPosition', props.position)  // #TODO voir pourquoi origine EvtInfo
-      console.table(myInfos)
+      // console.table(myInfos)
       majBtn()
 
     }
   }
 
   function add10km () {
-    console.log(`add10km : ${aff10km.value}`)
+    // console.log(`add10km : ${aff10km.value}`)
     // console.table(props.visu)
     if (aff10km.value === true) {
       for (let index = 100; index < props.visu.length - 1; index+=100) {
@@ -563,7 +559,7 @@
         let marker = {}
         info.type = 'marker'
         marker.taille = props.vignetteSize
-        console.log(`On traite l'index ${index}`)
+        // console.log(`On traite l'index ${index}`)
         info.position = index
         info.start = index - preAff10km
         info.end =  index + parseInt(postAff10km)
@@ -584,17 +580,17 @@
       })
 
       isPresent.value = true
-      console.table(myInfos)
+      // console.table(myInfos)
       majBtn()
 
 
     
     } else {
 
-      console.log(`add10km : On supprime`)
+      // console.log(`add10km : On supprime`)
       let i = 0
       while (i < myInfos.length) {
-        console.log(`${myInfos[i].marker.fichier}`)
+        // console.log(`${myInfos[i].marker.fichier}`)
         if (myInfos[i].marker.fichier.substr(0,4) === "§_km") {
           myInfos.splice(i,1)
           isPresent.value = false
@@ -603,7 +599,7 @@
         i++
       }
       emit('newPosition', props.position)  // #TODO voir pourquoi origine EvtInfo
-      console.table(myInfos)
+      // console.table(myInfos)
       majBtn()
 
 
@@ -613,7 +609,7 @@
   }
 
   function precedent() {
-    console.log(`EvtInfo : precedent`)
+    // console.log(`EvtInfo : precedent`)
     let i = myInfos.length - 1
     while (myInfos[i].position >= props.position)
       i--
@@ -622,7 +618,7 @@
   }
 
   function suivant() {
-    console.log(`EvtInfo : suivant`)
+    // console.log(`EvtInfo : suivant`)
     let i = 0
     while (myInfos[i].position <= props.position) i++
     emit('newPosition', myInfos[i].position)

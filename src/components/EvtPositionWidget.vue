@@ -167,7 +167,7 @@ watch(() => props.pitch, (newvalue, oldValue) => {
 })
 
 function changeZoom(delta) {
-  console.log(`EvtPositionWidget - changeZoom : ${delta}`)
+  // console.log(`EvtPositionWidget - changeZoom : ${delta}`)
   // console.log(`changeZoom : ${delta}`)
   switch(delta) {
     case 0.5:
@@ -189,7 +189,7 @@ function changeZoom(delta) {
 }
 
 function changeCap(delta) {
-  console.log(`EvtPositionWidget - changeCap : ${delta}`)
+  // console.log(`EvtPositionWidget - changeCap : ${delta}`)
   // console.log(`changeCap : ${delta}`)
   switch(delta) {
     case 10:
@@ -237,7 +237,7 @@ function changePitch(delta) {
 
 
 function deplacement(delta) {
-  console.log(`EvtPositionWidget - deplacement : ${delta}`)
+  // console.log(`EvtPositionWidget - deplacement : ${delta}`)
   props.map.panBy([0, delta, {easing: capActif.value}])
 }
 
