@@ -213,6 +213,7 @@
   const vignetteArriveePreAff = parseInt(import.meta.env.VITE_VIGNETTE_ARRIVEE_PRE_AFFICHAGE)
   const preAff10km = import.meta.env.VITE_VIGNETTE_PRE_AFFICHAGE_10_KM
   const postAff10km = import.meta.env.VITE_VIGNETTE_POST_AFFICHAGE_10_KM
+  const vignetteAff10km = import.meta.env.VITE_VIGNETTE_10KM
 
 
   const mask = ref(false)
@@ -351,7 +352,7 @@
   } catch (err) {
     affDepart.value = false
     affArrivee.value = false
-    console.warning(`Le tableau myInfos est vide`)}
+    console.warn(`Le tableau myInfos est vide`)}
   }
 
   function majBtn() {
@@ -565,7 +566,7 @@
         info.end =  index + parseInt(postAff10km)
         marker.id = uuidv6()
         // console.log((index/10).toString().padStart(3, "0"))
-        marker.fichier = `§_km${(index/10).toString().padStart(3, "0")}.png` 
+        marker.fichier = `${vignetteAff10km}${(index/10).toString().padStart(3, "0")}.png` 
         marker.coord =  props.visu[index].lookAt
         info.marker = marker
         myInfos.push(info)

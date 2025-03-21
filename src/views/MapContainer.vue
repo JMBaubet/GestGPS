@@ -17,6 +17,7 @@
     >
     </MapHomeWidget>
     <MapDataWidget
+      :showData="showData"
       :distanceTotale="distanceTotale"
       :distance="distance"
       :altitude="altitude"
@@ -48,7 +49,7 @@
   import * as turf from '@turf/turf'
   import {mapLoadLayers, mapMaskSymbols, mapAdd3D} from "../scripts/mapLayers" 
   import {resetIndexEvt, initEvt, traiteEvt, flyToEvt, endFlyToEvt} from '../scripts/mapEvt'
-import { ca } from 'vuetify/locale';
+  import { ca } from 'vuetify/locale';
 
   const props = defineProps({
     id: String,
@@ -85,6 +86,7 @@ import { ca } from 'vuetify/locale';
   const distanceTotale = ref("0.0")
   const distance = ref("0.0")
   const altitude = ref()
+  const showData = ref(true)
 
   // Récupération des données du circuit 
   let urlTrace = `http://localhost:4000/api/lineString/` + zpad(props.id, 6)
@@ -235,10 +237,14 @@ import { ca } from 'vuetify/locale';
     } 
     }
     if (e.key === "r") {
-
       start = 0
 //  window.requestAnimationFrame(frame)
     }
+    if (e.key === "d") showData.value = !showData.value
+
+    // if (e.key === "m") {
+    //   start = start + 3750
+    // }
   }
 
   /**

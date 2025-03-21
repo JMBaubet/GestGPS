@@ -11,7 +11,7 @@ import { getTraceurs } from './src/scripts/traceurs.js'
 import { getVilles } from './src/scripts/villes.js'
 import { getCircuits, getcircuitsMinMax } from './src/scripts/circuits.js'
 import { delDataCircuit } from './src/scripts/dataCircuit.js'
-import { delCircuit2DataModel } from './src/scripts/dataModel.js'
+import { delCircuit2dataModel, majEvt2dataModel, majVisu2dataModel } from './src/scripts/dataModel.js'
 import { getLineString } from './src/scripts/circuits.js'
 import { getVisu } from './src/scripts/3DFiles.js'
 import { saveVisu } from './src/scripts/visu.js'
@@ -68,6 +68,7 @@ app.get('/api/GpxFiles/', (req, res) => {
     })
 })
 
+
 // Obtention d'un fichier lineString
 app.get('/api/lineString/:id', (req, res) => {
   getLineString(`${req.params.id}`)
@@ -113,7 +114,7 @@ app.delete('/api/GpxFile/:id', (req, res) => {
   //console.log(`backend.js : id circuit : ${req.params.id}`)
   delDataCircuit(req.params.id)
     .then((ret) => {
-      delCircuit2DataModel(req.params.id)
+      delCircuit2dataModel(req.params.id)
         .then((ret) => {
           // console.log(`backend.js : Retour de la promise : OK`)
 
@@ -137,10 +138,9 @@ app.delete('/api/GpxFile/:id', (req, res) => {
 
 
 // récupération des circuits à afficher
-app.get('/api/circuits/:page/:nombre/:ville?', (req, res) => {
-  getCircuits(req.params.page, req.params.nombre)
-    // app.get('/api/circuits/:page/:nombre/:ville?', (req, res) => {
-    //   getCircuits(req.params.page, req.params.nombre, req.params.ville)
+app.get('/api/circuits/:page/:nombre/:ville/:traceur/:distances/:deniveles', (req, res) => {
+  // console.table(req.params)
+  getCircuits(req.params)
     .then(data => {
       res.setHeader('Content-Type', 'application/json')
       res.status(200).send(data)
@@ -151,6 +151,8 @@ app.get('/api/circuits/:page/:nombre/:ville?', (req, res) => {
       res.status(500).send({ id: 1020, error: `Les circuits ne peuvent être récupérés !` })
     })
 })
+
+
 
 // récupération des min max 
 app.get('/api/circuitsMinMax/', (req, res) => {
@@ -215,13 +217,18 @@ app.get('/api/visu/:id', (req, res) => {
 app.post('/api/visu/:id/', (req, res) => {
   saveVisu(req.params.id, req.body.visu)
     .then((retour) => {
-      res.setHeader('Content-Type', 'application/json')
-      res.status(200)
-      res.send({ status: "OK" })
-
+      majVisu2dataModel(req.params.id, req.body.visu)
+        .then(() => {
+          res.setHeader('Content-Type', 'application/json')
+          res.status(200)
+          res.send({ status: "OK" })
+        })
+        .catch((err) => {
+          console.error(`backend.js - majVisu2dataModel : ${err.id}`)
+        })
     })
     .catch((err) => {
-      console.error(`backend.js : ${err.id}`)
+      console.error(`backend.js - saveVisu : ${err.id}`)
     })
 })
 
@@ -245,13 +252,18 @@ app.get('/api/evt/:id', (req, res) => {
 app.post('/api/evt/:id/', (req, res) => {
   saveEvt(req.params.id, req.body.evt)
     .then((retour) => {
-      res.setHeader('Content-Type', 'application/json')
-      res.status(200)
-      res.send({ status: "OK" })
-
+      majEvt2dataModel(req.params.id, req.body.evt)
+        .then(() => {
+          res.setHeader('Content-Type', 'application/json')
+          res.status(200)
+          res.send({ status: "OK" })
+        })
+        .catch((err) => {
+          console.error(`backend.js - majEvt2dataModel : ${err.id}`)
+        })
     })
     .catch((err) => {
-      console.error(`backend.js : ${err.id}`)
+      console.error(`backend.js - saveEvt : ${err.id}`)
     })
 })
 

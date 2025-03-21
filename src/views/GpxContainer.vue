@@ -6,17 +6,36 @@
   <MsgAlert :alarmes @close-alarme="delAlarme"></MsgAlert>
 
   <!-- <MenuToolbar :no-gpx-file-ready :no-fit-file-ready @addGpxFile="getGpxFiles" @affMap="myMap"> -->
-  <MenuToolbar :no-gpx-file-ready :no-fit-file-ready @addGpxFile="getGpxFiles">
-    </MenuToolbar>
-  <Fitre :items-villes :items-traceurs :dist-min :dist-max :deniv-min :deniv-max @filtrerVille="filtrerVille"
-    @filtrerTraceur="filtrerTraceur">
+  <MenuToolbar 
+    :no-gpx-file-ready 
+    :no-fit-file-ready 
+    :showFiltre
+    @addGpxFiles="getGpxFiles"
+    @activerFiltre="activerFiltre"
+  >
+  </MenuToolbar>
+  <Fitre 
+    :showFiltre
+    :items-villes 
+    :items-traceurs 
+    :dist-min 
+    :dist-max 
+    :deniv-min 
+    :deniv-max 
+    :reset
+    @filtrerDistance="filtrerDistance"
+    @filtrerDenivele="filtrerDenivele"
+    @filtrerVille="filtrerVille"
+    @filtrerTraceur="filtrerTraceur"
+    @filtreCircuits="filtreCircuits"
+    @resetFiltre ="resetFiltre"
+  >
   </Fitre>
   <v-container class="hidden-md-and-up">
     <v-row justify="space-between">
       <v-col class="d-flex justify-center" v-for="(circuit, key) in circuitsAffiches">
-        <ParcoursCard :name="circuit.nom" :distance="circuit.distance" :denivele="circuit.denivele"
-          :top="circuit.sommet.altitude" :top-distance="circuit.sommet.km"
-          :vignette="'src/assets/data/' + circuit.circuitId + '/vignette.png'"
+        <ParcoursCard 
+          :circuit="circuit" 
           @confirm-del-gpx-file="askDelGpxFile(circuit.circuitId, circuit.nom)"
           @modCameraFile="modCameraFile(circuit.circuitId)"
           @affiche3D="map3D(circuit.circuitId)">
@@ -27,9 +46,8 @@
   <v-container class="hidden-sm-and-down hidden-lg-and-up">
     <v-row justify="space-between">
       <v-col class="d-flex justify-center" v-for="(circuit, key) in circuitsAffiches" cols="12" sm="6">
-        <ParcoursCard :name="circuit.nom" :distance="circuit.distance" :denivele="circuit.denivele"
-          :top="circuit.sommet.altitude" :top-distance="circuit.sommet.km"
-          :vignette="'src/assets/data/' + circuit.circuitId + '/vignette.png'"
+        <ParcoursCard 
+          :circuit="circuit"
           @confirm-del-gpx-file="askDelGpxFile(circuit.circuitId, circuit.nom)"
           @modCameraFile="modCameraFile(circuit.circuitId)"
           @affiche3D="map3D(circuit.circuitId)">
@@ -40,9 +58,8 @@
   <v-container class="hidden-md-and-down hidden-xl-and-up">
     <v-row justify="space-between">
       <v-col class="d-flex justify-center" v-for="(circuit, key) in circuitsAffiches" cols="12" sm="5">
-        <ParcoursCard :name="circuit.nom" :distance="circuit.distance" :denivele="circuit.denivele"
-          :top="circuit.sommet.altitude" :top-distance="circuit.sommet.km"
-          :vignette="'src/assets/data/' + circuit.circuitId + '/vignette.png'"
+        <ParcoursCard 
+          :circuit="circuit" 
           @confirm-del-gpx-file="askDelGpxFile(circuit.circuitId, circuit.nom)"
           @modCameraFile="modCameraFile(circuit.circuitId)"
           @affiche3D="map3D(circuit.circuitId)">
@@ -53,7 +70,7 @@
   <v-container class="hidden-lg-and-down">
     <v-row justify="space-between">
       <v-col class="d-flex justify-center" v-for="(circuit, key) in circuitsAffiches" cols="12" sm="3">
-        <ParcoursCard :name="circuit.nom" :distance="circuit.distance" :denivele="circuit.denivele"
+        <ParcoursCard :circuit="circuit" :name="circuit.nom" :distance="circuit.distance" :denivele="circuit.denivele"
           :top="circuit.sommet.altitude" :top-distance="circuit.sommet.km"
           :vignette="'src/assets/data/' + circuit.circuitId + '/vignette.png'"
           @confirmDelGpxFile="askDelGpxFile(circuit.circuitId, circuit.nom)"
@@ -102,9 +119,13 @@ const distMin = ref()
 const distMax = ref()
 const denivMin = ref()
 const denivMax = ref(0)
+const reset = ref(true)
 
 const name = ref("Test")
 
+const disabledBtnFiltre = ref(false)
+
+const showFiltre = ref(false)
 const rmGpxDialog = ref(false)
 const nomGpx = ref()
 const idGpx = ref()
@@ -217,6 +238,23 @@ function backEndIsRunning() {
     })
 }
 
+function activerFiltre (etat) {
+  showFiltre.value = etat
+  if (!showFiltre.value) resetFiltre()
+
+}
+
+
+function filtreCircuits() {
+  console.log(`filtreCircuits`)
+  disabledBtnFiltre.value=true
+  getCircuits()
+}
+
+function resetFiltre() {
+  console.log(`resetfiltre`)
+  reset.value = !reset.value
+}
 
 /**
  * @Desc Cette fonction demande au backend une liste de circuits qui dépend des paramètres envoyés. 
@@ -226,7 +264,8 @@ function backEndIsRunning() {
  */
 function getCircuits() {
   // console.log(`GpxContainerView : getCirtuits`)
-  const url = `http://localhost:4000/api/circuits/${page.value}/${nbCircuitsAffiches}`
+  const url = `http://localhost:4000/api/circuits/${page.value}/${nbCircuitsAffiches}/${filtreVille}/${filtreTraceur}/${filtreDistances}/${filtreDeniveles}`
+  console.log(url)
   fetch(url, { method: 'GET', signal: AbortSignal.timeout(1500) })
     .then((rep, err) => {
       return rep.json()
@@ -475,21 +514,36 @@ function delAlarme(id) {
 }
 
 
-let filtrageVille = ""
-let filtrageTraceur = ""
+let filtreVille = " "
+let filtreTraceur = " "
+let filtreDistances = [0, 200]
+let filtreDeniveles = [0,4600]
 
 /*************************************
 *  Filtre de la ville               *
 *************************************/
-function filtrerVille(ville) {
-  filtrageVille = ville
+function filtrerVille(villeSelect) {
+  filtreVille = villeSelect
+  disabledBtnFiltre.value = false
 }
 
 /*************************************
 *  Filtre du traceur                 *
 *************************************/
-function filtrerTraceur(traceur) {
-  filtrageTraceur = traceur
+function filtrerTraceur(traceurSelect) {
+  filtreTraceur = traceurSelect
+  disabledBtnFiltre.value = false
+}
+
+function filtrerDistance(range) {
+  // console.log(range)
+  filtreDistances=range
+  disabledBtnFiltre.value = false
+}
+
+function filtrerDenivele(range) {
+  filtreDeniveles=range
+  disabledBtnFiltre.value = false
 }
 
 

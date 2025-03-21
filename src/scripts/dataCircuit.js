@@ -7,6 +7,7 @@ const dataDirectory = process.env.DATA_DIRECTORY
 const tmpDirectory = process.env.TMP_DIRECTORY
 const fileVignette = process.env.FILE_VIGNETTE
 const fileVisu = process.env.FILE_VISU
+const fileEvt = process.env.FILE_EVT
 
 
 /**
@@ -32,7 +33,14 @@ export const archiveDataCircuit = (id, lineString) => {
                   .then(() => {
                     fs.rename(tmpDirectory + fileVisu, newDirectory + fileVisu)
                       .then(() => {
-                        resolve()
+                        fs.rename(tmpDirectory + fileEvt, newDirectory + fileEvt)
+                          .then(() => {
+                            resolve()
+                          })
+                          .catch((err) => {
+                            console.error(`archiveDataCircuit : ${err}`)
+                            reject({ id: 9999, error: "Archive du fichier evt" })
+                          })
                       })
                       .catch((err) => {
                         console.error(`archiveDataCircuit : ${err}`)

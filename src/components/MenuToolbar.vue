@@ -1,88 +1,63 @@
 <template>
   <v-toolbar>
     <template v-slot:prepend>
-      <v-btn icon="mdi-console" @click="debug()"></v-btn>
-    </template>
-    GPX
-    <div>
-      <v-btn :disabled="noGpxFileReady" icon @click="ImportGpx">
-        <v-icon color="primary">mdi-file-marker-outline</v-icon>
-      </v-btn>
-      <v-tooltip activator="parent" location="bottom">
-        Importer une trace gpx
-      </v-tooltip>
-    </div>
+      <div class="mx-4"> Filtrer les circuits </div>
+      <v-switch 
+      v-model="showFiltre" 
+      color="primary" 
+      label=""
+      hide-details="true"
+      >
+      </v-switch>
 
-    <div>
-      <v-btn icon disabled>
-        <v-icon color="primary">mdi-file-search-outline</v-icon>
+  
+<!-- 
+      <v-btn 
+        :disabled="props.disabledBtnFiltre"
+        @click= "emit('filtreCircuits')"
+        icon 
+      >
+          <v-icon color="primary">mdi-file-search-outline</v-icon>
       </v-btn>
       <v-tooltip activator="parent" location="bottom">
         Filtrer les traces
-      </v-tooltip>
-    </div>
-<!-- 
-    <div>
-      <v-btn icon @click="emit('affMap')">
-        <v-icon color="success">mdi-file-video</v-icon>
-      </v-btn>
-      <v-tooltip activator="parent" location="bottom">
-        Visualiser les traces
-      </v-tooltip>
-    </div> -->
+      </v-tooltip> -->
+          
+    </template>
 
-    <!-- <div>
-      <v-btn icon disabled>
-        <v-icon color="error">mdi-file-remove-outline</v-icon>
+    <div>
+      <v-btn
+        :disabled="noGpxFileReady" 
+        @click="ImportGpx"
+        class="me-2 text-none"
+        color="#5865f2"
+        prepend-icon="mdi-file-marker-outline"
+        variant="flat"
+      >
+      Importer une trace GPX
       </v-btn>
-      <v-tooltip activator="parent" location="bottom">
-        Supprimer des traces
-      </v-tooltip>
+
     </div>
- -->
+
+
     <!-- Menu fichiers FIT-->
     <template v-if="$vuetify.display.smAndUp">
       <v-divider class="mx-1 align-self-center" length="24" thickness="2" vertical></v-divider>
 
-      &nbsp;&nbsp;&nbsp;FIT
+      <!-- &nbsp;&nbsp;&nbsp;FIT -->
 
       <div>
-        <!-- <v-btn icon :disabled="noFitFileReady"> -->
-        <v-btn icon disabled>
-          <v-icon>mdi-file-document-plus-outline</v-icon>
-        </v-btn>
-        <v-tooltip activator="parent" location="bottom">
-          Importer un fichier FIT
-        </v-tooltip>
-      </div>
-
-      <div>
-        <v-btn icon disabled>
-          <v-icon>mdi-file-minus-outline</v-icon>
-        </v-btn>
-        <v-tooltip activator="parent" location="bottom">
-          Filtrer les fichiers FIT
-        </v-tooltip>
-      </div>
-
-      <div>
-        <v-btn icon disabled>
-          <v-icon>mdi-file-minus-outline</v-icon>
-        </v-btn>
-        <v-tooltip activator="parent" location="bottom">
-          Visualiser le fichiers FIT
-        </v-tooltip>
-      </div>
-
-      <div>
-        <v-btn icon disabled>
-          <v-icon>mdi-file-minus-outline</v-icon>
-        </v-btn>
-        <v-tooltip activator="parent" location="bottom">
-          Supprimer des fichiers FIT
-        </v-tooltip>
-      </div>
-
+      <v-btn
+        :disabled="noFitFileReady" 
+        @click="ImportFit"
+        class="me-2 text-none"
+        color="#5865f2"
+        prepend-icon="mdi-file-document-plus-outline"
+        variant="flat"
+      >
+      Importer un fichier FIT
+      </v-btn>
+    </div>
       <!-- Menu Aide-->
     </template>
 
@@ -100,19 +75,32 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 
 const props = defineProps({
   noGpxFileReady: Boolean,
   noFitFileReady: Boolean,
+  showFiltre: Boolean,
 })
 
-const emit = defineEmits(['addGpxFile'])
+const emit = defineEmits(['addGpxFiles', 'activerFiltre'])
+
+const showFiltre = ref(props.showFiltre)
+
+watch(() => showFiltre.value, (newValue, oldValue) => {
+  // console.log(showFiltre.value)
+  emit('activerFiltre', showFiltre.value)
+})
+
 
 //const router = useRouter()
 
 function ImportGpx() {
-  emit('addGpxFile')
+  emit('addGpxFiles')
+}
+
+function ImportFit() {
+  // emit('addGpxFiles')
 }
 
 // A supprimer

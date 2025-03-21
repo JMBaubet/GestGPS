@@ -23,6 +23,7 @@ declare module 'vue' {
     IhmConfiguration: typeof import('./src/components/IhmConfiguration.vue')['default']
     InputNumber: typeof import('./src/components/InputNumber.vue')['default']
     MapCmdWidget: typeof import('./src/components/MapCmdWidget.vue')['default']
+    MapData: typeof import('./src/components/MapData.vue')['default']
     MapDataWidget: typeof import('./src/components/MapDataWidget.vue')['default']
     MapHomeWidget: typeof import('./src/components/MapHomeWidget.vue')['default']
     MenuToolbar: typeof import('./src/components/MenuToolbar.vue')['default']

@@ -134,7 +134,7 @@ watch(() => props.showPause, () => {
     }
   } catch (err) {
     km0.value = false
-    console.warning(`Le tableau myInfos est vide`)
+    console.warn(`Le tableau myInfos est vide`)
   }
   
 
