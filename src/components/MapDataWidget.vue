@@ -16,7 +16,7 @@
         buffer-color="red"
         buffer-opacity="1"
         :buffer-value=distanceTotale
-        color="blue-lighten-2"
+        color="yellow-lighten-2"
         height="6"
         :max=distanceTotale
         min="0"

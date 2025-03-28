@@ -6,6 +6,7 @@ dotenv.config()
 const dataDirectory = process.env.DATA_DIRECTORY
 const tmpDirectory = process.env.TMP_DIRECTORY
 const fileVignette = process.env.FILE_VIGNETTE
+const fileQrcode = process.env.FILE_QRCODE
 const fileVisu = process.env.FILE_VISU
 const fileEvt = process.env.FILE_EVT
 
@@ -29,22 +30,29 @@ export const archiveDataCircuit = (id, lineString) => {
             // Creation du fichier
             fs.writeFile(`${newDirectory}\\lineString.json`, lineString)
               .then(() => {
-                fs.rename(tmpDirectory + 'vignette.png', newDirectory + `vignette.png`)
+                fs.rename(tmpDirectory + fileVignette, newDirectory + fileVignette)
                   .then(() => {
-                    fs.rename(tmpDirectory + fileVisu, newDirectory + fileVisu)
+                    fs.rename(tmpDirectory + fileQrcode, newDirectory + fileQrcode)
                       .then(() => {
-                        fs.rename(tmpDirectory + fileEvt, newDirectory + fileEvt)
+                        fs.rename(tmpDirectory + fileVisu, newDirectory + fileVisu)
                           .then(() => {
-                            resolve()
+                            fs.rename(tmpDirectory + fileEvt, newDirectory + fileEvt)
+                              .then(() => {
+                                resolve()
+                              })
+                              .catch((err) => {
+                                console.error(`archiveDataCircuit : ${err}`)
+                                reject({ id: 9999, error: "Archive du fichier evt" })
+                              })
                           })
                           .catch((err) => {
                             console.error(`archiveDataCircuit : ${err}`)
-                            reject({ id: 9999, error: "Archive du fichier evt" })
+                            reject({ id: 9999, error: "Archive du fichier visu" })
                           })
                       })
                       .catch((err) => {
                         console.error(`archiveDataCircuit : ${err}`)
-                        reject({ id: 9999, error: "Archive du fichier visu" })
+                        reject({ id: 9999, error: "Archive du QRcode" })
                       })
                   })
                   .catch((err) => {

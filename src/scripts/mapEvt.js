@@ -107,6 +107,10 @@ export const traiteEvt = (map, evt, avancement) => {
   let flyTo = 0
 
   // console.log(`traiteEvt : ${typeof (avancement)}, ${indexEvt}`)
+  if (avancement < listEvts[ indexEvt - 1 ]) {
+    // console.log(`On a du faire un retour arrière`)
+    indexEvt -= 1
+  }
 
   if (avancement === listEvts[ indexEvt ]) {
     // console.log(`On traite ${listEvts[ indexEvt ]}`)
@@ -137,7 +141,18 @@ export const traiteEvt = (map, evt, avancement) => {
 
         } else {
           // console.log(`on efface un marker`)
-          markers[ indexMarker ].remove()
+          // console.log(markers[ indexMarker ])
+          // markers[ indexMarker ].remove()
+
+          let divToDelete = 1
+          while (divToDelete) {
+            divToDelete = document.getElementById(evt[ indexMarker ].marker.id);
+            if (divToDelete) {
+              // console.log(" On suprime un element")
+              divToDelete.parentNode.removeChild(divToDelete);
+            }
+          }
+
         }
       }
     } // Fin de traitement des marker

@@ -30,6 +30,7 @@
     :disabledReprise=disabledReprise
     @playPause="playPause()"
     @reprise="reprise()"
+    @arriere="back()"
     ></MapCmdWidget>
   </v-container>
 </template>
@@ -66,7 +67,12 @@
   const initCenterLat = import.meta.env.VITE_MAPBOX_INIT_CENTER_LAT
   const initBear = import.meta.env.VITE_MAPBOX_INIT_BEAR
   const initPitch = import.meta.env.VITE_MAPBOX_INIT_PITCH
-  const coeffAnnimation= import.meta.env.VITE_COEFFICIENT_DUREE_ANIMATION
+  let coeffAnnimation= import.meta.env.VITE_COEFFICIENT_DUREE_ANIMATION
+  const showTraceOnStart = import.meta.env.VITE_MAPBOX_START_SHOW_TRACE
+  const timerShowTraceOnStart = parseInt(import.meta.env.VITE_MAPBOX_START_SHOW_TRACE_TIMER)
+  const showEndTrace = import.meta.env.VITE_MAPBOX_END_SHOW_TRACE
+
+  
 
   const disabledPlayPause = ref(true)
   const disabledReprise = ref(true)
@@ -87,6 +93,22 @@
   const distance = ref("0.0")
   const altitude = ref()
   const showData = ref(true)
+
+
+  let start
+  let phase = 0
+  let timePause
+  let startPause = true
+  let position 
+  let avancement
+  let dureeSegment
+  let startSegment
+  let phaseSegment
+  let altitudeDebut
+  let altitudeFin
+  let bounds
+
+
 
   // Récupération des données du circuit 
   let urlTrace = `http://localhost:4000/api/lineString/` + zpad(props.id, 6)
@@ -166,7 +188,7 @@
     window.addEventListener('keypress', keyboard)
 
     // console.log(`On charge mmap props.id : ${props.id}`)
-    // On initialise la carte au montage du composant
+    // On initialise la carte au montage du composant pour avoir une vue globale de la terre
     try {
       map = new mapboxgl.Map({
         container: "mapContainer",
@@ -181,39 +203,16 @@
     } catch (error) {console.log(error)}
   
     
-    // On charge les données graphiques pour le rendu
-    mapLoadLayers(map, trace)
-
     // On charge le relief, le ciel et le brouillard
     mapAdd3D(map)
 
+    // On charge dans l'objet map les données graphiques pour le rendu
+    mapLoadLayers(map, trace)
+
+
+    // On attend 500 ms pour avoir le temps de telecharger les fichiers de données
     const timer = setTimeout(loadMap, 500)
-
-    function loadMap() {
-      // console.log(`fonction loadMap`)
-      // Lancement de l'annimation qui part de Paris et pointe vers le départ
-      // console.table(visu)
-      // console.log(`On lance l'annimation du départ vers : ${visu[0].lookAt}`)
-      // let retour = traiteEvt(map, evt, 0)
-      // if (retour.pause === true) playPause()
-
-      map.flyTo({  center: visu[0].lookAt,
-          // bearing: camera[0].cap, 
-          bearing: visu[0].cap, 
-          zoom: visu[0].zoom, 
-          pitch:visu[0].pitch, 
-          duration: 7500
-        })
-
-      map.once('moveend', async () => {
-        // console.log("On lance la suite")
-        disabledPlayPause.value = false
-        position = map.getSource('point')
-        window.requestAnimationFrame(frame);
-    });
-    }
-  })
-
+  }) 
 
 
   onUnmounted(() => {
@@ -223,6 +222,71 @@
     start = t -  dureeAnimation
     // console.log(start)
   })
+
+
+  function loadMap() {
+    // console.log(`fonction loadMap`)
+    // Lancement de l'annimation qui part de Paris et pointe vers le départ
+    // console.table(visu)
+    // console.log(`On lance l'annimation du départ vers : ${visu[0].lookAt}`)
+    // let retour = traiteEvt(map, evt, 0)
+    // if (retour.pause === true) playPause()
+
+    bounds = trace.reduce((bounds, coord) => {
+      return bounds.extend(coord);
+    }, new mapboxgl.LngLatBounds(trace[0], trace[0]));
+
+    // console.table(bounds)
+
+    
+
+    if (showTraceOnStart === "true") {
+      map.fitBounds(bounds, {
+      padding: 75, // équivalent au padding dans transitionToOverviewState
+      duration: 5000, // durée en millisecondes
+      essential: true
+    });
+      map.once('moveend', async () => {
+        setTimeout(() => {
+          map.flyTo({  center: visu[0].lookAt,
+            // bearing: camera[0].cap, 
+            bearing: visu[0].cap, 
+            zoom: visu[0].zoom, 
+            pitch:visu[0].pitch, 
+            duration: 7500
+          })
+
+          }, timerShowTraceOnStart
+        )
+
+        map.once('moveend', async () => {
+        // console.log("On lance la suite")
+        disabledPlayPause.value = false
+        position = map.getSource('point')
+        window.requestAnimationFrame(frame);
+        });
+      })
+    } else {
+        map.flyTo({  center: visu[0].lookAt,
+          // bearing: camera[0].cap, 
+          bearing: visu[0].cap, 
+          zoom: visu[0].zoom, 
+          pitch:visu[0].pitch, 
+          duration: 7500
+        })
+        
+        map.once('moveend', async () => {
+        // console.log("On lance la suite")
+        disabledPlayPause.value = false
+        position = map.getSource('point')
+        window.requestAnimationFrame(frame);
+        });
+    }
+  } //loadMap
+  
+
+
+
   
   /**
    * 
@@ -231,38 +295,32 @@
   function keyboard(e) {
     // console.log(`Keyboard : ${e.key}`)
     // console.log(e.key)
+    // if (e.key === "p") { 
+    //   if (flyToState !== true) {        
+    //     playPause()
+    //   } else {
+    //     reprise()
+    //   }
+    // }
     if (e.key === "p") { 
-      if (flyToState !== true) {        
-        playPause()
-    } 
+      playPause()
     }
-    if (e.key === "r") {
-      start = 0
-//  window.requestAnimationFrame(frame)
-    }
+    
+   
     if (e.key === "d") showData.value = !showData.value
 
-    // if (e.key === "m") {
-    //   start = start + 3750
-    // }
+    if (e.key === "b") {
+      back()
+    }
+
+
+
   }
 
   /**
    * 
    * @param time 
    */
-  let start
-  let phase = 0
-  let timePause
-  let startPause = true
-  let position 
-  let avancement
-  let dureeSegment
-  let startSegment
-  let phaseSegment
-  let altitudeDebut
-  let altitudeFin
-
   
   function frame(time) {
 
@@ -277,6 +335,7 @@
     resetIndexEvt()
     // console.log(`start : ${start}, time : ${time}, phase = ${phase}`)
   }
+  // console.log(`start : ${start}, time : ${time}, phase = ${phase}`)
 
   // phase determines how far through the animation we are
   if (pause.value !== true)  {
@@ -286,7 +345,8 @@
 
     // Traitement des évènements
     let retour = traiteEvt(map, evt, avancement)
-    if (retour.pause === true) playPause()  // On a une pause de progrmmée.
+
+    if (retour.pause === true) playPause()  // On a une pause de programmée.
     
     if (retour.flyTo !== 0) {               // On a un flyTo de programmé. La pause a été faite
       disabledPlayPause.value = true
@@ -299,6 +359,7 @@
         map.once('moveend', function() {      // Le click souris a été fait 
           // console.log(`On met un message`)
           disabledReprise.value = false
+          disabledPlayPause.value = false
         
 
           map.once('moveend', function() {
@@ -330,7 +391,22 @@
 
   // phase is normalized between 0 and 1
   // when the animation is finished, reset start to loop the animation
-  if (phase > 1) return;
+  if (phase > 1) {
+    if (showEndTrace === "true") {
+      disabledPlayPause.value = true
+      map.fitBounds(bounds, {
+        padding: 75, // équivalent au padding dans transitionToOverviewState
+        duration: 5000, // durée en millisecondes
+        essential: true
+      });
+      map.once('moveend', function() {       
+          // Il faut modifier les boutons pour n'avoir que le retour au Km 0
+          disabledReprise.value = false
+          disabledPlayPause.value = false
+      })
+    }
+    return;
+  }
 
   // Gestion de la camera
   dureeSegment = visu[avancement].longueur * coeffAnnimation/10
@@ -410,34 +486,47 @@ function playPause() {
 
   if (phase > 1) {
     start = 0
-    for(let i=0; i<visu.length;i++)
-        visu[i].start=false 
+    // for(let i=0; i<visu.length;i++)
+    //     visu[i].start=false 
 
     window.requestAnimationFrame(frame)
   } else {
-    if (pause.value) {
-      // On relance l'annimation
-      start = start + performance.now() - timePause
-      window.requestAnimationFrame(frame)
-      timePause = 0
-      startPause = true
-    } else {
-      // On stop l'annimation
-      if (!timePause) {
-        timePause = performance.now();
-        // console.table(map.getZoom())
-        // console.log(`timePause : ${timePause}`)s
+    if (flyToState) reprise()  
+    else {
+      if (pause.value) {
+        // On relance l'annimation
+        start = start + performance.now() - timePause
+        window.requestAnimationFrame(frame)
+        timePause = 0
+        startPause = true
+      } else {
+        // On stop l'annimation
+        if (!timePause) {
+          timePause = performance.now();
+          // console.table(map.getZoom())
+          // console.log(`timePause : ${timePause}`)s
+        }
       }
+      pause.value = !pause.value
     }
-    pause.value = !pause.value
   }
   
 }
 
 function reprise () {
   // console.log(`reprise`)
-  endFlyToEvt(map, avancement)        // On a reçu un click souris pour lancer le retour au point de départ
+  endFlyToEvt(map, avancement)        
+  disabledPlayPause.value = true
+}
 
+function back() {
+  if (!pause.value) playPause()
+  start = start + 375
+  setTimeout(() => {
+        playPause()            
+        }
+    , 25)
+  playPause()
 }
 
 function home() {

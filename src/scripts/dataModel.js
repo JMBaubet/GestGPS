@@ -85,6 +85,15 @@ export const addCircuit2dataModel = (newCircuit) => {
         // console.log(`dataModel.js : addCircuit : circuitIndex = ${circuitIndex}`)
         newCircuit.circuitId = zpad(circuitIndex, 6)
         newCircuit.lgEdition = 0
+        newCircuit.evt = {
+          nbZoom: 0,
+          nbPause: 0,
+          nbInfo: 0,
+          affDepart: false,
+          affArrivee: false,
+          aff10km: false
+        }
+
         objet.circuits.push(newCircuit)
         objet.indexCircuits = circuitIndex
 
@@ -201,6 +210,8 @@ export const delCircuit2dataModel = (id) => {
 }
 
 
+
+
 export const majVisu2dataModel = (id, visu) => {
   return new Promise((resolve, reject) => {
     // console.log(`dataModel.js : majVisu2dataModel : ${visu}, ${id}`)
@@ -263,6 +274,8 @@ export const majVisu2dataModel = (id, visu) => {
       })
   })
 }
+
+
 
 
 
@@ -362,6 +375,57 @@ export const majEvt2dataModel = (id, evts) => {
   })
 }
 
+
+export const majTraceur2dataModel = (id, traceur) => {
+  return new Promise((resolve, reject) => {
+    // console.log(`dataModel.js : majVisu2dataModel : ${visu}, ${id}`)
+
+    let objet = {}
+
+    fs.readFile(fichier)
+      .then((buffer) => {
+        try {
+          objet = JSON.parse(buffer.toString())
+        } catch (err) {
+          console.error(`majTraceur2dataModel : Erreur lecture JSON : ${err}`)
+          reject({ id: 2065, error: `Erreur dans le fichier dataModel.json !` })
+        }
+
+        let index = 0
+        while (index < objet.circuits.length) {
+          if (objet.circuits[ index ].circuitId === id) {
+            break
+          }
+          index++
+        }
+        // console.log(`on va modifier l'index : ${index}`)
+        objet.circuits[ index ].traceur = traceur
+        // console.table(objet.circuits)
+        // Il faut enregistrer l'objet dans dataModel.json
+        fs.rm(fichier)
+          .then(() => {
+            fs.writeFile(fichier, JSON.stringify(objet))
+              .then(() => {
+                resolve()
+              })
+              .catch((err) => {
+                console.error(`majTraceur2dataModel: Erreur d'ecriture : ${err}`)
+                return reject({ id: 9999, error: `Ecriture de dataModel.json : ${err}` })
+              })
+
+          })
+          .catch((err) => {
+            console.error(`majTraceur2dataModel: Erreur rm : ${err}`)
+            return reject({ id: 9999, error: `Effacement de dataModel.json !` })
+          })
+
+      })
+      .catch((err) => {
+        console.error(`majTraceur2dataModel: Erreur lecture : ${err}`)
+        return reject({ id: 9999, error: `Lecture de dataModel.json : ${err}` })
+      })
+  })
+}
 
 
 

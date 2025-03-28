@@ -115,29 +115,26 @@ export const mapAdd3D = (map) => {
   map.on('load', () => {
     map.setFog({
       range: [ 5, 10 ],
-      color: "grey",
-      "horizon-blend": 0.2,
+      color: "rgba(112, 123, 204, 0.73)",
+      "horizon-blend": 0.1
     });
 
     map.setLights([ {
       "id": "sun_light",
-      "type": "directional",
+      "type": "flat",
       "properties": {
+        anchor: "map",
         "color": "rgba(255.0, 0.0, 0.0, 1.0)",
-        "intensity": 0.4,
-        "direction": [ 200.0, 40.0 ],
-        "cast-shadows": true,
-        "shadow-intensity": 0.2
+        "intensity": 0.6
       }
     } ]);
 
-    // // Add a sky layer over the horizon
     map.addLayer({
       id: "sky",
       type: "sky",
       paint: {
         "sky-type": "atmosphere",
-        "sky-atmosphere-color": "rgba(85, 151, 210, 0.5)",
+        "sky-atmosphere-color": "rgba(42, 96, 178, 0.56)",
       },
     });
 

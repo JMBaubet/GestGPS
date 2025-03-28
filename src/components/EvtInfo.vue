@@ -323,7 +323,7 @@
   }
 
   function majSwitches() {
-    try {
+  try {
     if (myInfos[0].marker.fichier === vignetteDepart) {
       affDepart.value = true
     } else {
@@ -352,6 +352,12 @@
   } catch (err) {
     affDepart.value = false
     affArrivee.value = false
+    aff10km.value = false
+    if (props.longueur > 100) {
+      showAdd10km.value = true
+    } else {
+      showAdd10km.value = false
+    }
     console.warn(`Le tableau myInfos est vide`)}
   }
 

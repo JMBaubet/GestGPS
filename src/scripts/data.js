@@ -1,8 +1,16 @@
+import { tmpdir } from 'os'
+import * as dotenv from 'dotenv'
+import QRCode from 'qrcode'
+
+
+
 /**
  * Promise de lecture des données diverses
  */
 export const getEditeurUrl = (fileName, objetGpx) => {
   return new Promise((resolve, reject) => {
+    const tmpDirectory = process.env.TMP_DIRECTORY
+    const qrcodeFile = process.env.FILE_QRCODE
 
     let editeur = undefined
     let editeurId = undefined
@@ -38,12 +46,12 @@ export const getEditeurUrl = (fileName, objetGpx) => {
         case 1:   // Strava
         case 2:   // Garmin
         case 3:   // RideWithGps
-          nomTrace = objetGpx.gpx.trk[0].name[0]
+          nomTrace = objetGpx.gpx.trk[ 0 ].name[ 0 ]
           break;
         case 4:   // OpenRunner le nom de la trace est précédé de son id 
-          const nomLong = objetGpx.gpx.trk[0].name
+          const nomLong = objetGpx.gpx.trk[ 0 ].name
           const tabNom = nomLong.toString().split("-")
-          nomTrace = tabNom[0]
+          nomTrace = tabNom[ 0 ]
           break;
         default:
           console.error(`getEditeurUrl : EditeurId ${editeurId} inconnu !`)
@@ -61,14 +69,14 @@ export const getEditeurUrl = (fileName, objetGpx) => {
       switch (editeurId) {
         case 1: //Strava
         case 3: //RideWithGps
-          urlOrigine = objetGpx.gpx.metadata[0].link[0].$.href
+          urlOrigine = objetGpx.gpx.metadata[ 0 ].link[ 0 ].$.href
           break;
         case 2: //Garmin
           urlOrigine = 'https://connect.garmin.com/modern/course/' + nomFichier.toString().replace('COURSE_', '').replace('.gpx', '')
           break;
         case 4: //Openrunner
           const myArrayBis = nomFichier.toString().split("-")
-          urlOrigine = 'https://www.openrunner.com/route-details/' + myArrayBis[1]
+          urlOrigine = 'https://www.openrunner.com/route-details/' + myArrayBis[ 1 ]
           break;
         default:
           console.error(`getEditeurUrl : EditeurId ${editeurId} inconnu !`)
@@ -78,7 +86,30 @@ export const getEditeurUrl = (fileName, objetGpx) => {
         console.error(`getEditeurUrl : URL d'origine indéterminée !`)
         reject({ id: 2043, error: `URL d'origine indéterminée !` })
       }
-      resolve({ editeur: editeur, editeurId: editeurId, nom: nomTrace, url: urlOrigine })
+
+      // On génère le QRCode
+      // console.log(tmpDirectory, qrcodeFile)
+      QRCode.toFile(
+        `${tmpDirectory}${qrcodeFile}`,
+        // "E:/Loisirs/GestGps/src/assets/tmp/qrCode.png",
+        urlOrigine,
+        {
+          errorCorrectionLevel: "H",
+          width: 512,
+          color: {
+            dark: "#212121"
+          }
+        },
+        function (err) {
+          if (err) {
+            console.error(`${err}`)
+            reject({ id: 999, error: `Génération QRCode` })
+          } else {
+            resolve({ editeur: editeur, editeurId: editeurId, nom: nomTrace, url: urlOrigine })
+          }
+        }
+      )
+
     } catch (err) {
       console.error(`getEditeurUrl : ${err}`)
       reject({ id: 2049, error: `Catch : ${err} sur getEditeurURL !` })

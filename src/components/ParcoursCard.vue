@@ -14,14 +14,14 @@
                 <v-btn icon="mdi-dots-vertical"  variant="text" v-bind="props"></v-btn>
               </template>
               <v-list>
-                <v-list-item disabled value="aff">
-                  <v-list-item-title>Informations</v-list-item-title>
+                <v-list-item value="aff">
+                  <v-list-item-title @click="  emit('informations')">Informations</v-list-item-title>
                 </v-list-item>
                 <v-list-item value="camera">
-                  <v-list-item-title @click="paramCamera">Editer</v-list-item-title>
+                  <v-list-item-title @click="emit('modCameraFile')">Editer</v-list-item-title>
                 </v-list-item>
                 <v-list-item value="3d">
-                  <v-list-item-title @click="Affiche3D">Visualiser</v-list-item-title>
+                  <v-list-item-title @click="emit('affiche3D')">Visualiser</v-list-item-title>
                 </v-list-item>
                 <!-- <v-list-item disabled value="sel">
                   <v-list-item-title>Sélectionner pour comparer</v-list-item-title>
@@ -29,8 +29,8 @@
                 <v-list-item disabled value="com">
                   <v-list-item-title>Comparer</v-list-item-title>
                 </v-list-item> -->
-                <v-list-item value="sup"base-color="red">
-                  <v-list-item-title @click="delCircuit">Supprimer</v-list-item-title>
+                <v-list-item value="sup" base-color="red">
+                  <v-list-item-title @click="emit('confirmDelGpxFile')">Supprimer</v-list-item-title>
                 </v-list-item>
               </v-list>
             </v-menu>
@@ -41,15 +41,26 @@
           <v-row class="ma-0">
             <v-col class="pa-0" cols="12" sm="6">Distance : {{ circuit.distance }} km</v-col>
             <v-col class="pa-0 text-right" cols="12" sm="6">Dénivelé + : {{ circuit.denivele }} m</v-col>
-            <v-col class="pa-0" cols="12" sm="6">
-              <v-row align="center" class=" ma-0">
-                <div class="text-subtitle-1">Dificulté : &nbsp;</div>
-                <v-rating :model-value="3.0" color="yellow" density="compact" size="small" half-increments readonly>
-                </v-rating>
-              </v-row>
+            <v-col class="pa-0 " cols="12" sm="8">
+              Sommet : {{ circuit.sommet.altitude }} m à {{ circuit.sommet.km }} km
             </v-col>
-            <v-col class="pa-0 text-right" cols="12" sm="6">
-              <h5>Sommet : {{ circuit.sommet.altitude }} m à {{ circuit.sommet.km }} km</h5>
+            <v-col class="pa-0" cols="12" sm="2">
+              Edition : 
+            </v-col>
+            <v-col class="pt-3 text-right pa-0 ma-0" cols="12" sm="2">
+              <v-progress-linear
+                :location="null"
+                bg-color="#FFFFFF"
+                buffer-color="#802020"
+                buffer-opacity="1"
+                :buffer-value="lg"
+                color="#40FF40"
+                height="8"
+                :max="lg"
+                min="0"
+                :model-value="lgEdition"
+                rounded
+              ></v-progress-linear>
             </v-col>
           </v-row>
         </div>
@@ -66,19 +77,11 @@ const props = defineProps({
   circuit: Object,
 })
 
-const emit = defineEmits(['confirmDelGpxFile', 'modCameraFile', 'affiche3D'])
+const lg = ref(parseInt(props.circuit.distance))
+const lgEdition = ref(parseInt(props.circuit.lgEdition/10))
 
-function delCircuit() {
-  emit('confirmDelGpxFile')
-}
+const emit = defineEmits(['informations', 'confirmDelGpxFile', 'modCameraFile', 'affiche3D'])
 
-function paramCamera() {
-  emit('modCameraFile')
-}
-
-function Affiche3D() {
-  emit('affiche3D')
-}
 
 //router.push({ path: `/map/${id}` })
 </script>

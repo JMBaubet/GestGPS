@@ -1,8 +1,19 @@
 <template>
-  <div id="mapCmd" >
+  <div id="mapCmd" v-show="disabledPlayPause === false">
   <v-card class="mx-auto"  color="#23374A00"> 
     <v-card-text> 
       <v-row justify="start" class="pl-0">
+        <div id="reprise">
+          <v-btn  class="ml-2"
+            
+            @click="emit('arriere')"
+            :disabled=false           
+            size="large" 
+            color="cyan-darken-1"
+            icon="mdi-chevron-left" 
+          >  
+          </v-btn>
+        </div>
         <div v-if="disabledPlayPause">
           <v-btn class="ml-2"
             size="large" 
@@ -28,7 +39,7 @@
           >  
           </v-btn>
         </div>
-        <div id="reprise">
+        <!-- <div id="reprise">
           <v-btn v-if="disabledReprise"  class="ml-2"
             size="large" 
             color="#00000000"
@@ -43,8 +54,8 @@
             color="cyan-darken-1"
             icon="mdi-ray-start-arrow" 
           >  
-          </v-btn>
-        </div>
+          </v-btn> -->
+        
 
       </v-row>    
 
@@ -59,7 +70,7 @@
 
 import { ref } from 'vue';
 
-const emit = defineEmits(['playPause', 'reprise'])
+const emit = defineEmits(['playPause', 'reprise', 'arriere'])
 
 const props = defineProps({
   pause: Boolean,

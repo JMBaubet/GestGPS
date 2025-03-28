@@ -1,8 +1,8 @@
 import fs from 'fs'
 import * as dotenv from 'dotenv'
 import { roundMax, roundMin } from './utils.js'
-import { getVille, } from './villes.js'
-import { getTraceur } from './traceurs.js'
+import { getIdVille, } from './villes.js'
+import { getIdTraceur } from './traceurs.js'
 
 dotenv.config()
 const dataDirectory = process.env.DATA_DIRECTORY
@@ -61,6 +61,28 @@ export const getCircuits = (param) => {
 
 }
 
+export const getCircuit = (id) => {
+  return new Promise((resolve, reject) => {
+    try {
+      objet = JSON.parse(fs.readFileSync(fichier))
+      // console.log(id)
+      filtreId(objet.circuits, id)
+        .then((info) => {
+          resolve({ circuit: info })
+        })
+        .catch((err) => {
+          console.error(`getCircuits - fitreId : ${err}`)
+          reject(err)
+        })
+
+    } catch (e) {
+      console.error(`getCircuits Erreur : ${e}`)
+      reject(e)
+    }
+  })
+
+}
+
 
 export const getLineString = (id) => {
   return new Promise((resolve, reject) => {
@@ -102,11 +124,27 @@ export const getcircuitsMinMax = () => {
 }
 
 
+export const filtreId = (circuits, id) => {
+  return new Promise((resolve, reject) => {
+    // console.table(id)
+    let circuit
+    for (let i = 0; i < circuits.length; i++) {
+      if (circuits[ i ].circuitId === id) {
+        circuit = circuits[ i ]
+      }
+    }
+    resolve(circuit)
+  })
+}
+
+
+
+
 export const filtreVilleDepart = (circuits, ville) => {
   return new Promise((resolve, reject) => {
     let tmp = []
     if (ville !== " ") {
-      getVille(ville)
+      getIdVille(ville)
         .then((idVille) => {
           for (let i = 0; i < circuits.length; i++) {
             if (circuits[ i ].villeDepart === idVille.id) {
@@ -131,7 +169,7 @@ export const filtreTraceur = (circuits, traceur) => {
   return new Promise((resolve, reject) => {
     let tmp = []
     if (traceur !== " ") {
-      getTraceur(traceur)
+      getIdTraceur(traceur)
         .then((idTraceur) => {
           for (let i = 0; i < circuits.length; i++) {
             if (circuits[ i ].traceur === idTraceur.id) {

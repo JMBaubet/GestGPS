@@ -36,6 +36,7 @@
       <v-col class="d-flex justify-center" v-for="(circuit, key) in circuitsAffiches">
         <ParcoursCard 
           :circuit="circuit" 
+          @informations="getInfoCircuit(circuit.circuitId)"
           @confirm-del-gpx-file="askDelGpxFile(circuit.circuitId, circuit.nom)"
           @modCameraFile="modCameraFile(circuit.circuitId)"
           @affiche3D="map3D(circuit.circuitId)">
@@ -48,6 +49,7 @@
       <v-col class="d-flex justify-center" v-for="(circuit, key) in circuitsAffiches" cols="12" sm="6">
         <ParcoursCard 
           :circuit="circuit"
+          @informations="getInfoCircuit(circuit.circuitId)"
           @confirm-del-gpx-file="askDelGpxFile(circuit.circuitId, circuit.nom)"
           @modCameraFile="modCameraFile(circuit.circuitId)"
           @affiche3D="map3D(circuit.circuitId)">
@@ -60,6 +62,7 @@
       <v-col class="d-flex justify-center" v-for="(circuit, key) in circuitsAffiches" cols="12" sm="5">
         <ParcoursCard 
           :circuit="circuit" 
+          @informations="getInfoCircuit(circuit.circuitId)"
           @confirm-del-gpx-file="askDelGpxFile(circuit.circuitId, circuit.nom)"
           @modCameraFile="modCameraFile(circuit.circuitId)"
           @affiche3D="map3D(circuit.circuitId)">
@@ -72,7 +75,7 @@
       <v-col class="d-flex justify-center" v-for="(circuit, key) in circuitsAffiches" cols="12" sm="3">
         <ParcoursCard :circuit="circuit" :name="circuit.nom" :distance="circuit.distance" :denivele="circuit.denivele"
           :top="circuit.sommet.altitude" :top-distance="circuit.sommet.km"
-          :vignette="'src/assets/data/' + circuit.circuitId + '/vignette.png'"
+          @informations="getInfoCircuit(circuit.circuitId)"
           @confirmDelGpxFile="askDelGpxFile(circuit.circuitId, circuit.nom)"
           @modCameraFile="modCameraFile(circuit.circuitId)"
           @affiche3D="map3D(circuit.circuitId)">
@@ -90,6 +93,18 @@
   <DelGpxDialog :rm-gpx-dialog :nom-gpx :id-gpx @close-del-gpx-dialog="closeDelGpxDialog" @del-gpx-File="rmGpxFile">
   </DelGpxDialog>
 
+  <information-dialog
+    :show-information
+    :circuit="circuit" 
+    :villeDepart
+    :traceur
+    :items-traceurs
+    @close-info-dialog="showInformation=false"
+    @save-traceur="saveTraceur"
+  >
+  </information-dialog>
+
+
 </template>
 
 <script setup>
@@ -101,6 +116,7 @@ import ParcoursCard from '@/components/ParcoursCard.vue';
 import AddGpxDialog from '@/components/AddGpxDialog.vue';
 import DelGpxDialog from '@/components/DelGpxDialog.vue';
 import MsgAlert from '@/components/MsgAlert.vue';
+import InformationDialog from '@/components/InformationDialog.vue';
 import { traiteCatch, traiteErreur } from '@/scripts/promisesError.js'
 
 const TIMER = import.meta.env.VITE_TIMER
@@ -120,6 +136,10 @@ const distMax = ref()
 const denivMin = ref()
 const denivMax = ref(0)
 const reset = ref(true)
+const showInformation = ref(false)
+const circuit = ref({})
+const villeDepart = ref()
+const traceur = ref()
 
 const name = ref("Test")
 
@@ -452,6 +472,83 @@ function askDelGpxFile(id, nom) {
   idGpx.value = id
 
 }
+
+function getInfoCircuit(id) {
+
+  const url = `http://localhost:4000/api/circuit/` + id
+  console.log(url)
+  fetch(url, { method: 'GET', signal: AbortSignal.timeout(500) })
+    .then((rep) => {
+      return rep.json()
+    })
+    .then((json, err) => {
+      if (typeof (json.error) === "undefined") { // On recoit la réponse attendu
+        circuit.value = json.circuit
+        // console.log(circuit.value)
+        showInformation.value = true
+        // On récupère le nom de la ville de départ
+        const urlVille = `http://localhost:4000/api/ville/` + json.circuit.villeDepart
+        console.log(urlVille)
+        fetch(urlVille, { method: 'GET', signal: AbortSignal.timeout(500) })
+         .then((rep) => {
+            return rep.json()
+          })
+        .then((json, err) => {
+          villeDepart.value = json.ville
+        })
+
+        // On récupère le nom du traceur
+        const urlTraceur = `http://localhost:4000/api/traceur/` + json.circuit.traceur
+        console.log(urlTraceur)
+        fetch(urlTraceur, { method: 'GET', signal: AbortSignal.timeout(500) })
+         .then((rep) => {
+            return rep.json()
+          })
+        .then((json, err) => {
+          // console.log(json.traceur)
+          traceur.value = json.traceur
+        })
+        
+
+      } else { // On reçoit une réponse de type error
+        traiteErreur(json, alarmes)
+      }
+    })
+    .catch((err) => {
+      traiteCatch(err, alarmes)
+    })
+}
+
+function saveTraceur(newTraceur, id) {
+  console.log(`saveTraceur : ${newTraceur}, ${id}`)
+  const url = `http://localhost:4000/api/traceur/${id}/${newTraceur}`
+  console.log(url)
+  fetch(url, { method: 'POST', signal: AbortSignal.timeout(500) })
+    .then((rep) => {
+      return rep.json()
+    })
+    .then((json, err) => {
+      if (typeof (json.error) === "undefined") { // On recoit la réponse attendu
+        alarmes.value.push({
+          id: 12,
+          type: 'success',
+          text: "Le traceur a bien été mis à jour.",
+          closable: true,
+          icon: "mdi-map-marker-distance"
+        })
+        traceur.value=newTraceur
+      } else { // On reçoit une réponse de type error
+        traiteErreur(json, alarmes)
+      }
+
+    })
+    .catch((err) => {
+      traiteCatch(err, alarmes)
+    })
+}
+
+
+
 
 function closeDelGpxDialog() {
   rmGpxDialog.value = false
