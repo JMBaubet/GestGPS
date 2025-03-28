@@ -173,7 +173,7 @@ function changePov() {
 }
 
 function fnShowEvt(evt) {
-  console.log(`IhmConfiguration - showEvt : ${evt}`)
+  // console.log(`IhmConfiguration - showEvt : ${evt}`)
   emit('showEvt', evt )
 }
 
@@ -207,7 +207,7 @@ function saveEvts(evt) {
 }
 
 function initEvts() {
-  console.log(`ihmConfiguration : initEvt`)
+  // console.log(`ihmConfiguration : initEvt`)
 }
 
 function fnShowInfo(info) {

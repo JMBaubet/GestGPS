@@ -7,11 +7,11 @@ import fs from 'fs'
 import path from 'path'
 
 import { decodeTraceGpx } from './src/scripts/gpx.js'
-import { getTraceurs } from './src/scripts/traceurs.js'
-import { getVilles } from './src/scripts/villes.js'
-import { getCircuits, getcircuitsMinMax } from './src/scripts/circuits.js'
+import { getTraceurs, getTraceur, getIdTraceur } from './src/scripts/traceurs.js'
+import { getVilles, getVille } from './src/scripts/villes.js'
+import { getCircuits, getCircuit, getcircuitsMinMax } from './src/scripts/circuits.js'
 import { delDataCircuit } from './src/scripts/dataCircuit.js'
-import { delCircuit2DataModel } from './src/scripts/dataModel.js'
+import { delCircuit2dataModel, majEvt2dataModel, majVisu2dataModel, majTraceur2dataModel } from './src/scripts/dataModel.js'
 import { getLineString } from './src/scripts/circuits.js'
 import { getVisu } from './src/scripts/3DFiles.js'
 import { saveVisu } from './src/scripts/visu.js'
@@ -68,6 +68,7 @@ app.get('/api/GpxFiles/', (req, res) => {
     })
 })
 
+
 // Obtention d'un fichier lineString
 app.get('/api/lineString/:id', (req, res) => {
   getLineString(`${req.params.id}`)
@@ -85,10 +86,10 @@ app.get('/api/lineString/:id', (req, res) => {
 
 // Ajout d'un fichier gpx
 app.post('/api/GpxFile/:fileName/:traceur', (req, res) => {
-  console.log(`backend.js : Traceur sélectionné : ${req.params.traceur}?, fichier : ${req.params.fileName}`)
+  // console.log(`backend.js : Traceur sélectionné : ${req.params.traceur}?, fichier : ${req.params.fileName}`)
   decodeTraceGpx(`${directory}\\${req.params.fileName}`, `${req.params.traceur}`)
     .then(retour => {
-      console.log(`backend.js : Retour de la promise : ${retour.circuitId}, ${retour.peutEtrePresent}`)
+      // console.log(`backend.js : Retour de la promise : ${retour.circuitId}, ${retour.peutEtrePresent}`)
 
       res.setHeader('Content-Type', 'application/json')
       res.status(200)
@@ -113,7 +114,7 @@ app.delete('/api/GpxFile/:id', (req, res) => {
   //console.log(`backend.js : id circuit : ${req.params.id}`)
   delDataCircuit(req.params.id)
     .then((ret) => {
-      delCircuit2DataModel(req.params.id)
+      delCircuit2dataModel(req.params.id)
         .then((ret) => {
           // console.log(`backend.js : Retour de la promise : OK`)
 
@@ -137,10 +138,9 @@ app.delete('/api/GpxFile/:id', (req, res) => {
 
 
 // récupération des circuits à afficher
-app.get('/api/circuits/:page/:nombre/:ville?', (req, res) => {
-  getCircuits(req.params.page, req.params.nombre)
-    // app.get('/api/circuits/:page/:nombre/:ville?', (req, res) => {
-    //   getCircuits(req.params.page, req.params.nombre, req.params.ville)
+app.get('/api/circuits/:page/:nombre/:ville/:traceur/:distances/:deniveles', (req, res) => {
+  // console.table(req.params)
+  getCircuits(req.params)
     .then(data => {
       res.setHeader('Content-Type', 'application/json')
       res.status(200).send(data)
@@ -151,6 +151,23 @@ app.get('/api/circuits/:page/:nombre/:ville?', (req, res) => {
       res.status(500).send({ id: 1020, error: `Les circuits ne peuvent être récupérés !` })
     })
 })
+
+// récupération des circuits à afficher
+app.get('/api/circuit/:id', (req, res) => {
+  // console.table(req.params)
+  getCircuit(req.params.id)
+    .then(data => {
+      res.setHeader('Content-Type', 'application/json')
+      res.status(200).send(data)
+    })
+    .catch(err => {
+      console.error(`Erreur : ${err}`)
+      res.setHeader('Content-Type', 'application/json');
+      res.status(500).send({ id: 9999, error: `Les informations du circuit ne peuvent être récupérées !` })
+    })
+})
+
+
 
 // récupération des min max 
 app.get('/api/circuitsMinMax/', (req, res) => {
@@ -181,12 +198,66 @@ app.get('/api/traceurs/', (req, res) => {
     })
 })
 
+// Récupération du nom du traceurs à partir de son id
+app.get('/api/traceur/:id', (req, res) => {
+  getTraceur(req.params.id)
+    .then(traceur => {
+      res.setHeader('Content-Type', 'application/json')
+      res.status(200).send(traceur)
+    })
+    .catch(err => {
+      console.error(`Erreur : ${err}`)
+      res.setHeader('Content-Type', 'application/json');
+      res.status(500).send({ id: 1030, error: `La liste des traceurs ne peut être récupérée !` })
+    })
+})
+
+// Mise a jour du traceur à partir de son nom
+app.post('/api/traceur/:id/:traceur', (req, res) => {
+  getIdTraceur(req.params.traceur)
+    .then(traceur => {
+      // console.log(traceur.id)
+      majTraceur2dataModel(req.params.id, traceur.id)
+        .then(() => {
+          res.setHeader('Content-Type', 'application/json')
+          res.status(200).send(`{"status": "OK"}`)
+        })
+        .catch(err => {
+          console.error(`Erreur : ${err}`)
+          res.setHeader('Content-Type', 'application/json');
+          res.status(500).send({ id: 9999, error: `L'id du traceur n'a pas été mis à jour !` })
+        })
+
+    })
+    .catch(err => {
+      console.error(`Erreur : ${err}`)
+      res.setHeader('Content-Type', 'application/json');
+      res.status(500).send({ id: 9999, error: `L'id du traceur ne peut être récupéré !` })
+    })
+})
+
+
+
 // Récupération de la liste des villes de départ connus dans dataModel.json
 app.get('/api/villes/', (req, res) => {
   getVilles()
     .then(listeVilles => {
       res.setHeader('Content-Type', 'application/json')
       res.status(200).send(listeVilles)
+    })
+    .catch(err => {
+      console.error(`Erreur : ${err}`)
+      res.setHeader('Content-Type', 'application/json');
+      res.status(500).send({ id: 1040, error: `La liste des villes de départ ne peut être récupérée !` })
+    })
+})
+
+// Récupération du nom de la ville à partir de son id
+app.get('/api/ville/:id', (req, res) => {
+  getVille(req.params.id)
+    .then(ville => {
+      res.setHeader('Content-Type', 'application/json')
+      res.status(200).send(ville)
     })
     .catch(err => {
       console.error(`Erreur : ${err}`)
@@ -215,13 +286,18 @@ app.get('/api/visu/:id', (req, res) => {
 app.post('/api/visu/:id/', (req, res) => {
   saveVisu(req.params.id, req.body.visu)
     .then((retour) => {
-      res.setHeader('Content-Type', 'application/json')
-      res.status(200)
-      res.send({ status: "OK" })
-
+      majVisu2dataModel(req.params.id, req.body.visu)
+        .then(() => {
+          res.setHeader('Content-Type', 'application/json')
+          res.status(200)
+          res.send({ status: "OK" })
+        })
+        .catch((err) => {
+          console.error(`backend.js - majVisu2dataModel : ${err.id}`)
+        })
     })
     .catch((err) => {
-      console.error(`backend.js : ${err.id}`)
+      console.error(`backend.js - saveVisu : ${err.id}`)
     })
 })
 
@@ -245,13 +321,18 @@ app.get('/api/evt/:id', (req, res) => {
 app.post('/api/evt/:id/', (req, res) => {
   saveEvt(req.params.id, req.body.evt)
     .then((retour) => {
-      res.setHeader('Content-Type', 'application/json')
-      res.status(200)
-      res.send({ status: "OK" })
-
+      majEvt2dataModel(req.params.id, req.body.evt)
+        .then(() => {
+          res.setHeader('Content-Type', 'application/json')
+          res.status(200)
+          res.send({ status: "OK" })
+        })
+        .catch((err) => {
+          console.error(`backend.js - majEvt2dataModel : ${err.id}`)
+        })
     })
     .catch((err) => {
-      console.error(`backend.js : ${err.id}`)
+      console.error(`backend.js - saveEvt : ${err.id}`)
     })
 })
 

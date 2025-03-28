@@ -149,7 +149,7 @@ const color = computed(() => {
 
 
 watch(() => props.position, (newValue, oldValue) => {
-  console.log(`EvtZoom - watch props.position : ${props.position}`)
+  // console.log(`EvtZoom - watch props.position : ${props.position}`)
   distance.value = props.position / 10
   majBtn()
 })
@@ -166,17 +166,17 @@ watch(() => props.endFlyTo, (newValue, oldValue)=> {
 
 
 function newZoom(newZoom) {
-  console.log(`EvtZoom - newZoom : ${newZoom}`)
+  // console.log(`EvtZoom - newZoom : ${newZoom}`)
   emit('newZoom', newZoom)
 }
 
 function newCap(newCap) {
-  console.log(`EvtZoom - newCap : ${newCap}`)
+  // console.log(`EvtZoom - newCap : ${newCap}`)
   emit('newCap', newCap)  
 }
 
 function newPitch(newPitch) {
-  console.log(`EvtZoom - newPitch : ${newPitch}`)
+  // console.log(`EvtZoom - newPitch : ${newPitch}`)
   emit('newPitch', newPitch)  
 }
 
@@ -237,7 +237,7 @@ function add() {
 
 
     isPresent.value = true
-    console.table(myZooms)
+    // console.table(myZooms)
     majBtn()
   }
 
@@ -254,7 +254,7 @@ function del() {
     i++
   }
   emit('newPosition', props.position) // #TODO voir pourquoi origine EvtInfo
-  console.table(myZooms)
+  // console.table(myZooms)
   majBtn()
 }
 
@@ -268,7 +268,7 @@ function precedent() {
 }
 
 function suivant() {
-  console.log(`EvtZoom : suivant`)
+  // console.log(`EvtZoom : suivant`)
   let i = 0
   while (myZooms[i].start <= props.position) i++
   emit('newPosition', myZooms[i].start)
@@ -298,7 +298,7 @@ function majBtn() {
   i=0
   while (i < myZooms.length) {
     if (myZooms[i].start === props.position) {
-      console.log(`EvtZoom.vue - majBtn : Position trouvée !`)
+      // console.log(`EvtZoom.vue - majBtn : Position trouvée !`)
       duree.value = myZooms[i].flyTo.duree
       isPresent.value = true
       disabledVoirRetour.value=false
@@ -311,7 +311,7 @@ function majBtn() {
 
 
 function save() {
-    console.log(`EvtZoom.vue - save `)
+    // console.log(`EvtZoom.vue - save `)
     emit('saveZooms', myZooms)
   }
 

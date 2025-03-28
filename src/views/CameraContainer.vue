@@ -574,22 +574,22 @@ function affVignette(vignette) {
 }
 
 function newVignette(vignetteSel){
-  console.log(`newVignette, ${vignetteSel}`)
+  // console.log(`newVignette, ${vignetteSel}`)
   vignette.value=vignetteSel
 }
 
 function newSize(size){
-  console.log(` CameraContainer.vue - newSize, ${size}`)
+  // console.log(` CameraContainer.vue - newSize, ${size}`)
   vignetteSize.value=size
-  console.log(vignetteSize.value)
+  // console.log(vignetteSize.value)
 }
 /**
  * Fonction qui affiche la vignette selectionnée pour prévisualiser avant d'ajouter la vignette
  */
 function voirVignette(){
-  console.log(`voirVignette`)
+  // console.log(`voirVignette`)
 
-  console.log(`on affiche la vignette : ${vignetteSize.value}`)
+  // console.log(`on affiche la vignette : ${vignetteSize.value}`)
   try {
     markerVignette.remove()
   } catch (err){}
@@ -609,8 +609,8 @@ function voirVignette(){
 }
 
 function voirZoom(zoom) {
-  console.log(`voirZoom : `)
-  console.table(zoom)
+  // console.log(`voirZoom : `)
+  // console.table(zoom)
 
   map.flyTo({  center: zoom.coord,
     bearing: zoom.cap, 
@@ -620,7 +620,7 @@ function voirZoom(zoom) {
   })
 
   map.once('moveend', async () => {
-    console.log("On lance la suite")
+    // console.log("On lance la suite")
     // On chnage
     endFlyTo.value = !endFlyTo.value
   })

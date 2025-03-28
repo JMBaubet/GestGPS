@@ -106,21 +106,25 @@ export const traiteEvt = (map, evt, avancement) => {
   let pause = false
   let flyTo = 0
 
-  console.log(`traiteEvt : ${typeof (avancement)}, ${indexEvt}`)
+  // console.log(`traiteEvt : ${typeof (avancement)}, ${indexEvt}`)
+  if (avancement < listEvts[ indexEvt - 1 ]) {
+    // console.log(`On a du faire un retour arrière`)
+    indexEvt -= 1
+  }
 
   if (avancement === listEvts[ indexEvt ]) {
-    console.log(`On traite ${listEvts[ indexEvt ]}`)
+    // console.log(`On traite ${listEvts[ indexEvt ]}`)
 
     // Traitement des markers
 
     if (typeof (elements[ listEvts[ indexEvt ] ]) !== "undefined") {
-      console.log(`Nombre de marker à traiter pour cette occurence : ${elements[ listEvts[ indexEvt ] ].length}`)
+      // console.log(`Nombre de marker à traiter pour cette occurence : ${elements[ listEvts[ indexEvt ] ].length}`)
       for (let nbr = 0; nbr < elements[ listEvts[ indexEvt ] ].length; nbr++) {
         let indexMarker = elements[ listEvts[ indexEvt ] ][ nbr ].id
 
         if (elements[ listEvts[ indexEvt ] ][ nbr ].start === listEvts[ indexEvt ]) {
-          console.log(`on traite le lancement du marker ${elements[ listEvts[ indexEvt ] ][ nbr ].id}`)
-          console.table(evt[ indexMarker ])
+          // console.log(`on traite le lancement du marker ${elements[ listEvts[ indexEvt ] ][ nbr ].id}`)
+          // console.table(evt[ indexMarker ])
 
           div[ indexMarker ] = document.createElement('div');
           div[ indexMarker ].id = evt[ indexMarker ].marker.id
@@ -137,7 +141,18 @@ export const traiteEvt = (map, evt, avancement) => {
 
         } else {
           // console.log(`on efface un marker`)
-          markers[ indexMarker ].remove()
+          // console.log(markers[ indexMarker ])
+          // markers[ indexMarker ].remove()
+
+          let divToDelete = 1
+          while (divToDelete) {
+            divToDelete = document.getElementById(evt[ indexMarker ].marker.id);
+            if (divToDelete) {
+              // console.log(" On suprime un element")
+              divToDelete.parentNode.removeChild(divToDelete);
+            }
+          }
+
         }
       }
     } // Fin de traitement des marker
@@ -190,10 +205,10 @@ export const flyToEvt = (map, evt) => {
       bearing: map.getBearing(),
       zoom: map.getZoom()
     };
-  })
-  // On fait le flyTo
-  // console.log("Lancement du FlyTo")
-  map.once('moveend', async () => {
+
+    // On fait le flyTo
+    // console.log("Lancement du FlyTo")
+
     map.flyTo({
       center: flyTos[ evt ].flyTo.coord,
       bearing: flyTos[ evt ].flyTo.cap,
@@ -202,7 +217,7 @@ export const flyToEvt = (map, evt) => {
       duration: flyTos[ evt ].flyTo.duree * 1000
     })
   });
-  // console.log("Fin du lLancement du FlyTo")
+  // console.log("Fin du lancement du FlyTo")
 
   return (true)
 }
@@ -211,23 +226,25 @@ export const flyToEvt = (map, evt) => {
 // On remet la camera à sa place. On a peu être une dificulte ici pour faire la reprise proprement.
 
 export const endFlyToEvt = (map, evt) => {
-  // console.log(`fonction endFlyToEvt`)
+  // console.log(`fonction endFlyToEvt : On attend le click souris`)
   //On attend un clic sur le bouton reprise pour retourner la ou nous en étions avant le flyTo
-  document.getElementById('reprise').addEventListener('click', () => {
-    // console.log(`On lance le flyTo pour une durée de ${flyTos[evt].flyTo.duree / 2} sec.`)
-    // console.log(`center: ${savedCameraState.position}`)
-    // console.log(`bearing: ${savedCameraState.bearing}`)
-    // console.log(`zoom: ${savedCameraState.zoom}`)
-    // console.log(`pitch: ${savedCameraState.pitch}`)
-    // console.log(`duration: ${flyTos[evt].flyTo.duree}`)
-    map.flyTo({
-      center: savedCameraState.position,
-      bearing: savedCameraState.bearing,
-      zoom: savedCameraState.zoom,
-      pitch: savedCameraState.pitch,
-      duration: flyTos[ evt ].flyTo.duree * 500
-    })
+  // document.getElementById('reprise').addEventListener('click', () => {
+  // console.log(`On lance le flyTo pour une durée de ${flyTos[evt].flyTo.duree / 2} sec.`)
+  // console.log(`center: ${savedCameraState.position}`)
+  // console.log(`bearing: ${savedCameraState.bearing}`)
+  // console.log(`zoom: ${savedCameraState.zoom}`)
+  // console.log(`pitch: ${savedCameraState.pitch}`)
+  // console.log(`duration: ${flyTos[evt].flyTo.duree}`)
+  // console.log(`On reçoit le clic souris. On lance le flyTo de retour`)
 
-  });
+  map.flyTo({
+    center: savedCameraState.position,
+    bearing: savedCameraState.bearing,
+    zoom: savedCameraState.zoom,
+    pitch: savedCameraState.pitch,
+    duration: flyTos[ evt ].flyTo.duree * 500
+  })
+  // console.log(`On vient de lancer le flyTo : ${flyTos[ evt ].flyTo.duree}`)
+  // });
   return (true)
 }

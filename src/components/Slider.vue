@@ -4,7 +4,9 @@
     :min
     :max
     :step
+    @update:model-value="emit('update', range)"
     density="compact"
+    hide-details="true"
   >
     <template v-slot:prepend ma-0>
       <div style="width: 5em; text-align: right;">
@@ -20,19 +22,28 @@
 </template>
 
 <script setup>
-  import { ref} from 'vue';
+import { ref , watch} from 'vue';
 
   const props = defineProps({
     min : Number,
     max : Number,
     step : String,
     label: String,
-    unite: String
+    unite: String,
+    reset: Boolean,
   }) 
+
+  const emit = defineEmits(['update'])
 
   const range = ref([props.min, props.max])
   const label = ref(props.label)
   const unite = ref(props.unite)  
+
+  watch(() => props.reset, (newValue, oldValue) => {
+    range.value[0] = props.min
+    range.value[1] = props.max
+  })
+
 </script>
 
 <style scoped>

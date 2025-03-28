@@ -6,17 +6,37 @@
   <MsgAlert :alarmes @close-alarme="delAlarme"></MsgAlert>
 
   <!-- <MenuToolbar :no-gpx-file-ready :no-fit-file-ready @addGpxFile="getGpxFiles" @affMap="myMap"> -->
-  <MenuToolbar :no-gpx-file-ready :no-fit-file-ready @addGpxFile="getGpxFiles">
-    </MenuToolbar>
-  <Fitre :items-villes :items-traceurs :dist-min :dist-max :deniv-min :deniv-max @filtrerVille="filtrerVille"
-    @filtrerTraceur="filtrerTraceur">
+  <MenuToolbar 
+    :no-gpx-file-ready 
+    :no-fit-file-ready 
+    :showFiltre
+    @addGpxFiles="getGpxFiles"
+    @activerFiltre="activerFiltre"
+  >
+  </MenuToolbar>
+  <Fitre 
+    :showFiltre
+    :items-villes 
+    :items-traceurs 
+    :dist-min 
+    :dist-max 
+    :deniv-min 
+    :deniv-max 
+    :reset
+    @filtrerDistance="filtrerDistance"
+    @filtrerDenivele="filtrerDenivele"
+    @filtrerVille="filtrerVille"
+    @filtrerTraceur="filtrerTraceur"
+    @filtreCircuits="filtreCircuits"
+    @resetFiltre ="resetFiltre"
+  >
   </Fitre>
   <v-container class="hidden-md-and-up">
     <v-row justify="space-between">
       <v-col class="d-flex justify-center" v-for="(circuit, key) in circuitsAffiches">
-        <ParcoursCard :name="circuit.nom" :distance="circuit.distance" :denivele="circuit.denivele"
-          :top="circuit.sommet.altitude" :top-distance="circuit.sommet.km"
-          :vignette="'src/assets/data/' + circuit.circuitId + '/vignette.png'"
+        <ParcoursCard 
+          :circuit="circuit" 
+          @informations="getInfoCircuit(circuit.circuitId)"
           @confirm-del-gpx-file="askDelGpxFile(circuit.circuitId, circuit.nom)"
           @modCameraFile="modCameraFile(circuit.circuitId)"
           @affiche3D="map3D(circuit.circuitId)">
@@ -27,9 +47,9 @@
   <v-container class="hidden-sm-and-down hidden-lg-and-up">
     <v-row justify="space-between">
       <v-col class="d-flex justify-center" v-for="(circuit, key) in circuitsAffiches" cols="12" sm="6">
-        <ParcoursCard :name="circuit.nom" :distance="circuit.distance" :denivele="circuit.denivele"
-          :top="circuit.sommet.altitude" :top-distance="circuit.sommet.km"
-          :vignette="'src/assets/data/' + circuit.circuitId + '/vignette.png'"
+        <ParcoursCard 
+          :circuit="circuit"
+          @informations="getInfoCircuit(circuit.circuitId)"
           @confirm-del-gpx-file="askDelGpxFile(circuit.circuitId, circuit.nom)"
           @modCameraFile="modCameraFile(circuit.circuitId)"
           @affiche3D="map3D(circuit.circuitId)">
@@ -40,9 +60,9 @@
   <v-container class="hidden-md-and-down hidden-xl-and-up">
     <v-row justify="space-between">
       <v-col class="d-flex justify-center" v-for="(circuit, key) in circuitsAffiches" cols="12" sm="5">
-        <ParcoursCard :name="circuit.nom" :distance="circuit.distance" :denivele="circuit.denivele"
-          :top="circuit.sommet.altitude" :top-distance="circuit.sommet.km"
-          :vignette="'src/assets/data/' + circuit.circuitId + '/vignette.png'"
+        <ParcoursCard 
+          :circuit="circuit" 
+          @informations="getInfoCircuit(circuit.circuitId)"
           @confirm-del-gpx-file="askDelGpxFile(circuit.circuitId, circuit.nom)"
           @modCameraFile="modCameraFile(circuit.circuitId)"
           @affiche3D="map3D(circuit.circuitId)">
@@ -53,9 +73,9 @@
   <v-container class="hidden-lg-and-down">
     <v-row justify="space-between">
       <v-col class="d-flex justify-center" v-for="(circuit, key) in circuitsAffiches" cols="12" sm="3">
-        <ParcoursCard :name="circuit.nom" :distance="circuit.distance" :denivele="circuit.denivele"
+        <ParcoursCard :circuit="circuit" :name="circuit.nom" :distance="circuit.distance" :denivele="circuit.denivele"
           :top="circuit.sommet.altitude" :top-distance="circuit.sommet.km"
-          :vignette="'src/assets/data/' + circuit.circuitId + '/vignette.png'"
+          @informations="getInfoCircuit(circuit.circuitId)"
           @confirmDelGpxFile="askDelGpxFile(circuit.circuitId, circuit.nom)"
           @modCameraFile="modCameraFile(circuit.circuitId)"
           @affiche3D="map3D(circuit.circuitId)">
@@ -73,6 +93,18 @@
   <DelGpxDialog :rm-gpx-dialog :nom-gpx :id-gpx @close-del-gpx-dialog="closeDelGpxDialog" @del-gpx-File="rmGpxFile">
   </DelGpxDialog>
 
+  <information-dialog
+    :show-information
+    :circuit="circuit" 
+    :villeDepart
+    :traceur
+    :items-traceurs
+    @close-info-dialog="showInformation=false"
+    @save-traceur="saveTraceur"
+  >
+  </information-dialog>
+
+
 </template>
 
 <script setup>
@@ -84,6 +116,7 @@ import ParcoursCard from '@/components/ParcoursCard.vue';
 import AddGpxDialog from '@/components/AddGpxDialog.vue';
 import DelGpxDialog from '@/components/DelGpxDialog.vue';
 import MsgAlert from '@/components/MsgAlert.vue';
+import InformationDialog from '@/components/InformationDialog.vue';
 import { traiteCatch, traiteErreur } from '@/scripts/promisesError.js'
 
 const TIMER = import.meta.env.VITE_TIMER
@@ -102,9 +135,17 @@ const distMin = ref()
 const distMax = ref()
 const denivMin = ref()
 const denivMax = ref(0)
+const reset = ref(true)
+const showInformation = ref(false)
+const circuit = ref({})
+const villeDepart = ref()
+const traceur = ref()
 
 const name = ref("Test")
 
+const disabledBtnFiltre = ref(false)
+
+const showFiltre = ref(false)
 const rmGpxDialog = ref(false)
 const nomGpx = ref()
 const idGpx = ref()
@@ -217,6 +258,23 @@ function backEndIsRunning() {
     })
 }
 
+function activerFiltre (etat) {
+  showFiltre.value = etat
+  if (!showFiltre.value) resetFiltre()
+
+}
+
+
+function filtreCircuits() {
+  console.log(`filtreCircuits`)
+  disabledBtnFiltre.value=true
+  getCircuits()
+}
+
+function resetFiltre() {
+  console.log(`resetfiltre`)
+  reset.value = !reset.value
+}
 
 /**
  * @Desc Cette fonction demande au backend une liste de circuits qui dépend des paramètres envoyés. 
@@ -226,7 +284,8 @@ function backEndIsRunning() {
  */
 function getCircuits() {
   // console.log(`GpxContainerView : getCirtuits`)
-  const url = `http://localhost:4000/api/circuits/${page.value}/${nbCircuitsAffiches}`
+  const url = `http://localhost:4000/api/circuits/${page.value}/${nbCircuitsAffiches}/${filtreVille}/${filtreTraceur}/${filtreDistances}/${filtreDeniveles}`
+  console.log(url)
   fetch(url, { method: 'GET', signal: AbortSignal.timeout(1500) })
     .then((rep, err) => {
       return rep.json()
@@ -414,6 +473,83 @@ function askDelGpxFile(id, nom) {
 
 }
 
+function getInfoCircuit(id) {
+
+  const url = `http://localhost:4000/api/circuit/` + id
+  console.log(url)
+  fetch(url, { method: 'GET', signal: AbortSignal.timeout(500) })
+    .then((rep) => {
+      return rep.json()
+    })
+    .then((json, err) => {
+      if (typeof (json.error) === "undefined") { // On recoit la réponse attendu
+        circuit.value = json.circuit
+        // console.log(circuit.value)
+        showInformation.value = true
+        // On récupère le nom de la ville de départ
+        const urlVille = `http://localhost:4000/api/ville/` + json.circuit.villeDepart
+        console.log(urlVille)
+        fetch(urlVille, { method: 'GET', signal: AbortSignal.timeout(500) })
+         .then((rep) => {
+            return rep.json()
+          })
+        .then((json, err) => {
+          villeDepart.value = json.ville
+        })
+
+        // On récupère le nom du traceur
+        const urlTraceur = `http://localhost:4000/api/traceur/` + json.circuit.traceur
+        console.log(urlTraceur)
+        fetch(urlTraceur, { method: 'GET', signal: AbortSignal.timeout(500) })
+         .then((rep) => {
+            return rep.json()
+          })
+        .then((json, err) => {
+          // console.log(json.traceur)
+          traceur.value = json.traceur
+        })
+        
+
+      } else { // On reçoit une réponse de type error
+        traiteErreur(json, alarmes)
+      }
+    })
+    .catch((err) => {
+      traiteCatch(err, alarmes)
+    })
+}
+
+function saveTraceur(newTraceur, id) {
+  console.log(`saveTraceur : ${newTraceur}, ${id}`)
+  const url = `http://localhost:4000/api/traceur/${id}/${newTraceur}`
+  console.log(url)
+  fetch(url, { method: 'POST', signal: AbortSignal.timeout(500) })
+    .then((rep) => {
+      return rep.json()
+    })
+    .then((json, err) => {
+      if (typeof (json.error) === "undefined") { // On recoit la réponse attendu
+        alarmes.value.push({
+          id: 12,
+          type: 'success',
+          text: "Le traceur a bien été mis à jour.",
+          closable: true,
+          icon: "mdi-map-marker-distance"
+        })
+        traceur.value=newTraceur
+      } else { // On reçoit une réponse de type error
+        traiteErreur(json, alarmes)
+      }
+
+    })
+    .catch((err) => {
+      traiteCatch(err, alarmes)
+    })
+}
+
+
+
+
 function closeDelGpxDialog() {
   rmGpxDialog.value = false
 }
@@ -475,21 +611,36 @@ function delAlarme(id) {
 }
 
 
-let filtrageVille = ""
-let filtrageTraceur = ""
+let filtreVille = " "
+let filtreTraceur = " "
+let filtreDistances = [0, 200]
+let filtreDeniveles = [0,4600]
 
 /*************************************
 *  Filtre de la ville               *
 *************************************/
-function filtrerVille(ville) {
-  filtrageVille = ville
+function filtrerVille(villeSelect) {
+  filtreVille = villeSelect
+  disabledBtnFiltre.value = false
 }
 
 /*************************************
 *  Filtre du traceur                 *
 *************************************/
-function filtrerTraceur(traceur) {
-  filtrageTraceur = traceur
+function filtrerTraceur(traceurSelect) {
+  filtreTraceur = traceurSelect
+  disabledBtnFiltre.value = false
+}
+
+function filtrerDistance(range) {
+  // console.log(range)
+  filtreDistances=range
+  disabledBtnFiltre.value = false
+}
+
+function filtrerDenivele(range) {
+  filtreDeniveles=range
+  disabledBtnFiltre.value = false
 }
 
 

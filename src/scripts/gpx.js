@@ -4,9 +4,10 @@ import * as dotenv from 'dotenv'
 import { createVignette, getCommune } from "./requestsMapbox.js"
 import { getDistanceDPlus } from "./distanceDenivele.js"
 import { getEditeurUrl } from "./data.js"
-import { addCircuit2dataModel, delCircuit2DataModel } from "./dataModel.js"
+import { addCircuit2dataModel, delCircuit2dataModel } from "./dataModel.js"
 import { archiveDataCircuit } from "./dataCircuit.js"
 import { createVisuFile } from "./createVisuFile.js"
+import { createEvtFile } from "./createEvtFile.js"
 
 dotenv.config()
 const dataDirectory = process.env.DATA_DIRECTORY
@@ -50,13 +51,13 @@ export const decodeTraceGpx = (fichier, traceur) => {
 
             // On verifie que l'élévation est bien présente dans le fichier gpx
             // Dans le cas de karoo ce n'est pas le cas
-            if (typeof (objetGpx.gpx.trk[0].trkseg[0].trkpt[0].ele) === "undefined") {
+            if (typeof (objetGpx.gpx.trk[ 0 ].trkseg[ 0 ].trkpt[ 0 ].ele) === "undefined") {
               console.error(`decodeTraceGpx :  Fichier gpx imcompatible !`)
               reject({ id: 2103, error: `Fichier incompatible !` })
             }
 
             // extraction des points de passage
-            trkpt = objetGpx.gpx.trk[0].trkseg[0].trkpt
+            trkpt = objetGpx.gpx.trk[ 0 ].trkseg[ 0 ].trkpt
 
             // Création du JSON lineString avec l'altitude lissée sur 9 points
             //console.log(trkpt.length)
@@ -65,44 +66,44 @@ export const decodeTraceGpx = (fichier, traceur) => {
             // Pour les 4 premiers point on ne corrige pas l'altitude
             for (let key = 0; key < 4; key++) {
               lineString = lineString + '[' +
-                Number.parseFloat(trkpt[key].$.lon).toFixed(5) + ',' +
-                Number.parseFloat(trkpt[key].$.lat).toFixed(5) + ',' +
-                parseInt(trkpt[key].ele) + ',' +
-                parseInt(trkpt[key].ele) + '],'
+                Number.parseFloat(trkpt[ key ].$.lon).toFixed(5) + ',' +
+                Number.parseFloat(trkpt[ key ].$.lat).toFixed(5) + ',' +
+                parseInt(trkpt[ key ].ele) + ',' +
+                parseInt(trkpt[ key ].ele) + '],'
             }
 
             // Pour les points intermédiares on lisse l'altitude
             for (let key = 4; key < trkpt.length - 4; key++) {
               let altitude = parseInt((
-                parseInt(trkpt[key - 4].ele) + parseInt(trkpt[key - 3].ele) + parseInt(trkpt[key - 2].ele) +
-                parseInt(trkpt[key - 1].ele) + parseInt(trkpt[key].ele) + parseInt(trkpt[key + 1].ele) +
-                parseInt(trkpt[key + 2].ele) + parseInt(trkpt[key + 3].ele) + parseInt(trkpt[key + 4].ele)
+                parseInt(trkpt[ key - 4 ].ele) + parseInt(trkpt[ key - 3 ].ele) + parseInt(trkpt[ key - 2 ].ele) +
+                parseInt(trkpt[ key - 1 ].ele) + parseInt(trkpt[ key ].ele) + parseInt(trkpt[ key + 1 ].ele) +
+                parseInt(trkpt[ key + 2 ].ele) + parseInt(trkpt[ key + 3 ].ele) + parseInt(trkpt[ key + 4 ].ele)
               ) / 9)
 
               lineString = lineString + '[' +
-                Number.parseFloat(trkpt[key].$.lon).toFixed(5) + ',' +
-                Number.parseFloat(trkpt[key].$.lat).toFixed(5) + ',' +
+                Number.parseFloat(trkpt[ key ].$.lon).toFixed(5) + ',' +
+                Number.parseFloat(trkpt[ key ].$.lat).toFixed(5) + ',' +
                 altitude + ',' +
-                parseInt(trkpt[key].ele) + '],'
+                parseInt(trkpt[ key ].ele) + '],'
             }
 
             // Pour les 4 derniers points on ne lisse pas l'altitude
             for (let key = trkpt.length - 4; key < trkpt.length; key++) {
               lineString = lineString + '[' +
-                Number.parseFloat(trkpt[key].$.lon).toFixed(5) + ',' +
-                Number.parseFloat(trkpt[key].$.lat).toFixed(5) + ',' +
-                parseInt(trkpt[key].ele) + ',' +
-                parseInt(trkpt[key].ele) + '],'
+                Number.parseFloat(trkpt[ key ].$.lon).toFixed(5) + ',' +
+                Number.parseFloat(trkpt[ key ].$.lat).toFixed(5) + ',' +
+                parseInt(trkpt[ key ].ele) + ',' +
+                parseInt(trkpt[ key ].ele) + '],'
             }
 
             lineString = lineString.slice(0, -1); // On supprime la dernière virgule
             lineString = lineString + ']},"properties": {}}'
 
             // Extracttion des coordonnées de départ et d'arrivée pour la création de la vignette
-            departLat = Number.parseFloat(trkpt[0].$.lat).toFixed(5)
-            departLong = Number.parseFloat(trkpt[0].$.lon).toFixed(5)
-            arriveeLat = Number.parseFloat(trkpt[trkpt.length - 1].$.lat).toFixed(5)
-            arriveeLong = Number.parseFloat(trkpt[trkpt.length - 1].$.lon).toFixed(5)
+            departLat = Number.parseFloat(trkpt[ 0 ].$.lat).toFixed(5)
+            departLong = Number.parseFloat(trkpt[ 0 ].$.lon).toFixed(5)
+            arriveeLat = Number.parseFloat(trkpt[ trkpt.length - 1 ].$.lat).toFixed(5)
+            arriveeLong = Number.parseFloat(trkpt[ trkpt.length - 1 ].$.lon).toFixed(5)
             return objetGpx
           })
           .then((objetGpx) => {
@@ -117,7 +118,8 @@ export const decodeTraceGpx = (fichier, traceur) => {
               // Il faut insérer la génération du fichier camera.json
               // Comme pour la vignette, on le crée dans assts/tmp
               // Il sera mis dans le dossier définitif dans la fonction archiveDataCircuit
-              createVisuFile(lineString)
+              createVisuFile(lineString),
+              createEvtFile()
             ])
 
               .then((retPromesses) => {
@@ -125,20 +127,20 @@ export const decodeTraceGpx = (fichier, traceur) => {
                 const horodatage = new Date()
                 let donneesGpx = {
                   circuitId: "",
-                  nom: retPromesses[1].nom,
-                  villeDepart: retPromesses[2].commune,
+                  nom: retPromesses[ 1 ].nom,
+                  villeDepart: retPromesses[ 2 ].commune,
                   traceur: traceur,
-                  editeurId: retPromesses[1].editeurId,
-                  url: retPromesses[1].url,
-                  distance: retPromesses[0].distance,
-                  denivele: retPromesses[0].denivele,
+                  editeurId: retPromesses[ 1 ].editeurId,
+                  url: retPromesses[ 1 ].url,
+                  distance: retPromesses[ 0 ].distance,
+                  denivele: retPromesses[ 0 ].denivele,
                   depart: {
                     lon: departLong,
                     lat: departLat
                   },
                   sommet: {
-                    altitude: retPromesses[0].sommet,
-                    km: retPromesses[0].distSommet
+                    altitude: retPromesses[ 0 ].sommet,
+                    km: retPromesses[ 0 ].distSommet
                   },
                   isoDateTime: horodatage.toISOString()
                 }
@@ -153,7 +155,7 @@ export const decodeTraceGpx = (fichier, traceur) => {
                       })
                       .catch((err) => {
                         // Dans ce cas il faut supprimer le circuit dans dataModel.json
-                        delCircuit2DataModel(result.circuitId)
+                        delCircuit2dataModel(result.circuitId)
                           .then(() => {
                             reject(err)
                           })

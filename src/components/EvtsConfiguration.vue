@@ -15,6 +15,7 @@
           <EvtPause
           :position
           :pauses
+          :showPause
           @save-pauses="savePauses"
           @new-position="newPosition"
           ></EvtPause>
@@ -216,21 +217,21 @@ function voirZoom(zoom) {
 }
 
 function savePauses(myPauses){
-  console.log(`EvtsConfiguration - savePauses`) 
+  // console.log(`EvtsConfiguration - savePauses`) 
   // console.table(myPauses)
   pausesToSave = [].concat(myPauses)
-  console.table(pausesToSave)
+  // console.table(pausesToSave)
   saveEvts()
 }
 
 function saveInfos(myInfos) {
-  console.log(`EvtsConfiguration - saveInfos`) 
+  // console.log(`EvtsConfiguration - saveInfos`) 
   infosToSave = [].concat(myInfos)
   saveEvts()
 }
 
 function saveZooms(myZooms) {
-  console.log(`EvtsConfiguration - saveZooms`) 
+  // console.log(`EvtsConfiguration - saveZooms`) 
   zoomsToSave = [].concat(myZooms)
   saveEvts()
 }
@@ -275,7 +276,7 @@ function fnShowZoom() {
 }
 
 function saveEvts() {
-  console.log(`EvtsConfiguration - saveEvts`) 
+  // console.log(`EvtsConfiguration - saveEvts`) 
   evtsToSave.length=0
   let id = 0
   for (let i=0; i<pausesToSave.length; i++) {
@@ -308,7 +309,7 @@ function saveEvts() {
   }  
   
   emit('saveEvts', evtsToSave)
-  console.table(evtsToSave)
+  // console.table(evtsToSave)
 
 }
 </script>
