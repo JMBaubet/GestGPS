@@ -140,10 +140,8 @@ export const traiteEvt = (map, evt, avancement) => {
             .addTo(map);
 
         } else {
-          // console.log(`on efface un marker`)
-          // console.log(markers[ indexMarker ])
-          // markers[ indexMarker ].remove()
-
+          // On supprime toutes les vignettes avec l'id de marker
+          // C'est pour traiter le cas des retours arrière   
           let divToDelete = 1
           while (divToDelete) {
             divToDelete = document.getElementById(evt[ indexMarker ].marker.id);
@@ -247,4 +245,21 @@ export const endFlyToEvt = (map, evt) => {
   // console.log(`On vient de lancer le flyTo : ${flyTos[ evt ].flyTo.duree}`)
   // });
   return (true)
+}
+
+export const delVignettes = (evt) => {
+  console.log(`delVignettes`)
+  console.table(evt)
+  for (let i = 0; i < evt.length; i++) {
+    if (evt[ i ].type === "marker") {
+      let divToDelete = 1
+      while (divToDelete) {
+        divToDelete = document.getElementById(evt[ i ].marker.id);
+        if (divToDelete) {
+          console.log(`On suprime un element : ${evt[ i ].marker.id}`)
+          divToDelete.parentNode.removeChild(divToDelete);
+        }
+      }
+    }
+  }
 }

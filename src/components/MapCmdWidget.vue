@@ -1,66 +1,41 @@
 <template>
-  <div id="mapCmd" v-show="disabledPlayPause === false">
+  <div id="mapCmd" v-show="showBtn">
   <v-card class="mx-auto"  color="#23374A00"> 
     <v-card-text> 
       <v-row justify="start" class="pl-0">
         <div id="reprise">
-          <v-btn  class="ml-2"
-            
+          <v-btn  class="ml-2" v-show="showArriere"            
             @click="emit('arriere')"
-            :disabled=false           
             size="large" 
             color="cyan-darken-1"
             icon="mdi-chevron-left" 
           >  
           </v-btn>
         </div>
-        <div v-if="disabledPlayPause">
-          <v-btn class="ml-2"
-            size="large" 
-            color="#00000000"
-            icon="" 
-          > </v-btn>
-        </div>
-        <div v-else>
-          <v-btn v-if="pause" class="ml-2"
+        <div >
+          <v-btn v-if="btnPlayPause === 'run'" class="ml-2"
             @click="emit('playPause')"
-            :disabled=disabledPlayPause
             size="large" 
             color="cyan-darken-1"
             icon="mdi-play" 
           >  
           </v-btn>
-          <v-btn  v-else class="ml-2"
+          <v-btn  v-else-if="btnPlayPause === 'pause'" class="ml-2"
             @click="emit('playPause')"
-            :disabled=disabledPlayPause
             size="large" 
             color="deep-orange-lighten-1"
             icon="mdi-pause" 
           >  
           </v-btn>
-        </div>
-        <!-- <div id="reprise">
-          <v-btn v-if="disabledReprise"  class="ml-2"
+          <v-btn  v-else class="ml-2"
+            @click="emit('playPause')"
             size="large" 
-            color="#00000000"
-            icon="" 
+            color="green-lighten-1"
+            icon="mdi-restart" 
           >  
           </v-btn>
-          <v-btn v-else class="ml-2"
-            
-            @click="emit('reprise')"
-            :disabled=disabledReprise            
-            size="large" 
-            color="cyan-darken-1"
-            icon="mdi-ray-start-arrow" 
-          >  
-          </v-btn> -->
-        
-
+        </div>
       </v-row>    
-
-
-
     </v-card-text>
   </v-card>
 </div>
@@ -68,14 +43,56 @@
 
 <script setup>
 
-import { ref } from 'vue';
+import { ref, watch } from 'vue';
 
 const emit = defineEmits(['playPause', 'reprise', 'arriere'])
 
 const props = defineProps({
-  pause: Boolean,
-  disabledPlayPause: Boolean,
-  disabledReprise: Boolean
+  etat: String,
+})
+
+const showBtn=ref(false)
+const showArriere=ref(false)
+const btnPlayPause=ref("run")
+
+watch(() => props.etat, (newValue, oldValue) => {
+  console.log(`etat :${ props.etat}`)
+  switch(props.etat) {
+    case  "init" :
+      showArriere.value = false
+      btnPlayPause.value = "run"
+    break
+    case  "run" :
+      showBtn.value = true
+      showArriere.value = true
+      btnPlayPause.value = "pause"
+    break
+    case  "pause" :
+      showBtn.value = true
+      showArriere.value = true
+      btnPlayPause.value = "run"
+    break
+    case  "flyto" :
+     showBtn.value = false
+     showArriere.value = false
+     btnPlayPause.value = "run"
+     break
+    case  "wait" :
+      showBtn.value = true
+      showArriere.value = false
+      btnPlayPause.value = "run"
+    break
+    case  "end" :
+      showBtn.value = true
+      showArriere.value = false
+      btnPlayPause.value = "restart"
+    break
+    default :
+
+  }
+
+
+
 })
 
 </script>

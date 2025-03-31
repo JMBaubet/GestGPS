@@ -25,6 +25,7 @@
     </MapDataWidget>
 
     <MapCmdWidget
+    :etat
     :pause="pause"
     :disabledPlayPause=disabledPlayPause
     :disabledReprise=disabledReprise
@@ -49,8 +50,8 @@
   import {ref, onMounted, onUnmounted} from 'vue' 
   import * as turf from '@turf/turf'
   import {mapLoadLayers, mapMaskSymbols, mapAdd3D} from "../scripts/mapLayers" 
-  import {resetIndexEvt, initEvt, traiteEvt, flyToEvt, endFlyToEvt} from '../scripts/mapEvt'
-  import { ca } from 'vuetify/locale';
+  import {resetIndexEvt, initEvt, traiteEvt, flyToEvt, endFlyToEvt, delVignettes} from '../scripts/mapEvt'
+  import { ca, et } from 'vuetify/locale';
 
   const props = defineProps({
     id: String,
@@ -73,6 +74,8 @@
   const showEndTrace = import.meta.env.VITE_MAPBOX_END_SHOW_TRACE
 
   
+  const etat = ref("init")
+  console.log(`etat : ${etat.value}`)
 
   const disabledPlayPause = ref(true)
   const disabledReprise = ref(true)
@@ -93,7 +96,6 @@
   const distance = ref("0.0")
   const altitude = ref()
   const showData = ref(true)
-
 
   let start
   let phase = 0
@@ -261,6 +263,8 @@
 
         map.once('moveend', async () => {
         // console.log("On lance la suite")
+        etat.value="run"
+        console.log(`etat : ${etat.value}`)
         disabledPlayPause.value = false
         position = map.getSource('point')
         window.requestAnimationFrame(frame);
@@ -277,6 +281,8 @@
         
         map.once('moveend', async () => {
         // console.log("On lance la suite")
+        etat.value="run"
+        console.log(`etat : ${etat.value}`)
         disabledPlayPause.value = false
         position = map.getSource('point')
         window.requestAnimationFrame(frame);
@@ -343,12 +349,15 @@
     avancement = parseInt((dureeAnimation*phase/coeffAnnimation) * 10)
     distance.value = (dureeAnimation*phase/coeffAnnimation).toFixed(1)
 
+
     // Traitement des évènements
     let retour = traiteEvt(map, evt, avancement)
 
     if (retour.pause === true) playPause()  // On a une pause de programmée.
     
-    if (retour.flyTo !== 0) {               // On a un flyTo de programmé. La pause a été faite
+    if (retour.flyTo !== 0) {   
+      etat.value="flyto"
+      console.log(`etat: ${etat.value}`)            // On a un flyTo de programmé. La pause a été faite
       disabledPlayPause.value = true
       flyToState = true                     // On interdit la prise en compte d'une pause
       flyToEvt(map, retour.flyTo)
@@ -358,12 +367,16 @@
        
         map.once('moveend', function() {      // Le click souris a été fait 
           // console.log(`On met un message`)
+          etat.value="wait"
+          console.log(`etat: ${etat.value}`)            // On a un flyTo de programmé. La pause a été faite
           disabledReprise.value = false
           disabledPlayPause.value = false
         
 
           map.once('moveend', function() {
             // console.log("Fin du flyTo de retour")
+            etat.value="run"
+            console.log(`etat: ${etat.value}`)            // On a un flyTo de programmé. La pause a été faite
             flyToState = false
             disabledReprise.value = true
             playPause()
@@ -375,8 +388,7 @@
 
 
   }
-  else { 
-    // console.log(`Nous sommes en pause`)
+  else {     // console.log(`Nous sommes en pause`)
     if (startPause) {
       // console.log(`Nous passons en pause`)
       phase = (time - start) / dureeAnimation;
@@ -393,6 +405,8 @@
   // when the animation is finished, reset start to loop the animation
   if (phase > 1) {
     if (showEndTrace === "true") {
+      etat.value = "flyto"
+      console.log(`etat: ${etat.value}`)            // On a un flyTo de programmé. La pause a été faite
       disabledPlayPause.value = true
       map.fitBounds(bounds, {
         padding: 75, // équivalent au padding dans transitionToOverviewState
@@ -404,6 +418,9 @@
           disabledReprise.value = false
           disabledPlayPause.value = false
       })
+    } else {
+      etat.value = "end"
+      console.log(`etat: ${etat.value}`)            // On a un flyTo de programmé. La pause a été faite
     }
     return;
   }
@@ -482,24 +499,29 @@
 }
 
 function playPause() {
-  // console.log(`Play Pause`)
 
-  if (phase > 1) {
+  if (phase > 1) {  // On relance la visualisation. Il faut effacer les vignettes précédentes
+    delVignettes(evt)
     start = 0
-    // for(let i=0; i<visu.length;i++)
-    //     visu[i].start=false 
+    etat.value="run"
+
 
     window.requestAnimationFrame(frame)
   } else {
     if (flyToState) reprise()  
     else {
       if (pause.value) {
+        etat.value="run"
+        console.log(`etat : ${etat.value}`)
         // On relance l'annimation
         start = start + performance.now() - timePause
         window.requestAnimationFrame(frame)
         timePause = 0
         startPause = true
       } else {
+        etat.value="pause"
+        console.log(`etat : ${etat.value}`)
+
         // On stop l'annimation
         if (!timePause) {
           timePause = performance.now();
@@ -515,6 +537,8 @@ function playPause() {
 
 function reprise () {
   // console.log(`reprise`)
+  etat.value="flyto"
+  console.log(`etat: ${etat.value}`)            // On a un flyTo de programmé. La pause a été faite
   endFlyToEvt(map, avancement)        
   disabledPlayPause.value = true
 }
