@@ -75,7 +75,7 @@
 
   
   const etat = ref("init")
-  console.log(`etat : ${etat.value}`)
+  // console.log(`etat : ${etat.value}`)
 
   const disabledPlayPause = ref(true)
   const disabledReprise = ref(true)
@@ -264,7 +264,7 @@
         map.once('moveend', async () => {
         // console.log("On lance la suite")
         etat.value="run"
-        console.log(`etat : ${etat.value}`)
+        // console.log(`etat : ${etat.value}`)
         disabledPlayPause.value = false
         position = map.getSource('point')
         window.requestAnimationFrame(frame);
@@ -299,25 +299,51 @@
    * @param e 
    */
   function keyboard(e) {
-    // console.log(`Keyboard : ${e.key}`)
-    // console.log(e.key)
-    // if (e.key === "p") { 
-    //   if (flyToState !== true) {        
-    //     playPause()
-    //   } else {
-    //     reprise()
-    //   }
-    // }
-    if (e.key === "p") { 
-      playPause()
-    }
     
    
     if (e.key === "d") showData.value = !showData.value
 
-    if (e.key === "b") {
-      back()
-    }
+    // if (e.key === "b") {
+    //   back()
+    // }
+    // if (e.key === "p") { 
+    //   playPause()
+    // }
+
+    switch(etat.value) {
+      case  "init" :
+      break
+      case  "run" :
+        if (e.key === "b") {
+          back()
+        }
+        if (e.key === "p") { 
+          playPause()
+        }
+      break
+      case  "pause" :
+        if (e.key === "b") {
+          back()
+        }
+        if (e.key === "p") { 
+          playPause()
+        }
+      break
+      case  "flyto" :
+      break
+      case  "wait" :
+        if (e.key === "p") { 
+          playPause()
+        }
+      break
+      case  "end" :
+        if (e.key === "p") { 
+          playPause()
+        }
+      break
+      default :
+
+  }
 
 
 
@@ -357,7 +383,7 @@
     
     if (retour.flyTo !== 0) {   
       etat.value="flyto"
-      console.log(`etat: ${etat.value}`)            // On a un flyTo de programmé. La pause a été faite
+      // console.log(`etat: ${etat.value}`)            // On a un flyTo de programmé. La pause a été faite
       disabledPlayPause.value = true
       flyToState = true                     // On interdit la prise en compte d'une pause
       flyToEvt(map, retour.flyTo)
@@ -368,7 +394,7 @@
         map.once('moveend', function() {      // Le click souris a été fait 
           // console.log(`On met un message`)
           etat.value="wait"
-          console.log(`etat: ${etat.value}`)            // On a un flyTo de programmé. La pause a été faite
+          // console.log(`etat: ${etat.value}`)            // On a un flyTo de programmé. La pause a été faite
           disabledReprise.value = false
           disabledPlayPause.value = false
         
@@ -376,7 +402,7 @@
           map.once('moveend', function() {
             // console.log("Fin du flyTo de retour")
             etat.value="run"
-            console.log(`etat: ${etat.value}`)            // On a un flyTo de programmé. La pause a été faite
+            // console.log(`etat: ${etat.value}`)            // On a un flyTo de programmé. La pause a été faite
             flyToState = false
             disabledReprise.value = true
             playPause()
@@ -406,7 +432,7 @@
   if (phase > 1) {
     if (showEndTrace === "true") {
       etat.value = "flyto"
-      console.log(`etat: ${etat.value}`)            // On a un flyTo de programmé. La pause a été faite
+      // console.log(`etat: ${etat.value}`)            // On a un flyTo de programmé. La pause a été faite
       disabledPlayPause.value = true
       map.fitBounds(bounds, {
         padding: 75, // équivalent au padding dans transitionToOverviewState
@@ -512,7 +538,7 @@ function playPause() {
     else {
       if (pause.value) {
         etat.value="run"
-        console.log(`etat : ${etat.value}`)
+        // console.log(`etat : ${etat.value}`)
         // On relance l'annimation
         start = start + performance.now() - timePause
         window.requestAnimationFrame(frame)
@@ -520,7 +546,7 @@ function playPause() {
         startPause = true
       } else {
         etat.value="pause"
-        console.log(`etat : ${etat.value}`)
+        // console.log(`etat : ${etat.value}`)
 
         // On stop l'annimation
         if (!timePause) {
@@ -538,7 +564,7 @@ function playPause() {
 function reprise () {
   // console.log(`reprise`)
   etat.value="flyto"
-  console.log(`etat: ${etat.value}`)            // On a un flyTo de programmé. La pause a été faite
+  // console.log(`etat: ${etat.value}`)            // On a un flyTo de programmé. La pause a été faite
   endFlyToEvt(map, avancement)        
   disabledPlayPause.value = true
 }

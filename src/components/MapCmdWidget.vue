@@ -56,7 +56,7 @@ const showArriere=ref(false)
 const btnPlayPause=ref("run")
 
 watch(() => props.etat, (newValue, oldValue) => {
-  console.log(`etat :${ props.etat}`)
+  // console.log(`etat :${ props.etat}`)
   switch(props.etat) {
     case  "init" :
       showArriere.value = false

@@ -266,13 +266,13 @@ function activerFiltre (etat) {
 
 
 function filtreCircuits() {
-  console.log(`filtreCircuits`)
+  // console.log(`filtreCircuits`)
   disabledBtnFiltre.value=true
   getCircuits()
 }
 
 function resetFiltre() {
-  console.log(`resetfiltre`)
+  // console.log(`resetfiltre`)
   reset.value = !reset.value
 }
 
@@ -285,7 +285,7 @@ function resetFiltre() {
 function getCircuits() {
   // console.log(`GpxContainerView : getCirtuits`)
   const url = `http://localhost:4000/api/circuits/${page.value}/${nbCircuitsAffiches}/${filtreVille}/${filtreTraceur}/${filtreDistances}/${filtreDeniveles}`
-  console.log(url)
+  // console.log(url)
   fetch(url, { method: 'GET', signal: AbortSignal.timeout(1500) })
     .then((rep, err) => {
       return rep.json()
@@ -476,7 +476,7 @@ function askDelGpxFile(id, nom) {
 function getInfoCircuit(id) {
 
   const url = `http://localhost:4000/api/circuit/` + id
-  console.log(url)
+  // console.log(url)
   fetch(url, { method: 'GET', signal: AbortSignal.timeout(500) })
     .then((rep) => {
       return rep.json()
@@ -488,7 +488,7 @@ function getInfoCircuit(id) {
         showInformation.value = true
         // On récupère le nom de la ville de départ
         const urlVille = `http://localhost:4000/api/ville/` + json.circuit.villeDepart
-        console.log(urlVille)
+        // console.log(urlVille)
         fetch(urlVille, { method: 'GET', signal: AbortSignal.timeout(500) })
          .then((rep) => {
             return rep.json()
@@ -499,7 +499,7 @@ function getInfoCircuit(id) {
 
         // On récupère le nom du traceur
         const urlTraceur = `http://localhost:4000/api/traceur/` + json.circuit.traceur
-        console.log(urlTraceur)
+        // console.log(urlTraceur)
         fetch(urlTraceur, { method: 'GET', signal: AbortSignal.timeout(500) })
          .then((rep) => {
             return rep.json()

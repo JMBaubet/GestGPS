@@ -232,7 +232,7 @@ const disabled = ref(props.disbaledSave)
 const qrcode = ref()
 
 watch(() => props.circuit, () => {
-  console.log(props.circuit.editeurId)
+  // console.log(props.circuit.editeurId)
   qrcode.value=`src/assets/data/${props.circuit.circuitId}/qrCode.png`
 })
 

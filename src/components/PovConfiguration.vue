@@ -125,7 +125,7 @@ function initMyRef() {
 }
 
 function updateRefs() {
-  console.log(`function updateRefs`)
+  // console.log(`function updateRefs`)
   refs.splice(0)
   for (let i=0; i< props.visu.length; i++) {
     if (props.visu[i].ref === true) refs.push(i)
