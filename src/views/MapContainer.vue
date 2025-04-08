@@ -72,6 +72,10 @@
   const showTraceOnStart = import.meta.env.VITE_MAPBOX_START_SHOW_TRACE
   const timerShowTraceOnStart = parseInt(import.meta.env.VITE_MAPBOX_START_SHOW_TRACE_TIMER)
   const showEndTrace = import.meta.env.VITE_MAPBOX_END_SHOW_TRACE
+  const pinDepart = import.meta.env.VITE_PIN_DEPART
+  const pinArrivee = import.meta.env.VITE_PIN_ARRIVEE
+  const urlSvg = import.meta.env.VITE_URL_SVG
+
 
   
   const etat = ref("init")
@@ -243,6 +247,23 @@
     
 
     if (showTraceOnStart === "true") {
+      // On ajoute une étiquette sur le point de départ
+      console.log("On ajoute l'étiquette de départ")
+      let divStart = document.createElement('div');
+      divStart.id = 'startEtiquette'
+      divStart.style.backgroundImage = `${urlSvg}${pinDepart}`
+      divStart.style.width = `120px`
+      divStart.style.height = `120px`
+      // markers[elements[listEvts[indexEvt]][nbr].id].style.zIndex = 101
+      divStart.style.backgroundSize = '100%';
+
+      const offset = -60
+      let markerStart= new mapboxgl.Marker({ element: divStart, offset: [ 60, -20 ] })
+        .setLngLat(visu[0].lookAt)
+        .addTo(map);
+
+
+
       map.fitBounds(bounds, {
       padding: 75, // équivalent au padding dans transitionToOverviewState
       duration: 5000, // durée en millisecondes
@@ -262,12 +283,13 @@
         )
 
         map.once('moveend', async () => {
-        // console.log("On lance la suite")
-        etat.value="run"
-        // console.log(`etat : ${etat.value}`)
-        disabledPlayPause.value = false
-        position = map.getSource('point')
-        window.requestAnimationFrame(frame);
+          markerStart.remove()
+          // console.log("On lance la suite")
+          etat.value="run"
+          // console.log(`etat : ${etat.value}`)
+          disabledPlayPause.value = false
+          position = map.getSource('point')
+          window.requestAnimationFrame(frame);
         });
       })
     } else {
@@ -431,6 +453,20 @@
   // when the animation is finished, reset start to loop the animation
   if (phase > 1) {
     if (showEndTrace === "true") {
+      // On ajoute une étiquette sur le point d'arrivée
+      let divEnd = document.createElement('div');
+      divEnd.id = 'endEtiquette'
+      divEnd.style.backgroundImage = `${urlSvg}${pinArrivee}`
+      divEnd.style.width = `120px`
+      divEnd.style.height = `120px`
+      // markers[elements[listEvts[indexEvt]][nbr].id].style.zIndex = 101
+      divEnd.style.backgroundSize = '100%';
+
+      const offset = -60
+      let markerStart= new mapboxgl.Marker({ element: divEnd, offset: [ 60, -20 ] })
+        .setLngLat(visu[visu.length - 1].lookAt)
+        .addTo(map);
+
       etat.value = "flyto"
       // console.log(`etat: ${etat.value}`)            // On a un flyTo de programmé. La pause a été faite
       disabledPlayPause.value = true
@@ -585,3 +621,8 @@ function home() {
 
 </script>
 
+<style scooped>
+  /*#mapContainer {
+    transform: scale(1.3); 
+  }*/
+</style>

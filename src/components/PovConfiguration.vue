@@ -131,7 +131,7 @@ function updateRefs() {
     if (props.visu[i].ref === true) refs.push(i)
   }
   lastRef = refs[refs.length - 1]
-  props.visu[lastRef].longueur = 0
+  // props.visu[lastRef].longueur = 0
   // console.table(refs)
 }
 
