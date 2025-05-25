@@ -1,6 +1,6 @@
 <template>
   <v-card width="560">
-    <v-img :src="'src/assets/data/' + circuit.circuitId + '/vignette.png'" class="align-end text-white" cover>
+    <v-img :src="dataDirectory + circuit.circuitId + '/vignette.png'" class="align-end text-white" cover>
     </v-img>
     <v-card-item class="pa-0">
       <v-card-text class="py-0">
@@ -71,6 +71,8 @@
 
 <script setup>
 import { ref } from 'vue';
+
+const dataDirectory = import.meta.env.VITE_DATA_DIRECTORY
 
 const props = defineProps({
   //id: Number,

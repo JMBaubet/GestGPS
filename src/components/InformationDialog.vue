@@ -213,6 +213,9 @@
 <script setup>
 import { ref, watch} from 'vue';
 
+const dataDirectory = import.meta.env.VITE_DATA_DIRECTORY
+
+
 const props = defineProps({
   showInformation: Boolean,
   disbaledSave: Boolean,
@@ -233,7 +236,7 @@ const qrcode = ref()
 
 watch(() => props.circuit, () => {
   // console.log(props.circuit.editeurId)
-  qrcode.value=`src/assets/data/${props.circuit.circuitId}/qrCode.png`
+  qrcode.value=`${dataDirectory}/${props.circuit.circuitId}/qrCode.png`
 })
 
 
