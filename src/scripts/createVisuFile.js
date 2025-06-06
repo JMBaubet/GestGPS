@@ -29,7 +29,7 @@ export const createVisuFile = (lineString) => {
     //console.table(pointsCamera)
 
     // On calcul l'angle de vision pour la caméra tous les 100m
-    // On vise le cap sur 1500m pour lisser les changement de cap
+    // On vise le cap sur 1500m pour lisser les changements de cap
     // pour avoir une vue dans la direction de la trace 
 
     for (let nbSegment = 0; nbSegment < pointsCamera.length - 15; nbSegment++) {
