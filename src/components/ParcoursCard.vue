@@ -18,7 +18,10 @@
                   <v-list-item-title @click="  emit('informations')">Informations</v-list-item-title>
                 </v-list-item>
                 <v-list-item value="camera">
-                  <v-list-item-title @click="emit('modCameraFile')">Editer</v-list-item-title>
+                  <v-list-item-title @click="emit('modCameraFile')">Editer la 3d</v-list-item-title>
+                </v-list-item>
+                <v-list-item value="communes">
+                  <v-list-item-title @click="emit('addCommunes')">Ajouter les communes</v-list-item-title>
                 </v-list-item>
                 <v-list-item value="3d">
                   <v-list-item-title @click="emit('affiche3D')">Visualiser</v-list-item-title>
@@ -82,7 +85,7 @@ const props = defineProps({
 const lg = ref(parseInt(props.circuit.distance))
 const lgEdition = ref(parseInt(props.circuit.lgEdition/10))
 
-const emit = defineEmits(['informations', 'confirmDelGpxFile', 'modCameraFile', 'affiche3D'])
+const emit = defineEmits(['informations', 'confirmDelGpxFile', 'modCameraFile', 'addCommunes', 'affiche3D'])
 
 
 //router.push({ path: `/map/${id}` })

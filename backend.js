@@ -282,7 +282,7 @@ app.get('/api/visu/:id', (req, res) => {
 })
 
 
-//Sauvegarde du fichiervisu.json
+//Sauvegarde du fichier visu.json
 app.post('/api/visu/:id/', (req, res) => {
   saveVisu(req.params.id, req.body.visu)
     .then((retour) => {

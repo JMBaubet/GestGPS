@@ -39,6 +39,7 @@
           @informations="getInfoCircuit(circuit.circuitId)"
           @confirm-del-gpx-file="askDelGpxFile(circuit.circuitId, circuit.nom)"
           @modCameraFile="modCameraFile(circuit.circuitId)"
+          @addCommunes="addCommunes(circuit.circuitId)"
           @affiche3D="map3D(circuit.circuitId)">
         </ParcoursCard>
       </v-col>
@@ -52,6 +53,7 @@
           @informations="getInfoCircuit(circuit.circuitId)"
           @confirm-del-gpx-file="askDelGpxFile(circuit.circuitId, circuit.nom)"
           @modCameraFile="modCameraFile(circuit.circuitId)"
+          @addCommunes="addCommunes(circuit.circuitId)"
           @affiche3D="map3D(circuit.circuitId)">
         </ParcoursCard>
       </v-col>
@@ -65,6 +67,7 @@
           @informations="getInfoCircuit(circuit.circuitId)"
           @confirm-del-gpx-file="askDelGpxFile(circuit.circuitId, circuit.nom)"
           @modCameraFile="modCameraFile(circuit.circuitId)"
+          @addCommunes="addCommunes(circuit.circuitId)"
           @affiche3D="map3D(circuit.circuitId)">
         </ParcoursCard>
       </v-col>
@@ -78,6 +81,7 @@
           @informations="getInfoCircuit(circuit.circuitId)"
           @confirmDelGpxFile="askDelGpxFile(circuit.circuitId, circuit.nom)"
           @modCameraFile="modCameraFile(circuit.circuitId)"
+          @addCommunes="addCommunes(circuit.circuitId)"
           @affiche3D="map3D(circuit.circuitId)">
         </ParcoursCard>
       </v-col>
@@ -118,6 +122,7 @@ import DelGpxDialog from '@/components/DelGpxDialog.vue';
 import MsgAlert from '@/components/MsgAlert.vue';
 import InformationDialog from '@/components/InformationDialog.vue';
 import { traiteCatch, traiteErreur } from '@/scripts/promisesError.js'
+import { addCommunes } from '@/scripts/addCommunes';
 
 const TIMER = import.meta.env.VITE_TIMER
 
@@ -474,7 +479,6 @@ function askDelGpxFile(id, nom) {
 }
 
 function getInfoCircuit(id) {
-
   const url = `http://localhost:4000/api/circuit/` + id
   // console.log(url)
   fetch(url, { method: 'GET', signal: AbortSignal.timeout(500) })
@@ -518,6 +522,7 @@ function getInfoCircuit(id) {
       traiteCatch(err, alarmes)
     })
 }
+
 
 function saveTraceur(newTraceur, id) {
   console.log(`saveTraceur : ${newTraceur}, ${id}`)
