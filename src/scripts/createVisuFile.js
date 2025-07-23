@@ -11,7 +11,7 @@ export const createVisuFile = (lineString) => {
     // console.log(`createCameraFile`)
 
     const lineStringObjet = JSON.parse(lineString)
-    // console.table(lineStringObjet["geometry"]["coordinates"])
+    // console.table(lineStringObjet[ "geometry" ][ "coordinates" ])
 
     const longueur = turf.length(turf.lineString(lineStringObjet[ "geometry" ][ "coordinates" ])).toFixed(2)
     let pointsCamera = []
@@ -56,6 +56,58 @@ export const createVisuFile = (lineString) => {
     pointsCamera[ pointsCamera.length - 1 ].cap = pointsCamera[ pointsCamera.length - 2 ].cap
     // console.table(pointsCamera)
 
+    //-------------------------------
+    // Traitement de l'altimétrie
+    //-------------------------------
+    // Sur tous les 100 m on calcule l'altitude arrondie à 0.1 m soit 0.1% de précision
+    // Algorithme : On prend les point un par un.
+    // Si on depasse le pas de 100 on prend le point précédent et on fait une règle de 3 entre les deux points
+    let pointsAltitude = []
+    let altPrecedente = 0
+    let altCourante = 0
+    let distance = 0.1
+    let avancement = []  // Tableau qui permet de calculer la distance de la trace en fonction de l'avancement
+    console.log(`On traite l'altimétrie: Longueur de la trace : ${lineStringObjet[ "geometry" ][ "coordinates" ].length}`)
+
+    avancement.push(
+      [ lineStringObjet[ "geometry" ][ "coordinates" ][ 0 ][ 0 ],
+      lineStringObjet[ "geometry" ][ "coordinates" ][ 0 ][ 1 ] ]
+    )
+
+    pointsAltitude.push(lineStringObjet[ "geometry" ][ "coordinates" ][ 0 ][ 2 ])
+    console.table(avancement)
+    for (let index = 1; index < lineStringObjet[ "geometry" ][ "coordinates" ].length; index++) {
+      avancement.push(
+        [ lineStringObjet[ "geometry" ][ "coordinates" ][ index ][ 0 ],
+        lineStringObjet[ "geometry" ][ "coordinates" ][ index ][ 1 ] ]
+      )
+      // console.table(avancement)
+      console.log(`Avancement : ${turf.length(turf.lineString(avancement))}`)
+      if (turf.length(turf.lineString(avancement)) > distance) {
+        console.log(`On traite un nouveau point`)
+        // On lit les altitudes courante et précédente
+        altCourante = lineStringObjet[ "geometry" ][ "coordinates" ][ index ][ 2 ]
+        altPrecedente = lineStringObjet[ "geometry" ][ "coordinates" ][ index - 1 ][ 2 ]
+        if (altCourante === altPrecedente) {
+          pointsAltitude.push = altCourante.toFixed(1)
+        } else { // Nous n'avons pas la meme alt. On calcule les distances entre les points
+          let point = turf.along(turf.lineString(lineStringObjet[ "geometry" ][ "coordinates" ]), distance)
+          let pointPrecedent = turf.point([ lineStringObjet[ "geometry" ][ "coordinates" ][ index - 1 ][ 0 ],
+          lineStringObjet[ "geometry" ][ "coordinates" ][ index - 1 ][ 1 ] ])
+          let pointSuivant = turf.point([ lineStringObjet[ "geometry" ][ "coordinates" ][ index ][ 0 ],
+          lineStringObjet[ "geometry" ][ "coordinates" ][ index ][ 1 ] ])
+          let distanceAvant = turf.distance(pointPrecedent, point)
+          let distanceApres = turf.distance(pointSuivant, point)
+          let altCalculee = ((altCourante - altPrecedente) * (distanceAvant / (distanceApres + distanceApres))) + altPrecedente
+          pointsAltitude.push = altCalculee.toFixed(1)
+        }
+        distance += 0.1
+
+        console.log(`avancement : ${distance}`)
+      }
+
+    }
+
     // On crée le tableau visu avec l'ensemble des champs
     let visu = []
     for (let index = 0; index < pointsCamera.length; index++) {
@@ -68,7 +120,8 @@ export const createVisuFile = (lineString) => {
         zoom: 16,
         pitch: 60,
         positionCamera: [],
-        altitudeCamera: 0
+        altitudeCamera: 0,
+        altitude: pointsAltitude[ index ]
       })
     }
     // console.table(visu)
